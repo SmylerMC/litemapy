@@ -10,7 +10,7 @@ class LitematicaBitArray:
         s = ceil(nbits * size / 8)
         self.store = b''*s
 
-    def fromnbtlongarray(arr, si
+    def fromnbtlongarray(arr, size, nbits):
         #TODO Check if size is compatible with long array length
         buff = b''
         for l in arr:
