@@ -17,27 +17,27 @@ class LitematicaBitArray:
             buff += struct.pack('<q', int(l)) #TODO Make sure this is right
         r = LitematicaBitArray(size, nbits)
         r.store = buff
-        #print(buff)
+        print(buff, len(buff))
         return r
 
     def __getitem__(self, index):
         startoff = index * self.nbits
         startind = startoff // 8
         endoff = (index + 1) * self.nbits
-        endind = ceil(endoff / 8)
+        endind = endoff // 8
         sbitoff = startoff % 8
         ebitoff = endoff % 8
         #print(startoff, startind, endoff, endind, sbitoff, ebitoff)
         v = 0
-        for i, b in enumerate(self.store[startind: endind]):
+        for i, b in enumerate(self.store[startind: min(endind + 1, len(self.store))]):
             bitadded = 8
             #print(b)
-            if i == endind - startind - 1:
-                b >>= (8 - ebitoff) % 8
-                bitadded -= (8 - ebitoff) % 8
+            if i == endind - startind:
+                b >>= 8 - ebitoff
+                bitadded -= 8 - ebitoff
                 #print(b, bitadded)
             if i == 0:
-                b &= (1 << (8-sbitoff)) - 1
+                b &= (1 << (bitadded-sbitoff)) - 1
                 bitadded -= sbitoff
                 #print(b, bitadded)
             #print(b)
