@@ -12,7 +12,7 @@ class LitematicaBitArray:
 
     def fromnbtlongarray(arr, size, nbits):
         #TODO Check if size is compatible with long array length
-        buff = b''
+        buff = bytearray()
         for l in arr:
             buff += struct.pack('<q', int(l)) #TODO Make sure this is right
         r = LitematicaBitArray(size, nbits)
