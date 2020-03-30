@@ -13,5 +13,6 @@ setuptools.setup(
         url="https://github.com/SmylerMC/litemapy",
         packages=setuptools.find_packages(),
         classifiers=[], #TODO
-        python_requires=">=3.5" #TODO,
+        python_requires=">=3.5", #TODO
+        test_suite="tests",
     )
