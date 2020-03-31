@@ -1,7 +1,9 @@
 from nbtlib.tag import End, Byte, Short, Int, Long, Float, Double, ByteArray, String, List, Compound, IntArray, LongArray
 import nbtlib
+import nbtlib
 from math import ceil, log
 import struct
+from storage import LitematicaBitArray
 
 LITEMATIC_VERSION = 5
 MC_DATA_VERSION = 1631
@@ -16,7 +18,6 @@ class Schematic:
         self.modified = 0 #TODO
         self.width, self.height, self.length = width, height, length
         self.regions = []
-        pass #TODO
 
     def getblock(self, x, y, z):
         pass #TODO
@@ -25,7 +26,9 @@ class Schematic:
         pass #TODO
 
     def save(self, fname):
-        pass #TODO
+        f = nbtlib.File(gzipped=True, byteorder='big')
+        f[""] = self._tonbt()
+        f.save(fname)
 
     def _tonbt(self, updatetime=True):
         root = Compound()
@@ -40,16 +43,17 @@ class Schematic:
         meta["Author"] = String(self.author)
         meta["Description"] = String(self.description)
         meta["Name"] = String(self.name)
-        meta["RegionCount"] = len(self.regions)
+        meta["RegionCount"] = Int(len(self.regions))
         meta["TimeCreated"] = Long(self.created)
         meta["TimeModified"] = Long(self.modified)
-        meta["TotalBlocks"] = sum([reg.getblockcount() for reg in self.regions]) #TODO Is this right
-        meta["TotalVolume"] = sum([reg.getvolume() for reg in self.regions]) #TODO Is this right
+        meta["TotalBlocks"] = Int(sum([reg.getblockcount() for reg in self.regions])) #TODO Is this right
+        meta["TotalVolume"] = Int(sum([reg.getvolume() for reg in self.regions])) #TODO Is this right
         root["Metadata"] = meta
         regs = Compound()
         for reg in self.regions:
             regs[reg.name] = reg._tonbt()
         root["Regions"] = regs
+        return root
 
     def fromnbt(nbt):
         meta = nbt["Metadata"]
@@ -79,7 +83,7 @@ class Region:
         self.x, self.y, self.z = x, y, z
         self.width, self.height, self.length = width, height, length
         self.palette = [AIR, ]
-        self.blocks = [[[ 0 for k in range(length)] for j in range(height)] for i in range(width)]
+        self.blocks = [[[ 0 for k in range(abs(length))] for j in range(abs(height))] for i in range(abs(width))]
         self.entities = []
         self.tileentities = []
         pass #TODO
@@ -92,21 +96,34 @@ class Region:
         pos["z"] = Int(self.z)
         root["Position"] = pos
         size = Compound()
-        size["x"] = width
-        size["y"] = height
-        size["z"] = length
+        size["x"] = Int(self.width)
+        size["y"] = Int(self.height)
+        size["z"] = Int(self.length)
         root["Size"] = size
-        plt = List([blk._tonbt() for blk in self.palette])
+        plt = List[Compound]([blk._tonbt() for blk in self.palette])
         root["BlockStatePalette"] = plt
-        ents = List([ent._tonbt() for ent in self.entities])
+        ents = List[Compound]([ent._tonbt() for ent in self.entities])
         root["Entities"] = ents
-        tilents = List([ent._tonbt for ent in self.tileentities])
+        tilents = List[Compound]([ent._tonbt for ent in self.tileentities])
         root["TileEntities"] = tilents
-        root["PendingBlockTicks"] = List() #TODO How does this work
-        root["PendingFluidTicks"] = List()
-        root["BlockStates"] = LongArray() #TODO
+        root["PendingBlockTicks"] = List[Compound]() #TODO How does this work
+        root["PendingFluidTicks"] = List[Compound]()
+        arr = LitematicaBitArray(self.getvolume(), self.__get_needed_nbits())
+        for x in range(abs(self.width)):
+            for y in range(abs(self.height)):
+                for z in range(abs(self.length)):
+                    ind = (y * abs(self.width * self.length)) + z * abs(self.width) + x
+                    arr[ind] = self.blocks[x][y][z]
+        root["BlockStates"] = arr._tonbtlongarray()
+        return root
 
     def getblock(self, x, y, z):
+        if self.width < 0:
+            x -= self.width + 1
+        if self.height < 0:
+            y -= self.height + 1
+        if self.length < 0:
+            z -= self.length + 1
         return self.palette[ self.blocks[x][y][z] ]
 
     def setblock(self, x, y, z, block):
@@ -128,7 +145,10 @@ class Region:
         return c
 
     def getvolume(self):
-        return self.width * self.height * self.length
+        return abs(self.width * self.height * self.length)
+
+    def __get_needed_nbits(self):
+        return max(ceil(log(len(self.palette), 2)), 2)
     
     def fromnbt(nbt, name="Unnamed"):
         pos = nbt["Position"]
@@ -150,26 +170,16 @@ class Region:
         for tenbt in nbt["TileEntities"]:
             block = TileEntity.fromnbt(tentity)
             reg.tileentities.append(block)
-        #TODO Blocks
         blks = nbt["BlockStates"]
-        nbits = ceil(log(len(reg.palette))) + 1
-        #print(nbits)
-        i = 0 # The longs we have consummed
-        buff = 0
-        buffbits = 0
-        for j in range(reg.getvolume()):
-            while buffbits < nbits:
-                buff <<= 64
-                buff += int(struct.unpack('L', struct.pack('L', blks[i])[::-1])[0])
-                i += 1
-                buffbits += 64
-                #print(buff)
-            ind = buff >> (buffbits - nbits)
-            print(struct.pack('L', buff))
-            buff &= (1 << (buffbits - nbits + 1)) - 1
-            buffbits -= nbits
-            print(ind)
+        nbits = reg.__get_needed_nbits()
+        arr = LitematicaBitArray.fromnbtlongarray(blks, reg.getvolume(), nbits)
+        for x in range(abs(width)):
+            for y in range(abs(height)):
+                for z in range(abs(length)):
+                    ind = (y * abs(width * length)) + z * abs(width) + x
+                    reg.blocks[x][y][z] = arr[ind]
         return reg
+
 
 class BlockState:
 
