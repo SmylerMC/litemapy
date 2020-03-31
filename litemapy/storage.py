@@ -29,6 +29,9 @@ class LitematicaBitArray:
             l.append(i)
         return l
 
+    def _tonbtlongarray(self):
+        pass #TODO
+
     def __getitem__(self, index):
         if not 0 <= index < len(self):
             raise IndexError("Invalid index {}".format(index))
@@ -48,7 +51,6 @@ class LitematicaBitArray:
             raise IndexError("Invalid index {}".format(index))
         if not 0 <= value <= self.__mask:
             raise IndexError("Invalid index {}".format(index))
-        #TODO Check index and value
         startOffset = index * self.nbits
         startArrIndex = startOffset >> 6
         endArrIndex = ((index + 1) * self.nbits - 1) >> 6
@@ -65,14 +67,19 @@ class LitematicaBitArray:
         return self.size
 
     def __iter__(self):
-        pass #TODO
+        for i in range(len(self)):
+            yield self[i]
 
     def __reversed__(self):
-        pass #TODO
+        arr = LitematicaBitArray(self.size, self.nbits)
+        for i in range(len(self)):
+            arr[i] = self[len(self) - i - 1]
+        return arr
     
-    def __contains__(self, item):
-        pass #TODO
+    def __contains__(self, value):
+        for v in self:
+            if v == value:
+                return True
+        return False
 
-    def _tonbtlongarray(self):
-        pass #TODO
 
