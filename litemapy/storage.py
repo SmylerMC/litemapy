@@ -1,4 +1,5 @@
 from math import ceil
+import nbtlib.tag
 import struct
 
 
@@ -12,8 +13,13 @@ class LitematicaBitArray:
         self.__mask = (1 << nbits) - 1 # nbits bits set to 1
 
     def fromnbtlongarray(arr, size, nbits):
-        if ceil(size * nbits / 64) != len(arr):
-            raise ValueError("long array length does not match bit array size and nbits")
+        excpected_len = ceil(size * nbits / 64)
+        if excpected_len != len(arr):
+            raise ValueError(
+                "long array length does not match bit array size and nbits, excpected {}, not {}".format(
+                        excpected_len, len(arr)
+                    )
+                )
         r = LitematicaBitArray(size, nbits)
         m = (1 << 64) - 1
         r.array = [int(i) & m for i in arr] # Remove the infinite trailing 1s of negative numbers
@@ -25,12 +31,12 @@ class LitematicaBitArray:
         m2 = (1 << 64) - 1
         for i in self.array:
             if i & m1 > 0:
-                i |= ~m2
+                i |= ~m2 # Add the potential infinit 1 prefix for negative numbers
             l.append(i)
         return l
 
     def _tonbtlongarray(self):
-        pass #TODO
+        return nbtlib.tag.LongArray(self._tolonglist())
 
     def __getitem__(self, index):
         if not 0 <= index < len(self):
