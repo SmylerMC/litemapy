@@ -12,7 +12,8 @@ class LitematicaBitArray:
         self.__mask = (1 << nbits) - 1 # nbits bits set to 1
 
     def fromnbtlongarray(arr, size, nbits):
-        #TODO Check if size is compatible with long array length
+        if ceil(size * nbits / 64) != len(arr):
+            raise ValueError("long array length does not match bit array size and nbits")
         r = LitematicaBitArray(size, nbits)
         m = (1 << 64) - 1
         r.array = [int(i) & m for i in arr] # Remove the infinite trailing 1s of negative numbers
@@ -28,9 +29,9 @@ class LitematicaBitArray:
             l.append(i)
         return l
 
-
     def __getitem__(self, index):
-        #TODO Check index
+        if not 0 <= index < len(self):
+            raise IndexError("Invalid index {}".format(index))
         startOffset = index * self.nbits
         startArrIndex = startOffset >> 6
         endArrIndex = ((index + 1) * self.nbits - 1) >> 6
@@ -43,6 +44,10 @@ class LitematicaBitArray:
             return (self.array[startArrIndex] >> startBitOffset | self.array[endArrIndex] << endOffset) & self.__mask
 
     def __setitem__(self, index, value):
+        if not 0 <= index < len(self):
+            raise IndexError("Invalid index {}".format(index))
+        if not 0 <= value <= self.__mask:
+            raise IndexError("Invalid index {}".format(index))
         #TODO Check index and value
         startOffset = index * self.nbits
         startArrIndex = startOffset >> 6
