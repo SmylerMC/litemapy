@@ -7,48 +7,57 @@ class LitematicaBitArray:
     def __init__(self, size, nbits):
         self.size = size
         self.nbits = nbits
-        s = ceil(nbits * size / 8)
-        self.store = b''*s
+        s = ceil(nbits * size / 64)
+        self.array = [0] * s
+        self.__mask = (1 << nbits) - 1 # nbits bits set to 1
 
     def fromnbtlongarray(arr, size, nbits):
         #TODO Check if size is compatible with long array length
-        buff = bytearray()
-        for l in arr:
-            buff += struct.pack('<q', int(l)) #TODO Make sure this is right
         r = LitematicaBitArray(size, nbits)
-        r.store = buff
-        print(buff, len(buff))
+        m = (1 << 64) - 1
+        r.array = [int(i) & m for i in arr] # Remove the infinite trailing 1s of negative numbers
         return r
 
-    def __getitem__(self, index):
-        startoff = index * self.nbits
-        startind = startoff // 8
-        endoff = (index + 1) * self.nbits
-        endind = endoff // 8
-        sbitoff = startoff % 8
-        ebitoff = endoff % 8
-        #print(startoff, startind, endoff, endind, sbitoff, ebitoff)
-        v = 0
-        for i, b in enumerate(self.store[startind: min(endind + 1, len(self.store))]):
-            bitadded = 8
-            #print(b)
-            if i == endind - startind:
-                b >>= 8 - ebitoff
-                bitadded -= 8 - ebitoff
-                #print(b, bitadded)
-            if i == 0:
-                b &= (1 << (bitadded-sbitoff)) - 1
-                bitadded -= sbitoff
-                #print(b, bitadded)
-            #print(b)
-            #print()
-            v <<= bitadded
-            #print(bitadded)
-            v += b
-        return v
+    def _tolonglist(self):
+        l = []
+        m1 = 1 << 63
+        m2 = (1 << 64) - 1
+        for i in self.array:
+            if i & m1 > 0:
+                i |= ~m2
+            l.append(i)
+        return l
 
-    def __setitem__(self, key, value):
-        pass #TODO
+
+    def __getitem__(self, index):
+        #TODO Check index
+        startOffset = index * self.nbits
+        startArrIndex = startOffset >> 6
+        endArrIndex = ((index + 1) * self.nbits - 1) >> 6
+        startBitOffset = startOffset & 0x3F
+
+        if startArrIndex == endArrIndex : 
+            return self.array[startArrIndex] >> startBitOffset & self.__mask
+        else:
+            endOffset = 64 - startBitOffset;
+            return (self.array[startArrIndex] >> startBitOffset | self.array[endArrIndex] << endOffset) & self.__mask
+
+    def __setitem__(self, index, value):
+        #TODO Check index and value
+        startOffset = index * self.nbits
+        startArrIndex = startOffset >> 6
+        endArrIndex = ((index + 1) * self.nbits - 1) >> 6
+        startBitOffset = startOffset & 0x3F
+        m = (1 << 64) - 1
+        self.array[startArrIndex] = (self.array[startArrIndex] & ~(self.__mask << startBitOffset) | (value & self.__mask) << startBitOffset) & m
+
+        if startArrIndex != endArrIndex:
+            endOffset = 64 - startBitOffset;
+            j1 = self.nbits - endOffset;
+            self.array[endArrIndex] = (self.array[endArrIndex] >> j1 << j1 | ( value & self.__mask) >> endOffset) & m
+
+    def __len__(self):
+        return self.size
 
     def __iter__(self):
         pass #TODO

@@ -2,9 +2,6 @@ import unittest
 import litemapy.storage as storage
 import tests.helper as helper
 
-LITEMATICA_URL = "https://www.curseforge.com/minecraft/mc-mods/litematica/download/2893431/file"
-LITEMATICA_FNAME = "litematica.jar"
-
 class TestLitematicaBitArray(unittest.TestCase):
 
     @classmethod
@@ -21,9 +18,26 @@ class TestLitematicaBitArray(unittest.TestCase):
         pass
 
     def test_reading(self):
-        arr = self.JLitematicaBitArray(6, 32)
-        arr.setAt(0, 3)
-        print(arr.getAt(0))
+        nbits = 6
+        size = 33
+        jarr = self.JLitematicaBitArray(nbits, size)
+        for i in range(size):
+            jarr.setAt(i, i)
+        longarr = jarr.getBackingLongArray()
+        parr = storage.LitematicaBitArray.fromnbtlongarray(longarr, size, nbits)
+        for i in range(size):
+            self.assertEqual(parr[i], i)
 
     def test_writing(self):
-        print("Testing :)")
+        nbits = 6
+        size = 33
+        parr = storage.LitematicaBitArray(size, nbits)
+        for i in range(size):
+            parr[i] = i
+        plongs = parr._tolonglist()
+        jlongs = self.gateway.new_array(self.gateway.jvm.long, len(plongs))
+        for i, l in enumerate(plongs):
+            jlongs[i] = l
+        jarr = self.JLitematicaBitArray(nbits, size, jlongs)
+        for i in range(len(parr)):
+            self.assertEqual(parr[i], jarr.getAt(i))
