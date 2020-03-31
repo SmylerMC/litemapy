@@ -1,7 +1,7 @@
 from nbtlib.tag import End, Byte, Short, Int, Long, Float, Double, ByteArray, String, List, Compound, IntArray, LongArray
 import nbtlib
 from math import ceil, log
-from storage import LitematicaBitArray
+from .storage import LitematicaBitArray
 from time import time
 
 LITEMATIC_VERSION = 5
