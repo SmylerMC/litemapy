@@ -1,14 +1,15 @@
 import requests
 import os
-import sys
-import git
 import subprocess
 import shutil
 import xml.etree.ElementTree
 import py4j.java_gateway
-from tests.constants import *
+from .constants import *
 
 SUB_PROC, GATEWAY = None, None
+
+def java_test_available():
+    return (not is_windows()) and os.path.isfile(ENTRY_JCLASS_JAVA)
 
 def setup_litematica():
     if not is_local_git_repo(LITEMATICA_LOCAL_GIT):
@@ -38,7 +39,7 @@ def get_litematica_jvm():
         classpath = get_full_classpath_str(LITEMATICA_LOCAL_GIT)
         compile_java(ENTRY_JCLASS_JAVA, classpath)
         cmd = ["java", "-cp", classpath, "EntryPoint"]
-        SUB_PROC = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
+        SUB_PROC = subprocess.Popen(cmd)
         try:
             SUB_PROC.wait(1)
         except:
@@ -72,15 +73,17 @@ def is_windows():
 
 def clone_git_repo(url, localdir):
     print("Clonning git repo from", url, "to", localdir)
-    git.Repo.clone_from(url, localdir)
+    cmd = ["git", "clone", url, localdir]
+    proc = subprocess.run(
+            cmd,
+        )
+    proc.check_returncode()
 
 def git_checkout(repo, branch):
     print("Switching", repo, "to branch", branch)
     cmd = ["git", "checkout", branch]
     proc = subprocess.run(
             cmd,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
             cwd=repo
         )
     proc.check_returncode()
@@ -90,8 +93,6 @@ def git_pull(repo):
     cmd = ["git", "pull"]
     proc = subprocess.run(
             cmd,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
             cwd=repo
         )
     proc.check_returncode()
@@ -101,8 +102,6 @@ def git_reset(repo):
     cmd = ["git", "reset", "--hard"]
     proc = subprocess.run(
             cmd,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
             cwd=repo
         )
     proc.check_returncode()
@@ -116,16 +115,12 @@ def gradle_build(projectroot):
     print("Generating eclipse envirronement in", projectroot) # We need this to get the classpath
     proc = subprocess.run(
             cmdroot + ["eclipse",],
-            stdout=sys.stdout,
-            stderr=sys.stderr,
             cwd=projectroot
         )
     proc.check_returncode()
     print("Running gradle build in", projectroot)
     proc = subprocess.run(
             cmdroot + ["build",],
-            stdout=sys.stdout,
-            stderr=sys.stderr,
             cwd=projectroot
         )
     proc.check_returncode()
@@ -158,8 +153,6 @@ def compile_java(fname, classpath):
     cmd = ["javac", "-cp", classpath, fname]
     proc = subprocess.run(
             cmd,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
         )
     proc.check_returncode()
 

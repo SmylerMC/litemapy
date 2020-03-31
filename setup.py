@@ -3,15 +3,23 @@
 import setuptools
 
 DESCRIPTION = "Read and write Litematica's Minecraft schematics files"
+
+def readme():
+    with open("README.md") as f:
+        txt = f.read()
+    return txt
+
+
 setuptools.setup(
         name="litemapy",
-        version="0.1.0a0",
+        version="0.1.1a0",
         author="SmylerMC",
         author_email="smyler@mail.com",
         description=DESCRIPTION,
-        long_description=DESCRIPTION, #TODO
+        long_description=readme(),
+        long_description_content_type="text/markdown",
         url="https://github.com/SmylerMC/litemapy",
-        packages=setuptools.find_packages(),
+        packages=setuptools.find_packages(exclude=["tests"]),
         license="GNU General Public License v3 (GPLv3)",
         classifiers=[
                 "Development Status :: 3 - Alpha",
@@ -25,5 +33,6 @@ setuptools.setup(
         install_requires=[
                 'nbtlib',
           ],
-        test_suite="tests",
+        test_suite='nose.collector',
+        tests_require=['nose'],
     )
