@@ -5,7 +5,7 @@ import setuptools
 DESCRIPTION = "Read and write Litematica's Minecraft schematics files"
 setuptools.setup(
         name="litemapy",
-        version="0.1.0.alpha",
+        version="0.1.0a0",
         author="SmylerMC",
         author_email="smyler@mail.com",
         description=DESCRIPTION,
