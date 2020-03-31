@@ -1,8 +1,6 @@
 from nbtlib.tag import End, Byte, Short, Int, Long, Float, Double, ByteArray, String, List, Compound, IntArray, LongArray
 import nbtlib
-import nbtlib
 from math import ceil, log
-import struct
 from storage import LitematicaBitArray
 from time import time
 

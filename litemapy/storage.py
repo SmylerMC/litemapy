@@ -1,7 +1,5 @@
 from math import ceil
 import nbtlib.tag
-import struct
-
 
 class LitematicaBitArray:
 
