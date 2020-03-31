@@ -50,7 +50,7 @@ class LitematicaBitArray:
         if not 0 <= index < len(self):
             raise IndexError("Invalid index {}".format(index))
         if not 0 <= value <= self.__mask:
-            raise IndexError("Invalid index {}".format(index))
+            raise ValueError("Invalid value {}, maximum value is {}".format(value, self.__mask))
         startOffset = index * self.nbits
         startArrIndex = startOffset >> 6
         endArrIndex = ((index + 1) * self.nbits - 1) >> 6
