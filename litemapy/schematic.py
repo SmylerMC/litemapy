@@ -4,26 +4,22 @@ import nbtlib
 from math import ceil, log
 import struct
 from storage import LitematicaBitArray
+from time import time
 
 LITEMATIC_VERSION = 5
 MC_DATA_VERSION = 1631
+DEFAULT_NAME = "Unnamed" # Default name given to schematics and regions if unspecified
 
 class Schematic:
 
-    def __init__(self, width, height, length, name="Unnamed", author="", description=""):
+    def __init__(self, width, height, length, name=DEFAULT_NAME, author="", description=""):
         self.author = author
         self.description = description
         self.name = name
-        self.created = 0 #TODO
-        self.modified = 0 #TODO
+        self.created = int(time())
+        self.modified = int(time())
         self.width, self.height, self.length = width, height, length
         self.regions = []
-
-    def getblock(self, x, y, z):
-        pass #TODO
-
-    def setblock(self, x, y, z, block):
-        pass #TODO
 
     def save(self, fname):
         f = nbtlib.File(gzipped=True, byteorder='big')
@@ -46,8 +42,8 @@ class Schematic:
         meta["RegionCount"] = Int(len(self.regions))
         meta["TimeCreated"] = Long(self.created)
         meta["TimeModified"] = Long(self.modified)
-        meta["TotalBlocks"] = Int(sum([reg.getblockcount() for reg in self.regions])) #TODO Is this right
-        meta["TotalVolume"] = Int(sum([reg.getvolume() for reg in self.regions])) #TODO Is this right
+        meta["TotalBlocks"] = Int(sum([reg.getblockcount() for reg in self.regions])) 
+        meta["TotalVolume"] = Int(sum([reg.getvolume() for reg in self.regions]))
         root["Metadata"] = meta
         regs = Compound()
         for reg in self.regions:
@@ -69,7 +65,8 @@ class Schematic:
         for key, value in nbt["Regions"].items():
             reg = Region.fromnbt(value, name=nbtstr2str(key))
             sch.regions.append(reg)
-        #TODO Compare extracted regions count to stored
+        if "RegionCount" in meta and len(sch.regions) != meta["RegionCount"]:
+            raise CorruptedSchematicError("Number of regions in metadata does not match the number of parsed regions")
         return sch
 
     def load(fname):
@@ -78,7 +75,7 @@ class Schematic:
 
 class Region:
 
-    def __init__(self, x, y, z, width, height, length, name="Unnamed"):
+    def __init__(self, x, y, z, width, height, length, name=DEFAULT_NAME):
         self.name = name
         self.x, self.y, self.z = x, y, z
         self.width, self.height, self.length = width, height, length
@@ -86,7 +83,6 @@ class Region:
         self.blocks = [[[ 0 for k in range(abs(length))] for j in range(abs(height))] for i in range(abs(width))]
         self.entities = []
         self.tileentities = []
-        pass #TODO
 
     def _tonbt(self):
         root = Compound()
@@ -220,4 +216,7 @@ def nbtstr2str(s):
     return str(s)[1:-1]
 
 AIR = BlockState("minecraft:air")
+
+class CorruptedSchematicError(Exception):
+    pass
 
