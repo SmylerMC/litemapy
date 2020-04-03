@@ -3,6 +3,7 @@ import nbtlib
 from math import ceil, log
 from .storage import LitematicaBitArray, DiscriminatingDictionnary
 from .info import *
+from .boxes import *
 from time import time
 
 class Schematic:
@@ -12,10 +13,10 @@ class Schematic:
     """
 
     def __init__(self,
-                width, height, length,
-                name=DEFAULT_NAME, author="", description="",
-                regions={}, main_region_name=DEFAULT_NAME
-            ):
+                    width, height, length, 
+                    name=DEFAULT_NAME, author="", description="",
+                    regions={}, main_region_name=DEFAULT_NAME
+                ):
         """
         Initialize a schematic of size width, height and length
         name, author and description are used in metadatas
@@ -28,7 +29,7 @@ class Schematic:
         self.name = name
         self.created = int(time())
         self.modified = int(time())
-        self.width, self.height, self.length = width, height, length #TODO Protect
+        self.__width, self.__height, self.__length = width, height, length
         self.__regions = DiscriminatingDictionnary(self._can_add_region)
         if regions != None and len(regions) > 0:
             self.__regions.update(regions)
@@ -37,6 +38,11 @@ class Schematic:
             self.__regions[main_region_name] = reg
 
     def save(self, fname, update_meta=True, save_soft=True):
+        """
+        Save this schematic to the disk in a file name fname
+        update_meta: update metadata before writing to the disk (modified time)
+        save_soft: add a metadata entry with the software name and version
+        """
         if update_meta:
             self.updatemeta()
         f = nbtlib.File(gzipped=True, byteorder='big')
@@ -44,6 +50,9 @@ class Schematic:
         f.save(fname)
 
     def _tonbt(self, save_soft=True):
+        """
+        Write the schematic to an nbt tag
+        """
         root = Compound()
         root["Version"] = Int(LITEMATIC_VERSION)
         root["MinecraftDataVersion"] = Int(MC_DATA_VERSION)
@@ -70,6 +79,9 @@ class Schematic:
         return root
 
     def fromnbt(nbt):
+        """
+        Read and return a schematic from an nbt tag
+        """
         meta = nbt["Metadata"]
         width = int(meta["EnclosingSize"]["x"])
         height = int(meta["EnclosingSize"]["y"])
@@ -89,21 +101,55 @@ class Schematic:
         return sch
 
     def updatemeta(self):
+        """
+        Update this schematic's metadata (modified time)
+        """
         self.modified = int(time())
 
     def load(fname):
+        """
+        Read a schematic from disk
+        fname; nale of the file
+        """
         nbt = nbtlib.File.load(fname, True)['']
         return Schematic.fromnbt(nbt)
 
     def _can_add_region(self, name, region):
-        return type(name) == str, "Region name should be a string"
-        pass #TODO check regions size
+        if type(name) != str:
+            return False, "Region name should be a string"
+        schembox = ((0, 0, 0), (self.width-1, self.height-1, self.length-1))
+        regx, regy, regz = region.x, region.y, region.z
+        regbx = regx + region.width - abs(region.width) / region.width
+        regby = regy + region.height - abs(region.height) / region.height
+        regbz = regz + region.length - abs(region.length) / region.length
+        regbox = ((regx, regy, regz), (regbx, regy, regz))
+        if not box_is_in_box(regbox, schembox):
+            return False, "The region does not fit in the schematic"
+        return True, ""
 
     @property
     def regions(self):
         return self.__regions
+    
+    @property
+    def width(self):
+        return self.__width
+
+    @property
+    def height(self):
+        return self.__height
+
+    @property
+    def length(self):
+        return self.__length
 
 class Region:
+
+    """
+    A schematic region
+    x, y, z: position in the schematic (read only)
+    width, height, length: size of the region (oriented, can be negative)
+    """
 
     def __init__(self, x, y, z, width, height, length):
         self.__x, self.__y, self.__z = x, y, z
@@ -114,6 +160,9 @@ class Region:
         self.tileentities = [] #TODO Add support
 
     def _tonbt(self):
+        """
+        Write this region to an nbt tab and return it
+        """
         root = Compound()
         pos = Compound()
         pos["x"] = Int(self.__x)
@@ -143,6 +192,9 @@ class Region:
         return root
 
     def getblock(self, x, y, z):
+        """
+        Return the block at the given coordinates
+        """
         if self.__width < 0:
             x -= self.__width + 1
         if self.__height < 0:
@@ -152,6 +204,9 @@ class Region:
         return self.__palette[ self.__blocks[x][y][z] ]
 
     def setblock(self, x, y, z, block):
+        """
+        Set the block at the given coordinate
+        """
         if block in self.__palette:
             i = self.__palette.index(block)
         else:
@@ -160,6 +215,9 @@ class Region:
         self.__blocks[x][y][z] = i
 
     def getblockcount(self):
+        """
+        Returns the number of non-air in the region
+        """
         airind = self.__palette.index(AIR)
         c = 0
         for plan in self.__blocks:
@@ -170,12 +228,18 @@ class Region:
         return c
 
     def getvolume(self):
+        """
+        Returns the region's volume
+        """
         return abs(self.__width * self.__height * self.__length)
 
     def __get_needed_nbits(self):
         return max(ceil(log(len(self.__palette), 2)), 2)
     
     def fromnbt(nbt):
+        """
+        Read a region from an nbt tag and return it
+        """
         pos = nbt["Position"]
         x = int(pos["x"])
         y = int(pos["y"])
