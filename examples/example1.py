@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from litemapy.schematic import Schematic, Region, BlockState
+from litemapy import Schematic, Region, BlockState
 
 
 # Creating a schematic object and attaching it a region
