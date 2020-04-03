@@ -4,9 +4,8 @@ from litemapy.schematic import Schematic, Region, BlockState
 
 
 # Creating a schematic object and attaching it a region
-schem = Schematic(21, 21, 21, name="Planet", author="SmylerMC", description="Made with litemapy")
-reg = Region(0, 0, 0, 21, 21, 21, name="planet")
-schem.regions.append(reg)
+schem = Schematic(21, 21, 21, name="Planet", author="SmylerMC", description="Made with litemapy", main_region_name="planet")
+reg = schem.regions["planet"]
 
 # Create the block state we are going to use (this is mutable)
 block = BlockState("minecraft:light_blue_concrete")
@@ -23,7 +22,7 @@ schem.save("planet.litematic")
 
 # Load the schematic and get its first region
 schem = Schematic.load("planet.litematic")
-reg = schem.regions[0]
+reg = list(schem.regions.values())[0]
 
 # Get the range where to loop, width, height and length
 # could be negative depending on the orientation of the build
