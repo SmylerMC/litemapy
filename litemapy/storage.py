@@ -86,4 +86,42 @@ class LitematicaBitArray:
                 return True
         return False
 
+class DiscriminatingDictionnary(dict):
 
+    def __init__(self, validator, *args, **options):
+        """
+        validator: a function that takes as argument a key and an item and returns a tuple (canstore, msg)
+        canstore must be a boolean, True if the item is accepted, and False otherwwise
+        if canstore is false, msg will be used as the error message
+        """
+        #TODO Handle iterators in constructor
+        self.validator = validator
+        if len(args) == 1 and type(args[0]) == dict:
+            for key, item in args[0].items():
+                self.validate(key, item)
+        else:
+            for key, item in args:
+                self.validate(key, item)
+        for key, item in options.items():
+            self.validate(key, item)
+        super().__init__(*args, **options)
+
+    def validate(self, key, item):
+        canstore, msg = self.validator(key, item)
+        if not canstore:
+            raise DiscriminationError(msg)
+
+    def __setitem__(self, key, item):
+        self.validate(key, item)
+        super().__setitem__(key, item)
+
+    def setdefault(key, default=None):
+        self.validate(key, default)
+        super().setdeault(key, default)
+
+    def update(self, other):
+        other = DiscriminatingDictionnary(self.validator, other)
+        super().update(other)
+
+class DiscriminationError(Exception):
+    pass
