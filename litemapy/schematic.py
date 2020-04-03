@@ -109,7 +109,7 @@ class Schematic:
     def load(fname):
         """
         Read a schematic from disk
-        fname; nale of the file
+        fname: name of the file
         """
         nbt = nbtlib.File.load(fname, True)['']
         return Schematic.fromnbt(nbt)
