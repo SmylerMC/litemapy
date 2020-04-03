@@ -2,11 +2,8 @@ from nbtlib.tag import End, Byte, Short, Int, Long, Float, Double, ByteArray, St
 import nbtlib
 from math import ceil, log
 from .storage import LitematicaBitArray
+from .info import *
 from time import time
-
-LITEMATIC_VERSION = 5
-MC_DATA_VERSION = 1631
-DEFAULT_NAME = "Unnamed" # Default name given to schematics and regions if unspecified
 
 class Schematic:
 
@@ -19,12 +16,14 @@ class Schematic:
         self.width, self.height, self.length = width, height, length
         self.regions = []
 
-    def save(self, fname):
+    def save(self, fname, update_meta=True, save_soft=True):
+        if update_meta:
+            self.updatemeta()
         f = nbtlib.File(gzipped=True, byteorder='big')
-        f[""] = self._tonbt()
+        f[""] = self._tonbt(save_soft=save_soft)
         f.save(fname)
 
-    def _tonbt(self, updatetime=True):
+    def _tonbt(self, save_soft=True):
         root = Compound()
         root["Version"] = Int(LITEMATIC_VERSION)
         root["MinecraftDataVersion"] = Int(MC_DATA_VERSION)
@@ -37,6 +36,7 @@ class Schematic:
         meta["Author"] = String(self.author)
         meta["Description"] = String(self.description)
         meta["Name"] = String(self.name)
+        meta["Software"] = String(SOFTWARE + "_" + VERSION)
         meta["RegionCount"] = Int(len(self.regions))
         meta["TimeCreated"] = Long(self.created)
         meta["TimeModified"] = Long(self.modified)
@@ -66,6 +66,9 @@ class Schematic:
         if "RegionCount" in meta and len(sch.regions) != meta["RegionCount"]:
             raise CorruptedSchematicError("Number of regions in metadata does not match the number of parsed regions")
         return sch
+
+    def updatemeta(self):
+        self.modified = int(time())
 
     def load(fname):
         nbt = nbtlib.File.load(fname, True)['']
@@ -177,7 +180,7 @@ class Region:
 
 class BlockState:
 
-    def __init__(self, blockid):
+    def __init__(self, blockid, properties={}):
         self.blockid = blockid
         self.properties = {}
 
