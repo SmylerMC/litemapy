@@ -11,7 +11,7 @@
 * Schematic's size is now read only
 
 #### 0.1.1a0:
-*Refactored package
+* Refactored package
 
 #### 0.1.0a0:
 * Initial alpha release with read/write support
