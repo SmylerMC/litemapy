@@ -1,0 +1,31 @@
+name: Python unittest
+
+on: [ push, pull_request ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Set up JDK 8
+      uses: actions/setup-java@v2
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+    - name: Install python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install py4j
+        python -m pip install nbtlib
+    - name: Run unittest
+      run: |
+        python setup.py test
