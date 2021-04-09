@@ -89,4 +89,4 @@ Litemapy is still new and only has basic functionalities, it lacks support for s
 ## Dependencies
 The only direct dependency is [nbtlib](https://github.com/vberlier/nbtlib), which is available on pypi and should be installed automatically when using pip.
 
-However, if you wish to play around with the code, please not that the test suite compares Litemapy's behavior with Litematica's to make sure it matches, and therefore needs [GitPython](https://github.com/gitpython-developers/GitPython) to clone Litematica's repo, a valid JDK installation to compile litematica, and [Py4J](https://www.py4j.org/index.html) to create a gateway between the JVM and Python. The tests perfmorming this comparison should only run on POSIX systems
+However, if you wish to play around with the code, please not that the test suite compares Litemapy's behavior with Litematica's to make sure it matches, and therefore needs a valid JDK installation and [Py4J](https://www.py4j.org/index.html). Tose specific tests have only been tested on POSIX systems.
