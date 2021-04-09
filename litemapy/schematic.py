@@ -299,7 +299,7 @@ class BlockState:
 
     def __init__(self, blockid, properties={}):
         self.blockid = blockid
-        self.properties = {}
+        self.properties = {String(k): String(v) for k, v in properties.items()}
 
     def _tonbt(self):
         root = Compound()
