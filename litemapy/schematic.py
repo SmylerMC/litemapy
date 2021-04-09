@@ -12,10 +12,9 @@ class Schematic:
     A schematic file
     """
 
-    def __init__(self,
-                    width, height, length, 
+    def __init__(self, 
                     name=DEFAULT_NAME, author="", description="",
-                    regions={}, main_region_name=DEFAULT_NAME
+                    regions={}
                 ):
         """
         Initialize a schematic of size width, height and length
@@ -29,13 +28,10 @@ class Schematic:
         self.name = name
         self.created = int(time())
         self.modified = int(time())
-        self.__width, self.__height, self.__length = width, height, length
-        self.__regions = DiscriminatingDictionnary(self._can_add_region)
-        if regions != None and len(regions) > 0:
+        self.__regions = DiscriminatingDictionnary(self._can_add_region, onadd=self.__on_region_add, onremove=self.__on_region_remove)
+        if regions is not None and len(regions) > 0:
             self.__regions.update(regions)
-        else:
-            reg = Region(0, 0, 0, self.width, self.height, self.length)
-            self.__regions[main_region_name] = reg
+        self.__compute_enclosure()
 
     def save(self, fname, update_meta=True, save_soft=True):
         """
@@ -51,8 +47,11 @@ class Schematic:
 
     def _tonbt(self, save_soft=True):
         """
-        Write the schematic to an nbt tag
+        Write the schematic to an nbt tag.
+        Raises ValueError if this schematic has no region.
         """
+        if len(self.__regions) < 1:
+            raise ValueError("Empty schematic does not have y region")
         root = Compound()
         root["Version"] = Int(LITEMATIC_VERSION)
         root["MinecraftDataVersion"] = Int(MC_DATA_VERSION)
@@ -93,7 +92,13 @@ class Schematic:
         for key, value in nbt["Regions"].items():
             reg = Region.fromnbt(value)
             regions[str(key)] = reg
-        sch = Schematic(width, height, length, name=name, author=author, description=desc, regions=regions)
+        sch = Schematic(name=name, author=author, description=desc, regions=regions)
+        if sch.width != width:
+            raise CorruptedSchematicError("Invalid schematic width in metadata, excepted {} was {}".format(sch.width, width))
+        if sch.height != height:
+            raise CorruptedSchematicError("Invalid schematic height in metadata, excepted {} was {}".format(sch.height, height))
+        if sch.length != length:
+            raise CorruptedSchematicError("Invalid schematic length in metadata, excepted {} was {}".format(sch.length, length))
         sch.created = int(meta["TimeCreated"])
         sch.modified = int(meta["TimeModified"])
         if "RegionCount" in meta and len(sch.regions) != meta["RegionCount"]:
@@ -117,15 +122,31 @@ class Schematic:
     def _can_add_region(self, name, region):
         if type(name) != str:
             return False, "Region name should be a string"
-        schembox = ((0, 0, 0), (self.width-1, self.height-1, self.length-1))
-        regx, regy, regz = region.x, region.y, region.z
-        regbx = regx + region.width - abs(region.width) / region.width
-        regby = regy + region.height - abs(region.height) / region.height
-        regbz = regz + region.length - abs(region.length) / region.length
-        regbox = ((regx, regy, regz), (regbx, regy, regz))
-        if not box_is_in_box(regbox, schembox):
-            return False, "The region does not fit in the schematic"
         return True, ""
+
+    def __on_region_add(self, name, region):
+        self.__compute_enclosure()
+
+    def __on_region_remove(self, name, region):
+        self.__compute_enclosure()
+
+    def __compute_enclosure(self):
+        if len(self.__regions) <= 0:
+            self.__width = 0
+            self.__height = 0
+            self.__length = 0
+            return
+        xmi, xma, ymi, yma, zmi, zma = None, None, None, None, None, None
+        for region in self.__regions.values():
+            xmi = min(xmi, region.minx()) if xmi is not None else region.minx()
+            xma = max(xma, region.maxx()) if xma is not None else region.maxx()
+            ymi = min(ymi, region.miny()) if ymi is not None else region.miny()
+            yma = max(yma, region.maxy()) if yma is not None else region.maxy()
+            zmi = min(zmi, region.minz()) if zmi is not None else region.minz()
+            zma = max(zma, region.maxz()) if zma is not None else region.maxz()
+        self.__width = xma - xmi + 1
+        self.__height = yma - ymi + 1
+        self.__length = zma - zmi + 1
 
     @property
     def regions(self):
@@ -268,6 +289,24 @@ class Region:
                     ind = (y * abs(width * length)) + z * abs(width) + x
                     reg.__blocks[x][y][z] = arr[ind]
         return reg
+
+    def minx(self):
+        return min(self.__x, self.__x + self.width + 1)
+
+    def maxx(self):
+        return max(self.__x, self.__x + self.width - 1)
+
+    def miny(self):
+        return min(self.__y, self.__y + self.height + 1)
+
+    def maxy(self):
+        return max(self.__y, self.__y + self.height - 1)
+
+    def minz(self):
+        return min(self.__z, self.__z + self.length + 1)
+
+    def maxz(self):
+        return max(self.__z, self.__z + self.length - 1)
 
     @property
     def x(self):
