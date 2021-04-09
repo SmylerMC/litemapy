@@ -1,4 +1,4 @@
-#### 0.2.0a1:
+#### 0.2.1a0:
 * Bug fix by @SebbyFur : Properly initialize block state properties
 * Refactored tests
 
