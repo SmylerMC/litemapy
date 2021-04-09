@@ -1,3 +1,7 @@
+#### 0.2.0a1:
+* Bug fix by @SebbyFur : Properly initialize block state properties
+* Refactored tests
+
 #### 0.2.0a0:
 * Modification time is now updated when writing a file
 * Refactored constants into a separate file
