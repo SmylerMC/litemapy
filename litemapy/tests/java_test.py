@@ -8,7 +8,6 @@ class TestAgainstJavaLitematica(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        helper.setup_litematica()
         cls.subproc, cls.gateway = helper.get_litematica_jvm()
         cls.JLitematicaBitArray = cls.gateway.jvm.fi.dy.masa.litematica.schematic.container.LitematicaBitArray
 
