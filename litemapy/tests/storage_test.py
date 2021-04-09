@@ -33,3 +33,79 @@ class TestLitematicaBitArray(unittest.TestCase):
             arr[i] = e
         self.assertIn(13, arr)
         self.assertNotIn(15, arr)
+
+class TestDiscriminatingDictionnary(unittest.TestCase):
+
+    def test_basic_set_get(self):
+        posdi = storage.DiscriminatingDictionnary(lambda k, v: (v>=0, "Need pos"))
+        posdi["0"] = 0
+        self.assertTrue(posdi["0"] == 0)
+        self.assertTrue("0" in posdi)
+        self.assertTrue("0" in posdi.keys())
+        self.assertTrue(0 in posdi.values())
+        self.assertIsNone(posdi.get("1"))
+        def seti(i, v):
+            posdi[i] = v
+        self.assertRaises(storage.DiscriminationError, seti, '-1', -1)
+        otherdir = {"1": 1, "2": 2}
+        posdi.update(otherdir)
+        self.assertTrue("1" in posdi)
+        self.assertTrue("2" in posdi)
+        self.assertRaises(storage.DiscriminationError, posdi.update, {"-1", -1})
+        otherdir = {"1": 1, "2": 2}
+        posdi = storage.DiscriminatingDictionnary(lambda k, v: (v>=0, "Need pos"), otherdir)
+        self.assertTrue("1" in posdi)
+        self.assertTrue("2" in posdi)
+        posdi = storage.DiscriminatingDictionnary(lambda k, v: (v>=0, "Need pos"), a=1, b=2)
+        self.assertTrue("a" in posdi)
+        self.assertTrue("b" in posdi)
+
+    def test_onadd(self):
+        class Counter:
+            def __init__(self):
+                self.counter = 0
+            def onadd(self, k, v):
+                self.counter += v
+        c = Counter()
+        posdi = storage.DiscriminatingDictionnary(
+                lambda k, v: (v>=0, "Need pos"),
+                onadd=c.onadd,
+                x=10
+        )
+        posdi["a"] = 1
+        self.assertEqual(c.counter, 1)
+        posdi.update({"b": 2, "c": 3})
+        self.assertEqual(c.counter, 6)
+        posdi.setdefault("d", default=4)
+        self.assertEqual(c.counter, 10)
+
+    def test_onremove(self):
+        class Counter:
+            def __init__(self):
+                self.counter = 0
+            def onrm(self, k, v):
+                self.counter += v
+        c = Counter()
+        posdi = storage.DiscriminatingDictionnary(
+                lambda k, v: (v>=0, "Need pos"),
+                onremove=c.onrm,
+                a=1, b=2, c=3, d=4, x=10
+        )
+        del posdi["a"]
+        self.assertEqual(c.counter, 1)
+        posdi.pop("b")
+        self.assertEqual(c.counter, 3)
+        posdi.pop("c")
+        self.assertEqual(c.counter, 6)
+        posdi.pop("d")
+        self.assertEqual(c.counter, 10)
+        posdi.popitem()
+        self.assertEqual(c.counter, 20)
+        c = Counter()
+        posdi = storage.DiscriminatingDictionnary(
+                lambda k, v: (v>=0, "Need pos"),
+                onremove=c.onrm,
+                a=1, b=2, c=3, d=4, x=10
+        )
+        posdi.clear()
+        self.assertEqual(c.counter, 20)
