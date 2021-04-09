@@ -1,9 +1,5 @@
-import requests
 import os
-from sys import stdout
 import subprocess
-import shutil
-import xml.etree.ElementTree
 import py4j.java_gateway
 from .constants import *
 
