@@ -109,3 +109,27 @@ class TestDiscriminatingDictionnary(unittest.TestCase):
         )
         posdi.clear()
         self.assertEqual(c.counter, 20)
+
+    def test_onadd_onremove(self):
+        class Counter:
+            def __init__(self):
+                self.added = 0
+                self.removed = 0
+            def onrm(self, k, v):
+                self.removed += v
+            def onadd(self, k, v):
+                self.added += v
+        c = Counter()
+        posdi = storage.DiscriminatingDictionnary(
+                lambda k, v: (v>=0, "Need pos"),
+                onadd=c.onadd,
+                onremove=c.onrm,
+                a=1, b=2, c=3, d=4, x=10
+        )
+        posdi["c"] = 7
+        self.assertEqual(c.added, 7)
+        self.assertEqual(c.removed, 3)
+        posdi.update({"x": 100, "d": 500, "y": 200})
+        self.assertEqual(c.added, 807)
+        self.assertEqual(c.removed, 17)
+

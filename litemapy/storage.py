@@ -123,7 +123,11 @@ class DiscriminatingDictionnary(dict):
 
     def __setitem__(self, key, item):
         self.validate(key, item)
+        b = key in self
+        old = self.get(key)
         super().__setitem__(key, item)
+        if b:
+            self.__onrm(key, old)
         self.__onadd(key, item)
 
     def __delitem__(self, key):
@@ -143,9 +147,8 @@ class DiscriminatingDictionnary(dict):
 
     def update(self, other):
         other = DiscriminatingDictionnary(self.validator, other)
-        super().update(other)
         for k, v in other.items():
-            self.__onadd(k, v)
+            self[k] = v
 
     def pop(self, key):
         v = super().pop(key)
