@@ -131,22 +131,20 @@ class Schematic:
         self.__compute_enclosure()
 
     def __compute_enclosure(self):
-        if len(self.__regions) <= 0:
-            self.__width = 0
-            self.__height = 0
-            self.__length = 0
-            return
         xmi, xma, ymi, yma, zmi, zma = None, None, None, None, None, None
         for region in self.__regions.values():
-            xmi = min(xmi, region.minx()) if xmi is not None else region.minx()
-            xma = max(xma, region.maxx()) if xma is not None else region.maxx()
-            ymi = min(ymi, region.miny()) if ymi is not None else region.miny()
-            yma = max(yma, region.maxy()) if yma is not None else region.maxy()
-            zmi = min(zmi, region.minz()) if zmi is not None else region.minz()
-            zma = max(zma, region.maxz()) if zma is not None else region.maxz()
-        self.__width = xma - xmi + 1
-        self.__height = yma - ymi + 1
-        self.__length = zma - zmi + 1
+            xmi = min(xmi, region.minschemx()) if xmi is not None else region.minschemx()
+            xma = max(xma, region.maxschemx()) if xma is not None else region.maxschemx()
+            ymi = min(ymi, region.minschemy()) if ymi is not None else region.minschemy()
+            yma = max(yma, region.maxschemy()) if yma is not None else region.maxschemy()
+            zmi = min(zmi, region.minschemz()) if zmi is not None else region.minschemz()
+            zma = max(zma, region.maxschemz()) if zma is not None else region.maxschemz()
+        self.__xmin = xmi
+        self.__xmax = xma
+        self.__ymin = ymi
+        self.__ymax = yma
+        self.__zmin = zmi
+        self.__zmax = zma
 
     @property
     def regions(self):
@@ -154,15 +152,21 @@ class Schematic:
     
     @property
     def width(self):
-        return self.__width
+        if self.__xmin is None or self.__xmax is None:
+            return 0
+        return self.__xmax - self.__xmin + 1
 
     @property
     def height(self):
-        return self.__height
+        if self.__ymin is None or self.__ymax is None:
+            return 0
+        return self.__ymax - self.__ymin + 1
 
     @property
     def length(self):
-        return self.__length
+        if self.__zmin is None or self.__zmax is None:
+            return 0
+        return self.__zmax - self.__zmin + 1
 
 class Region:
 
@@ -290,24 +294,56 @@ class Region:
                     reg.__blocks[x][y][z] = arr[ind]
         return reg
 
-    def minx(self):
+    def minschemx(self):
         return min(self.__x, self.__x + self.width + 1)
 
-    def maxx(self):
+    def maxschemx(self):
         return max(self.__x, self.__x + self.width - 1)
 
-    def miny(self):
+    def minschemy(self):
         return min(self.__y, self.__y + self.height + 1)
 
-    def maxy(self):
+    def maxschemy(self):
         return max(self.__y, self.__y + self.height - 1)
 
-    def minz(self):
+    def minschemz(self):
         return min(self.__z, self.__z + self.length + 1)
 
-    def maxz(self):
+    def maxschemz(self):
         return max(self.__z, self.__z + self.length - 1)
 
+    def minx(self):
+        return min(0, self.width + 1)
+
+    def maxx(self):
+        return max(0, self.width - 1)
+
+    def miny(self):
+        return min(0, self.height + 1)
+
+    def maxy(self):
+        return max(0, self.width - 1)
+
+    def minz(self):
+        return min(0, self.length + 1)
+
+    def maxz(self):
+        return max(0, self.length - 1)
+
+    def xrange(self):
+        return range(self.minx(), self.maxx() + 1)
+
+    def yrange(self):
+        return range(self.miny(), self.maxy() + 1)
+
+    def zrange(self):
+        return range(self.minz(), self.maxz() + 1)
+
+    def allblockpos(self):
+        for x in self.xrange():
+            for y in self.yrange():
+                for z in self.zrange():
+                    yield x, y, z
     @property
     def x(self):
         return self.__x
@@ -338,7 +374,7 @@ class BlockState:
 
     def __init__(self, blockid, properties={}):
         self.blockid = blockid
-        self.properties = {String(k): String(v) for k, v in properties.items()}
+        self.properties = {String(k): String(v) for k, v in properties.items()} #FIXME Only convert to when converting
 
     def _tonbt(self):
         root = Compound()
