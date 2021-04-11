@@ -37,7 +37,10 @@ class TestLitematicaBitArray(unittest.TestCase):
 class TestDiscriminatingDictionnary(unittest.TestCase):
 
     def test_basic_set_get(self):
-        posdi = storage.DiscriminatingDictionnary(lambda k, v: (v>=0, "Need pos"))
+        def discri(k, v):
+            print("Discriminating ", type(k), k, "=>", type(v), v)
+            return v >= 0, "Need pos"
+        posdi = storage.DiscriminatingDictionnary(discri)
         posdi["0"] = 0
         self.assertTrue(posdi["0"] == 0)
         self.assertTrue("0" in posdi)
@@ -51,7 +54,7 @@ class TestDiscriminatingDictionnary(unittest.TestCase):
         posdi.update(otherdir)
         self.assertTrue("1" in posdi)
         self.assertTrue("2" in posdi)
-        self.assertRaises(storage.DiscriminationError, posdi.update, {"-1", -1})
+        self.assertRaises(storage.DiscriminationError, posdi.update, {"-1": -1})
         otherdir = {"1": 1, "2": 2}
         posdi = storage.DiscriminatingDictionnary(lambda k, v: (v>=0, "Need pos"), otherdir)
         self.assertTrue("1" in posdi)

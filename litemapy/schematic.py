@@ -5,6 +5,7 @@ from .storage import LitematicaBitArray, DiscriminatingDictionnary
 from .info import *
 from .boxes import *
 from time import time
+import numpy as np
 
 class Schematic:
 
@@ -180,7 +181,8 @@ class Region:
         self.__x, self.__y, self.__z = x, y, z
         self.__width, self.__height, self.__length = width, height, length
         self.__palette = [AIR, ]
-        self.__blocks = [[[ 0 for k in range(abs(length))] for j in range(abs(height))] for i in range(abs(width))]
+        self.__blocks = np.zeros((abs(width), abs(height), abs(length)), dtype=np.uint32)
+        #self.__blocks = [[[ 0 for k in range(abs(length))] for j in range(abs(height))] for i in range(abs(width))]
         self.entities = [] #TODO Add support
         self.tileentities = [] #TODO Add support
 
@@ -208,11 +210,12 @@ class Region:
         root["PendingBlockTicks"] = List[Compound]() #TODO How does this work
         root["PendingFluidTicks"] = List[Compound]()
         arr = LitematicaBitArray(self.getvolume(), self.__get_needed_nbits())
+        #TODO Simplify the palet
         for x in range(abs(self.__width)):
             for y in range(abs(self.__height)):
                 for z in range(abs(self.__length)):
                     ind = (y * abs(self.__width * self.__length)) + z * abs(self.__width) + x
-                    arr[ind] = self.__blocks[x][y][z]
+                    arr[ind] = int(self.__blocks[x][y][z])
         root["BlockStates"] = arr._tonbtlongarray()
         return root
 
@@ -220,24 +223,20 @@ class Region:
         """
         Return the block at the given coordinates
         """
-        if self.__width < 0:
-            x -= self.__width + 1
-        if self.__height < 0:
-            y -= self.__height + 1
-        if self.__length < 0:
-            z -= __self.length + 1
-        return self.__palette[ self.__blocks[x][y][z] ]
+        x, y, z = self.__regcoordinates2storecoords(x, y, z)
+        return self.__palette[self.__blocks[x, y, z]]
 
     def setblock(self, x, y, z, block):
         """
         Set the block at the given coordinate
         """
+        x, y, z = self.__regcoordinates2storecoords(x, y, z)
         if block in self.__palette:
             i = self.__palette.index(block)
         else:
             self.__palette.append(block)
             i = len(self.__palette) - 1
-        self.__blocks[x][y][z] = i
+        self.__blocks[x, y, z] = i
 
     def getblockcount(self):
         """
@@ -245,12 +244,20 @@ class Region:
         """
         airind = self.__palette.index(AIR)
         c = 0
-        for plan in self.__blocks:
-            for column in plan:
-                for block in column:
-                    if block != airind:
-                        c += 1
+        for block in self.__blocks.flat:
+            if block != airind:
+                c += 1
         return c
+
+    def __regcoordinates2storecoords(self, x, y, z):
+        if self.__width < 0:
+            x -= self.__width + 1
+        if self.__height < 0:
+            y -= self.__height + 1
+        if self.__length < 0:
+            z -= self.__length + 1
+        return x, y, z
+
 
     def getvolume(self):
         """
@@ -322,7 +329,7 @@ class Region:
         return min(0, self.height + 1)
 
     def maxy(self):
-        return max(0, self.width - 1)
+        return max(0, self.height - 1)
 
     def minz(self):
         return min(0, self.length + 1)
@@ -406,7 +413,8 @@ class TileEntity:
         raise NotImplementedError("Tile entities are not supported yet")
 
 def nbtstr2str(s):
-    return str(s)[1:-1]
+    return str(s)
+    #return str(s)[1:-1]
 
 AIR = BlockState("minecraft:air")
 
