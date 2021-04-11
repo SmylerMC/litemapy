@@ -137,7 +137,8 @@ class DiscriminatingDictionnary(dict):
         super().__delitem__(key)
         self.__onrm(key, v)
 
-    def setdefault(self, key, default=None):
+    def setdefault(self, key, *args):
+        default = args[0] if len(args) > 0 else None
         self.validate(key, default)
         b =  key not in self
         r = super().setdefault(key, default)

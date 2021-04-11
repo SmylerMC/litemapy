@@ -79,7 +79,7 @@ class TestDiscriminatingDictionnary(unittest.TestCase):
         self.assertEqual(c.counter, 1)
         posdi.update({"b": 2, "c": 3})
         self.assertEqual(c.counter, 6)
-        posdi.setdefault("d", default=4)
+        posdi.setdefault("d", 4)
         self.assertEqual(c.counter, 10)
 
     def test_onremove(self):
