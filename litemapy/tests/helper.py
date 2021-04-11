@@ -66,7 +66,7 @@ def randomschematic(regsize=20, regspread=20, regprob=0.8, blockprob=0.999):
         height = random.randrange(-regsize, regsize)
         length = random.randrange(-regsize, regsize)
         if width == 0 or height == 0 or length == 0:
-            pass #TODO Raise exception
+            pass
         else:
             sch.regions[randomstring(10)] = Region(x, y, z, width, height, length)
     for reg in sch.regions.values():

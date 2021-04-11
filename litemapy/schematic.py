@@ -207,11 +207,12 @@ class Region:
     """
 
     def __init__(self, x, y, z, width, height, length):
+        if width == 0 or height == 0 or length == 0:
+            raise ValueError("Region dimensions cannot be 0")
         self.__x, self.__y, self.__z = x, y, z
         self.__width, self.__height, self.__length = width, height, length
         self.__palette = [AIR, ]
         self.__blocks = np.zeros((abs(width), abs(height), abs(length)), dtype=np.uint32)
-        #self.__blocks = [[[ 0 for k in range(abs(length))] for j in range(abs(height))] for i in range(abs(width))]
         self.entities = [] #TODO Add support
         self.tileentities = [] #TODO Add support
 
@@ -452,6 +453,12 @@ class Region:
         return self.__length
 
     def as_schematic(self, name=DEFAULT_NAME, author="", description=""):
+        """
+        Creates and returns a schematic that contains that region at the origin.
+        name: A name for both the region and the schematic
+        author: an author for the schematic
+        description: a description for the schematic
+        """
         return Schematic(name=name, author=author, description=description, regions={name: self})
 
 class BlockState:
