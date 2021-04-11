@@ -7,7 +7,7 @@ from litemapy import Schematic, Region, BlockState
 schem = Schematic(name="Planet", author="SmylerMC", description="Made with litemapy")
 reg = schem.regions.setdefault("planet", default=Region(0, 0, 0, 21, 21, 21))
 
-# Create the block state we are going to use (this is mutable)
+# Create the block state we are going to use
 block = BlockState("minecraft:light_blue_concrete")
 
 # Build the planet

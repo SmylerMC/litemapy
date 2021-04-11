@@ -6,6 +6,7 @@ from .info import *
 from .boxes import *
 from time import time
 import numpy as np
+from json import dumps
 
 class Schematic:
 
@@ -240,12 +241,11 @@ class Region:
         root["PendingBlockTicks"] = List[Compound]() #TODO How does this work
         root["PendingFluidTicks"] = List[Compound]()
         arr = LitematicaBitArray(self.getvolume(), self.__get_needed_nbits())
-        #TODO Simplify the palet
         for x in range(abs(self.__width)):
             for y in range(abs(self.__height)):
                 for z in range(abs(self.__length)):
                     ind = (y * abs(self.__width * self.__length)) + z * abs(self.__width) + x
-                    arr[ind] = int(self.__blocks[x][y][z])
+                    arr[ind] = int(self.__blocks[x, y, z])
         root["BlockStates"] = arr._tonbtlongarray()
         return root
 
@@ -408,7 +408,7 @@ class Region:
 class BlockState:
 
     def __init__(self, blockid, properties={}):
-        self.blockid = blockid
+        self.__blockid = blockid
         self.__properties = DiscriminatingDictionnary(self.__validate, properties)
 
     def _tonbt(self):
@@ -429,13 +429,27 @@ class BlockState:
         return block
 
     @property
-    def properties(self):
-        return self.__properties
+    def blockid(self):
+        return self.__blockid
 
     def __validate(self, k, v):
         if type(k) is not str or type(v) is not str:
             return False, "Blockstate properties should be a string => string dictionnary"
         return True, ""
+
+    def __eq__(self, other):
+        if not isinstance(other, BlockState):
+            raise ValueError("Can only compare blockstates with blockstates")
+        return other.__blockid == self.__blockid and other.__properties == self.__properties
+
+    def __repr__(self):
+        return self.__blockid + dumps(self.__properties)
+
+    def __getitem__(self, key):
+        return self.__properties[key]
+    
+    def __len__(self):
+        return len(self.__properties)
 
 class Entity:
 
