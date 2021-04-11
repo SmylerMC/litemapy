@@ -70,6 +70,7 @@ Litemapy is still new and only has basic functionalities, it lacks support for s
   * Entities are not supported
   * Tile entities are not supported
   * Pending block updates are not supported
+  * Preview screenshots are not supported
   * Legacy Schematica schematics are not supported at all, only the newer Litematica format is
 
 ## Dependencies
