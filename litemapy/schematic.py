@@ -332,51 +332,99 @@ class Region:
         return reg
 
     def minschemx(self):
+        """
+        Returns the minimum X coordinate of this region in the schematics coordinate system
+        """
         return min(self.__x, self.__x + self.width + 1)
 
     def maxschemx(self):
+        """
+        Returns the maximum X coordinate of this region in the schematics coordinate system
+        """
         return max(self.__x, self.__x + self.width - 1)
 
     def minschemy(self):
+        """
+        Returns the minimum Y coordinate of this region in the schematics coordinate system
+        """
         return min(self.__y, self.__y + self.height + 1)
 
     def maxschemy(self):
+        """
+        Returns the maximum Y coordinate of this region in the schematics coordinate system
+        """
         return max(self.__y, self.__y + self.height - 1)
 
     def minschemz(self):
+        """
+        Returns the minimum Z coordinate of this region in the schematics coordinate system
+        """
         return min(self.__z, self.__z + self.length + 1)
 
     def maxschemz(self):
+        """
+        Returns the maximum Z coordinate of this region in the schematics coordinate system
+        """
         return max(self.__z, self.__z + self.length - 1)
 
     def minx(self):
+        """
+        Returns the minimum X coordinate of this region in its own coordinate system
+        """
         return min(0, self.width + 1)
 
     def maxx(self):
+        """
+        Returns the maximum X coordinate of this region in its own coordinate system
+        """
         return max(0, self.width - 1)
 
     def miny(self):
+        """
+        Returns the minimum Y coordinate of this region in its own coordinate system
+        """
         return min(0, self.height + 1)
 
     def maxy(self):
+        """
+        Returns the maximum Y coordinate of this region in its own coordinate system
+        """
         return max(0, self.height - 1)
 
     def minz(self):
+        """
+        Returns the minimum Z coordinate of this region in its own coordinate system
+        """
         return min(0, self.length + 1)
 
     def maxz(self):
+        """
+        Returns the maximum Z coordinate of this region in its own coordinate system
+        """
         return max(0, self.length - 1)
 
     def xrange(self):
+        """
+        Returns the range of coordinates this region contains along it's X axis
+        """
         return range(self.minx(), self.maxx() + 1)
 
     def yrange(self):
+        """
+        Returns the range of coordinates this region contains along it's Y axis
+        """
         return range(self.miny(), self.maxy() + 1)
 
     def zrange(self):
+        """
+        Returns the range of coordinates this region contains along it's Z axis
+        """
         return range(self.minz(), self.maxz() + 1)
 
     def allblockpos(self):
+        """
+        Returns an iterator over the coordinates this regions contains in its own coordinate system
+        """
         for x in self.xrange():
             for y in self.yrange():
                 for z in self.zrange():
