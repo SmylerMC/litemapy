@@ -86,9 +86,9 @@ class Schematic:
         width = int(meta["EnclosingSize"]["x"])
         height = int(meta["EnclosingSize"]["y"])
         length = int(meta["EnclosingSize"]["z"])
-        author = nbtstr2str(meta["Author"])
-        name = nbtstr2str(meta["Name"])
-        desc = nbtstr2str(meta["Description"])
+        author = str(meta["Author"])
+        name = str(meta["Name"])
+        desc = str(meta["Description"])
         regions = {}
         for key, value in nbt["Regions"].items():
             reg = Region.fromnbt(value)
@@ -381,20 +381,33 @@ class BlockState:
 
     def __init__(self, blockid, properties={}):
         self.blockid = blockid
-        self.properties = {String(k): String(v) for k, v in properties.items()} #FIXME Only convert to when converting
+        self.__properties = DiscriminatingDictionnary(self.__validate, properties)
 
     def _tonbt(self):
         root = Compound()
         root["Name"] = String(self.blockid)
-        if len(self.properties) > 0:
-            root["Properties"] = Compound(self.properties)
+        properties = {String(k): String(v) for k, v in self.__properties.items()}
+        if len(properties) > 0:
+            root["Properties"] = Compound(properties)
         return root
 
     def fromnbt(nbt):
-        block = BlockState(nbtstr2str(nbt["Name"]))
-        for key, value in nbt.items():
-            block.properties[nbtstr2str(key)] = nbtstr2str(value)
+        bid = str(nbt["Name"])
+        if "Properties" in nbt:
+            properties = {str(k): str(v) for k, v in nbt["Properties"].items()}
+        else:
+            properties = {}
+        block = BlockState(bid, properties=properties)
         return block
+
+    @property
+    def properties(self):
+        return self.__properties
+
+    def __validate(self, k, v):
+        if type(k) is not str or type(v) is not str:
+            return False, "Blockstate properties should be a string => string dictionnary"
+        return True, ""
 
 class Entity:
 
@@ -411,10 +424,6 @@ class TileEntity:
 
     def _tonbt(self):
         raise NotImplementedError("Tile entities are not supported yet")
-
-def nbtstr2str(s):
-    return str(s)
-    #return str(s)[1:-1]
 
 AIR = BlockState("minecraft:air")
 

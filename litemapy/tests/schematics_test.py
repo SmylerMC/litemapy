@@ -1,5 +1,5 @@
 import unittest
-from litemapy import Schematic, Region
+from litemapy import Schematic, Region, BlockState
 from os import walk
 from .constants import *
 import random
@@ -142,3 +142,22 @@ class TestMaking(unittest.TestCase):
                     rs = wreg.getblock(x, y, z)
                     self.assertEqual(ws.blockid, rs.blockid)
                     self.assertEqual(ws.properties, rs.properties)
+        dir.cleanup()
+
+class TestBlockStates(unittest.TestCase):
+
+    def test(self):
+        b = BlockState("minecraft:stone")
+        prop = {"test1": "testval", "test2": "testval2"}
+        for k, v in prop.items():
+            b.properties[k] = v
+        self.assertEqual(len(prop), len(b.properties))
+        for k, v in prop.items():
+            self.assertEqual(b.properties[k], v)
+        nbt = b._tonbt()
+        print(nbt)
+        b2 = BlockState.fromnbt(nbt)
+        self.assertEqual(len(b.properties), len(b2.properties))
+        for k, v in b.properties.items():
+            self.assertEqual(b2.properties[k], v)
+
