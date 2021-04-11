@@ -93,12 +93,22 @@ class DiscriminatingDictionnary(dict):
         validator: a function that takes as argument a key and an item and returns a tuple (canstore, msg)
         canstore must be a boolean, True if the item is accepted, and False otherwwise
         if canstore is false, msg will be used as the error message
+        onadd: an optional function that gets called when an item is added to the dictionnary, with the key and item as arguments. On add is not called for the values that might have been passed in the constructor.
         """
         #TODO Handle iterators in constructor
         self.validator = validator
+        if "onadd" in options:
+            self.onadd = options.pop("onadd")
+        else:
+            self.onadd = None
+        if "onremove" in options:
+            self.onremove = options.pop("onremove")
+        else:
+            self.onremove = None
         if len(args) == 1 and type(args[0]) == dict:
             for key, item in args[0].items():
                 self.validate(key, item)
+            options = args[0]
         else:
             for key, item in args:
                 self.validate(key, item)
@@ -113,15 +123,54 @@ class DiscriminatingDictionnary(dict):
 
     def __setitem__(self, key, item):
         self.validate(key, item)
+        b = key in self
+        old = self.get(key)
         super().__setitem__(key, item)
+        if b:
+            self.__onrm(key, old)
+        self.__onadd(key, item)
 
-    def setdefault(key, default=None):
+    def __delitem__(self, key):
+        if key not in self:
+            raise KeyError()
+        v = self[key]
+        super().__delitem__(key)
+        self.__onrm(key, v)
+
+    def setdefault(self, key, default=None):
         self.validate(key, default)
-        super().setdeault(key, default)
+        b =  key not in self
+        r = super().setdefault(key, default)
+        if b:
+            self.__onadd(key, default)
+        return r
 
     def update(self, other):
         other = DiscriminatingDictionnary(self.validator, other)
-        super().update(other)
+        for k, v in other.items():
+            self[k] = v
+
+    def pop(self, key):
+        v = super().pop(key)
+        self.__onrm(key, v)
+
+    def popitem(self):
+        k, v = super().popitem()
+        self.__onrm(k, v)
+
+    def clear(self):
+        c = self.copy()
+        super().clear()
+        for k, v in c.items():
+            self.__onrm(k, v)
+
+    def __onadd(self, key, item):
+        if self.onadd is not None:
+            self.onadd(key, item)
+
+    def __onrm(self, key, item):
+        if self.onremove is not None:
+            self.onremove(key, item)
 
 class DiscriminationError(Exception):
     pass

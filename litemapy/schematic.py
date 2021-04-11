@@ -5,6 +5,7 @@ from .storage import LitematicaBitArray, DiscriminatingDictionnary
 from .info import *
 from .boxes import *
 from time import time
+import numpy as np
 
 class Schematic:
 
@@ -12,10 +13,9 @@ class Schematic:
     A schematic file
     """
 
-    def __init__(self,
-                    width, height, length, 
+    def __init__(self, 
                     name=DEFAULT_NAME, author="", description="",
-                    regions={}, main_region_name=DEFAULT_NAME
+                    regions={}
                 ):
         """
         Initialize a schematic of size width, height and length
@@ -29,13 +29,10 @@ class Schematic:
         self.name = name
         self.created = int(time())
         self.modified = int(time())
-        self.__width, self.__height, self.__length = width, height, length
-        self.__regions = DiscriminatingDictionnary(self._can_add_region)
-        if regions != None and len(regions) > 0:
+        self.__regions = DiscriminatingDictionnary(self._can_add_region, onadd=self.__on_region_add, onremove=self.__on_region_remove)
+        self.__compute_enclosure()
+        if regions is not None and len(regions) > 0:
             self.__regions.update(regions)
-        else:
-            reg = Region(0, 0, 0, self.width, self.height, self.length)
-            self.__regions[main_region_name] = reg
 
     def save(self, fname, update_meta=True, save_soft=True):
         """
@@ -51,8 +48,11 @@ class Schematic:
 
     def _tonbt(self, save_soft=True):
         """
-        Write the schematic to an nbt tag
+        Write the schematic to an nbt tag.
+        Raises ValueError if this schematic has no region.
         """
+        if len(self.__regions) < 1:
+            raise ValueError("Empty schematic does not have y region")
         root = Compound()
         root["Version"] = Int(LITEMATIC_VERSION)
         root["MinecraftDataVersion"] = Int(MC_DATA_VERSION)
@@ -86,14 +86,20 @@ class Schematic:
         width = int(meta["EnclosingSize"]["x"])
         height = int(meta["EnclosingSize"]["y"])
         length = int(meta["EnclosingSize"]["z"])
-        author = nbtstr2str(meta["Author"])
-        name = nbtstr2str(meta["Name"])
-        desc = nbtstr2str(meta["Description"])
+        author = str(meta["Author"])
+        name = str(meta["Name"])
+        desc = str(meta["Description"])
         regions = {}
         for key, value in nbt["Regions"].items():
             reg = Region.fromnbt(value)
             regions[str(key)] = reg
-        sch = Schematic(width, height, length, name=name, author=author, description=desc, regions=regions)
+        sch = Schematic(name=name, author=author, description=desc, regions=regions)
+        if sch.width != width:
+            raise CorruptedSchematicError("Invalid schematic width in metadata, excepted {} was {}".format(sch.width, width))
+        if sch.height != height:
+            raise CorruptedSchematicError("Invalid schematic height in metadata, excepted {} was {}".format(sch.height, height))
+        if sch.length != length:
+            raise CorruptedSchematicError("Invalid schematic length in metadata, excepted {} was {}".format(sch.length, length))
         sch.created = int(meta["TimeCreated"])
         sch.modified = int(meta["TimeModified"])
         if "RegionCount" in meta and len(sch.regions) != meta["RegionCount"]:
@@ -117,15 +123,59 @@ class Schematic:
     def _can_add_region(self, name, region):
         if type(name) != str:
             return False, "Region name should be a string"
-        schembox = ((0, 0, 0), (self.width-1, self.height-1, self.length-1))
-        regx, regy, regz = region.x, region.y, region.z
-        regbx = regx + region.width - abs(region.width) / region.width
-        regby = regy + region.height - abs(region.height) / region.height
-        regbz = regz + region.length - abs(region.length) / region.length
-        regbox = ((regx, regy, regz), (regbx, regy, regz))
-        if not box_is_in_box(regbox, schembox):
-            return False, "The region does not fit in the schematic"
         return True, ""
+
+    def __on_region_add(self, name, region):
+        if self.__xmin is None:
+            self.__xmin = region.minschemx()
+        else:
+            self.__xmin = min(self.__xmin, region.minschemx())
+        if self.__xmax is None:
+            self.__xmax = region.maxschemx()
+        else:
+            self.__xmax = max(self.__xmax, region.maxschemx())
+        if self.__ymin is None:
+            self.__ymin = region.minschemy()
+        else:
+            self.__ymin = min(self.__ymin, region.minschemy())
+        if self.__ymax is None:
+            self.__ymax = region.maxschemy()
+        else:
+            self.__ymax = max(self.__ymax, region.maxschemy())
+        if self.__zmin is None:
+            self.__zmin = region.minschemz()
+        else:
+            self.__zmin = min(self.__zmin, region.minschemz())
+        if self.__zmax is None:
+            self.__zmax = region.maxschemz()
+        else:
+            self.__zmax = max(self.__zmax, region.maxschemz())
+
+    def __on_region_remove(self, name, region):
+        b = self.__xmin == region.minschemx()
+        b = b or self.__xmax == region.maxschemx()
+        b = b or self.__ymin == region.minschemy()
+        b = b or self.__ymax == region.maxschemy()
+        b = b or self.__zmin == region.minschemz()
+        b = b or self.__zmax == region.maxschemz()
+        if b:
+            self.__compute_enclosure()
+
+    def __compute_enclosure(self):
+        xmi, xma, ymi, yma, zmi, zma = None, None, None, None, None, None
+        for region in self.__regions.values():
+            xmi = min(xmi, region.minschemx()) if xmi is not None else region.minschemx()
+            xma = max(xma, region.maxschemx()) if xma is not None else region.maxschemx()
+            ymi = min(ymi, region.minschemy()) if ymi is not None else region.minschemy()
+            yma = max(yma, region.maxschemy()) if yma is not None else region.maxschemy()
+            zmi = min(zmi, region.minschemz()) if zmi is not None else region.minschemz()
+            zma = max(zma, region.maxschemz()) if zma is not None else region.maxschemz()
+        self.__xmin = xmi
+        self.__xmax = xma
+        self.__ymin = ymi
+        self.__ymax = yma
+        self.__zmin = zmi
+        self.__zmax = zma
 
     @property
     def regions(self):
@@ -133,15 +183,21 @@ class Schematic:
     
     @property
     def width(self):
-        return self.__width
+        if self.__xmin is None or self.__xmax is None:
+            return 0
+        return self.__xmax - self.__xmin + 1
 
     @property
     def height(self):
-        return self.__height
+        if self.__ymin is None or self.__ymax is None:
+            return 0
+        return self.__ymax - self.__ymin + 1
 
     @property
     def length(self):
-        return self.__length
+        if self.__zmin is None or self.__zmax is None:
+            return 0
+        return self.__zmax - self.__zmin + 1
 
 class Region:
 
@@ -155,7 +211,8 @@ class Region:
         self.__x, self.__y, self.__z = x, y, z
         self.__width, self.__height, self.__length = width, height, length
         self.__palette = [AIR, ]
-        self.__blocks = [[[ 0 for k in range(abs(length))] for j in range(abs(height))] for i in range(abs(width))]
+        self.__blocks = np.zeros((abs(width), abs(height), abs(length)), dtype=np.uint32)
+        #self.__blocks = [[[ 0 for k in range(abs(length))] for j in range(abs(height))] for i in range(abs(width))]
         self.entities = [] #TODO Add support
         self.tileentities = [] #TODO Add support
 
@@ -183,11 +240,12 @@ class Region:
         root["PendingBlockTicks"] = List[Compound]() #TODO How does this work
         root["PendingFluidTicks"] = List[Compound]()
         arr = LitematicaBitArray(self.getvolume(), self.__get_needed_nbits())
+        #TODO Simplify the palet
         for x in range(abs(self.__width)):
             for y in range(abs(self.__height)):
                 for z in range(abs(self.__length)):
                     ind = (y * abs(self.__width * self.__length)) + z * abs(self.__width) + x
-                    arr[ind] = self.__blocks[x][y][z]
+                    arr[ind] = int(self.__blocks[x][y][z])
         root["BlockStates"] = arr._tonbtlongarray()
         return root
 
@@ -195,24 +253,20 @@ class Region:
         """
         Return the block at the given coordinates
         """
-        if self.__width < 0:
-            x -= self.__width + 1
-        if self.__height < 0:
-            y -= self.__height + 1
-        if self.__length < 0:
-            z -= __self.length + 1
-        return self.__palette[ self.__blocks[x][y][z] ]
+        x, y, z = self.__regcoordinates2storecoords(x, y, z)
+        return self.__palette[self.__blocks[x, y, z]]
 
     def setblock(self, x, y, z, block):
         """
         Set the block at the given coordinate
         """
+        x, y, z = self.__regcoordinates2storecoords(x, y, z)
         if block in self.__palette:
             i = self.__palette.index(block)
         else:
             self.__palette.append(block)
             i = len(self.__palette) - 1
-        self.__blocks[x][y][z] = i
+        self.__blocks[x, y, z] = i
 
     def getblockcount(self):
         """
@@ -220,12 +274,20 @@ class Region:
         """
         airind = self.__palette.index(AIR)
         c = 0
-        for plan in self.__blocks:
-            for column in plan:
-                for block in column:
-                    if block != airind:
-                        c += 1
+        for block in self.__blocks.flat:
+            if block != airind:
+                c += 1
         return c
+
+    def __regcoordinates2storecoords(self, x, y, z):
+        if self.__width < 0:
+            x -= self.__width + 1
+        if self.__height < 0:
+            y -= self.__height + 1
+        if self.__length < 0:
+            z -= self.__length + 1
+        return x, y, z
+
 
     def getvolume(self):
         """
@@ -269,6 +331,56 @@ class Region:
                     reg.__blocks[x][y][z] = arr[ind]
         return reg
 
+    def minschemx(self):
+        return min(self.__x, self.__x + self.width + 1)
+
+    def maxschemx(self):
+        return max(self.__x, self.__x + self.width - 1)
+
+    def minschemy(self):
+        return min(self.__y, self.__y + self.height + 1)
+
+    def maxschemy(self):
+        return max(self.__y, self.__y + self.height - 1)
+
+    def minschemz(self):
+        return min(self.__z, self.__z + self.length + 1)
+
+    def maxschemz(self):
+        return max(self.__z, self.__z + self.length - 1)
+
+    def minx(self):
+        return min(0, self.width + 1)
+
+    def maxx(self):
+        return max(0, self.width - 1)
+
+    def miny(self):
+        return min(0, self.height + 1)
+
+    def maxy(self):
+        return max(0, self.height - 1)
+
+    def minz(self):
+        return min(0, self.length + 1)
+
+    def maxz(self):
+        return max(0, self.length - 1)
+
+    def xrange(self):
+        return range(self.minx(), self.maxx() + 1)
+
+    def yrange(self):
+        return range(self.miny(), self.maxy() + 1)
+
+    def zrange(self):
+        return range(self.minz(), self.maxz() + 1)
+
+    def allblockpos(self):
+        for x in self.xrange():
+            for y in self.yrange():
+                for z in self.zrange():
+                    yield x, y, z
     @property
     def x(self):
         return self.__x
@@ -293,26 +405,37 @@ class Region:
     def length(self):
         return self.__length
 
-
-
 class BlockState:
 
     def __init__(self, blockid, properties={}):
         self.blockid = blockid
-        self.properties = {String(k): String(v) for k, v in properties.items()}
+        self.__properties = DiscriminatingDictionnary(self.__validate, properties)
 
     def _tonbt(self):
         root = Compound()
         root["Name"] = String(self.blockid)
-        if len(self.properties) > 0:
-            root["Properties"] = Compound(self.properties)
+        properties = {String(k): String(v) for k, v in self.__properties.items()}
+        if len(properties) > 0:
+            root["Properties"] = Compound(properties)
         return root
 
     def fromnbt(nbt):
-        block = BlockState(nbtstr2str(nbt["Name"]))
-        for key, value in nbt.items():
-            block.properties[nbtstr2str(key)] = nbtstr2str(value)
+        bid = str(nbt["Name"])
+        if "Properties" in nbt:
+            properties = {str(k): str(v) for k, v in nbt["Properties"].items()}
+        else:
+            properties = {}
+        block = BlockState(bid, properties=properties)
         return block
+
+    @property
+    def properties(self):
+        return self.__properties
+
+    def __validate(self, k, v):
+        if type(k) is not str or type(v) is not str:
+            return False, "Blockstate properties should be a string => string dictionnary"
+        return True, ""
 
 class Entity:
 
@@ -329,9 +452,6 @@ class TileEntity:
 
     def _tonbt(self):
         raise NotImplementedError("Tile entities are not supported yet")
-
-def nbtstr2str(s):
-    return str(s)[1:-1]
 
 AIR = BlockState("minecraft:air")
 
