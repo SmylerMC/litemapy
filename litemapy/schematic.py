@@ -22,8 +22,6 @@ class Schematic:
         Initialize a schematic of size width, height and length
         name, author and description are used in metadatas
         regions should be disctionnary {'regionname': region} to add to the schematic
-        If region is None or empty, an empty region, named after main_region_name,
-        and of the size of the schematic is created at its origin
         """
         self.author = author
         self.description = description
@@ -452,6 +450,9 @@ class Region:
     @property
     def length(self):
         return self.__length
+
+    def as_schematic(self, name=DEFAULT_NAME, author="", description=""):
+        return Schematic(name=name, author=author, description=description, regions={name: self})
 
 class BlockState:
 

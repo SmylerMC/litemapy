@@ -2,10 +2,9 @@
 
 from litemapy import Schematic, Region, BlockState
 
-
-# Creating a schematic object and attaching it a region
-schem = Schematic(name="Planet", author="SmylerMC", description="Made with litemapy")
-reg = schem.regions.setdefault("planet", default=Region(0, 0, 0, 21, 21, 21))
+# Shortcut to create a schematic with a single region
+reg = Region(0, 0, 0, 21, 21, 21)
+schem = reg.as_schematic(name="Planet", author="SmylerMC", description="Made with litemapy")
 
 # Create the block state we are going to use
 block = BlockState("minecraft:light_blue_concrete")

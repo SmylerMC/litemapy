@@ -139,25 +139,20 @@ class TestMaking(unittest.TestCase):
                 self.assertEqual(wreg.maxschemz(), rreg.maxschemz())
                 for x, y, z in wreg.allblockpos():
                     ws = wreg.getblock(x, y, z)
-                    rs = wreg.getblock(x, y, z)
-                    self.assertEqual(ws.blockid, rs.blockid)
-                    self.assertEqual(ws.properties, rs.properties)
+                    rs = rreg.getblock(x, y, z)
+                    self.assertEqual(ws, rs)
         dir.cleanup()
 
 class TestBlockStates(unittest.TestCase):
 
     def test(self):
-        b = BlockState("minecraft:stone")
         prop = {"test1": "testval", "test2": "testval2"}
+        b = BlockState("minecraft:stone", properties=prop)
+        self.assertEqual(len(prop), len(b))
         for k, v in prop.items():
-            b.properties[k] = v
-        self.assertEqual(len(prop), len(b.properties))
-        for k, v in prop.items():
-            self.assertEqual(b.properties[k], v)
+            self.assertEqual(b[k], v)
         nbt = b._tonbt()
         print(nbt)
         b2 = BlockState.fromnbt(nbt)
-        self.assertEqual(len(b.properties), len(b2.properties))
-        for k, v in b.properties.items():
-            self.assertEqual(b2.properties[k], v)
+        self.assertEqual(b, b2)
 

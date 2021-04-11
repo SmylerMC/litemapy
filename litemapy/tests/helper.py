@@ -54,7 +54,7 @@ def randomstring(length):
 
 def randomblockstate():
     ids = ("air", "stone", "granite", "diorite", "andesite", "dirt", "grass_block", "cobblestone", "oak_planks")
-    return BlockState(random.choice(ids))
+    return BlockState("minecraft:" + random.choice(ids))
 
 def randomschematic(regsize=20, regspread=20, regprob=0.8, blockprob=0.999):
     sch = Schematic(name=randomstring(15), author=randomstring(15), description=randomstring(100))
