@@ -1,3 +1,12 @@
+#### 0.3.0a0:
+ * Made BlockState immutable.
+ * BlockState properties should now be accessed directly from the blockstate instead of from its no longer visible properties field (e.g. `blockstate["propertyname"]` instead of `blockstate.properties["propertyname"]`).
+ * Correctly handle multiple regions in a single schematic. Schematic's enclosing sizes are no longer supplied by the user but rather calculated from the schematic's regions.
+ * String representation of BlockStates.
+ * Helper methods to iterate over region coordinates and get a region extrem coordinates in its schematic.
+ * Helper method to create a schematic from a single region.
+ * Use numpy for storage.
+
 #### 0.2.1a0:
 * Bug fix by @SebbyFur : Properly initialize block state properties
 * Refactored tests
