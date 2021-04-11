@@ -30,9 +30,9 @@ class Schematic:
         self.created = int(time())
         self.modified = int(time())
         self.__regions = DiscriminatingDictionnary(self._can_add_region, onadd=self.__on_region_add, onremove=self.__on_region_remove)
+        self.__compute_enclosure()
         if regions is not None and len(regions) > 0:
             self.__regions.update(regions)
-        self.__compute_enclosure()
 
     def save(self, fname, update_meta=True, save_soft=True):
         """
@@ -126,10 +126,40 @@ class Schematic:
         return True, ""
 
     def __on_region_add(self, name, region):
-        self.__compute_enclosure()
+        if self.__xmin is None:
+            self.__xmin = region.minschemx()
+        else:
+            self.__xmin = min(self.__xmin, region.minschemx())
+        if self.__xmax is None:
+            self.__xmax = region.maxschemx()
+        else:
+            self.__xmax = max(self.__xmax, region.maxschemx())
+        if self.__ymin is None:
+            self.__ymin = region.minschemy()
+        else:
+            self.__ymin = min(self.__ymin, region.minschemy())
+        if self.__ymax is None:
+            self.__ymax = region.maxschemy()
+        else:
+            self.__ymax = max(self.__ymax, region.maxschemy())
+        if self.__zmin is None:
+            self.__zmin = region.minschemz()
+        else:
+            self.__zmin = min(self.__zmin, region.minschemz())
+        if self.__zmax is None:
+            self.__zmax = region.maxschemz()
+        else:
+            self.__zmax = max(self.__zmax, region.maxschemz())
 
     def __on_region_remove(self, name, region):
-        self.__compute_enclosure()
+        b = self.__xmin == region.minschemx()
+        b = b or self.__xmax == region.maxschemx()
+        b = b or self.__ymin == region.minschemy()
+        b = b or self.__ymax == region.maxschemy()
+        b = b or self.__zmin == region.minschemz()
+        b = b or self.__zmax == region.maxschemz()
+        if b:
+            self.__compute_enclosure()
 
     def __compute_enclosure(self):
         xmi, xma, ymi, yma, zmi, zma = None, None, None, None, None, None
@@ -374,8 +404,6 @@ class Region:
     @property
     def length(self):
         return self.__length
-
-
 
 class BlockState:
 
