@@ -26,8 +26,8 @@ class Schematic:
         self.author = author
         self.description = description
         self.name = name
-        self.created = int(time())
-        self.modified = int(time())
+        self.created = round(time() * 1000)
+        self.modified = round(time() * 1000)
         self.__regions = DiscriminatingDictionnary(self._can_add_region, onadd=self.__on_region_add, onremove=self.__on_region_remove)
         self.__compute_enclosure()
         if regions is not None and len(regions) > 0:
@@ -109,7 +109,7 @@ class Schematic:
         """
         Update this schematic's metadata (modified time)
         """
-        self.modified = int(time())
+        self.modified = round(time() * 1000)
 
     def load(fname):
         """
