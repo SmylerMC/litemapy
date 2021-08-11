@@ -1,3 +1,6 @@
+#### 0.3.1a0:
+ * Bugfix: Save timestamp as milliseconds instead of seconds
+
 #### 0.3.0a0:
  * Made BlockState immutable.
  * BlockState properties should now be accessed directly from the blockstate instead of from its no longer visible properties field (e.g. `blockstate["propertyname"]` instead of `blockstate.properties["propertyname"]`).
