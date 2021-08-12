@@ -19,13 +19,13 @@ def get_litematica_jvm():
         gwrapper_path = JAVA_TEST_PROJECT + "/gradlew"
         os.chmod(gwrapper_path, 0b0111110100) #May need to be changed
         cmd = [gwrapper_path, "-p", JAVA_TEST_PROJECT, "--console=plain", "run"]
-        SUB_PROC = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        SUB_PROC = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         line = SUB_PROC.stdout.readline().decode('utf-8')
         while line is not None:
             if "[JAVA] Gateway Server Started..." in line:
                 break
             elif "FAILED" in line:
-                return None
+                raise RuntimeError("Failed to create test JVM")
             line = SUB_PROC.stdout.readline().decode('utf-8')
         GATEWAY = py4j.java_gateway.JavaGateway()
     return SUB_PROC, GATEWAY
