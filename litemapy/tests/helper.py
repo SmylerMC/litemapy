@@ -25,7 +25,7 @@ def get_litematica_jvm():
             if "[JAVA] Gateway Server Started..." in line:
                 break
             elif "FAILED" in line:
-                raise RuntimeError("Failed to start Litematica JVM")
+                return None
             line = SUB_PROC.stdout.readline().decode('utf-8')
         GATEWAY = py4j.java_gateway.JavaGateway()
     return SUB_PROC, GATEWAY
