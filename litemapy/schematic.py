@@ -248,18 +248,22 @@ class Region:
         root["BlockStates"] = arr._tonbtlongarray()
         return root
 
-    def getblock(self, x, y, z):
+    def getblock(self, x, y, z, schem=False):
         """
         Return the block at the given coordinates
+        If schem = True, will use schematic coordinates
         """
-        x, y, z = self.__regcoordinates2storecoords(x, y, z)
+        if not schem:
+            x, y, z = self.__regcoordinates2storecoords(x, y, z)
         return self.__palette[self.__blocks[x, y, z]]
 
-    def setblock(self, x, y, z, block):
+    def setblock(self, x, y, z, block, schem=False):
         """
         Set the block at the given coordinate
+        If schem = True, will use schematic coordinates
         """
-        x, y, z = self.__regcoordinates2storecoords(x, y, z)
+        if not schem:
+            x, y, z = self.__regcoordinates2storecoords(x, y, z)
         if block in self.__palette:
             i = self.__palette.index(block)
         else:
