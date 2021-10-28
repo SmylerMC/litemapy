@@ -41,8 +41,7 @@ class Schematic:
         """
         if update_meta:
             self.updatemeta()
-        f = nbtlib.File(gzipped=True, byteorder='big')
-        f[""] = self._tonbt(save_soft=save_soft)
+        f = nbtlib.File(self._tonbt(save_soft=save_soft), gzipped=True, byteorder='big')
         f.save(fname)
 
     def _tonbt(self, save_soft=True):
@@ -116,7 +115,8 @@ class Schematic:
         Read a schematic from disk
         fname: name of the file
         """
-        nbt = nbtlib.File.load(fname, True)['']
+        nbt = nbtlib.File.load(fname, True)
+        print(nbt)
         return Schematic.fromnbt(nbt)
 
     def _can_add_region(self, name, region):
