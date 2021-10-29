@@ -30,7 +30,7 @@ setuptools.setup(
                 "Programming Language :: Python :: 3",
                 "Topic :: Games/Entertainment",
             ],
-        python_requires=">=3.5",
+        python_requires=">=3.8",
         install_requires=[
                 'nbtlib>=2.0.0',
           ],
