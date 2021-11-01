@@ -321,11 +321,11 @@ class Region:
             block = BlockState.fromnbt(bnbt)
             reg.__palette.append(block)
         for enbt in nbt["Entities"]:
-            entity = Entity.fromnbt(entity)
+            entity = Entity.fromnbt(enbt)
             reg.entities.append(entity)
         for tenbt in nbt["TileEntities"]:
-            block = TileEntity.fromnbt(tentity)
-            reg.tileentities.append(block)
+            tile = TileEntity.fromnbt(tenbt)
+            reg.tileentities.append(tile)
         blks = nbt["BlockStates"]
         nbits = reg.__get_needed_nbits()
         arr = LitematicaBitArray.fromnbtlongarray(blks, reg.getvolume(), nbits)
@@ -525,6 +525,10 @@ class Entity:
     def _tonbt(self):
         raise NotImplementedError("Entities are not supported yet")
 
+    @staticmethod
+    def fromnbt(nbt):
+        raise NotImplementedError("Entities are not supported yet")
+
 
 class TileEntity:
 
@@ -532,6 +536,10 @@ class TileEntity:
         pass  # TODO
 
     def _tonbt(self):
+        raise NotImplementedError("Tile entities are not supported yet")
+
+    @staticmethod
+    def fromnbt(nbt):
         raise NotImplementedError("Tile entities are not supported yet")
 
 
