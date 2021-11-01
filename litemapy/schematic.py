@@ -21,8 +21,8 @@ class Schematic:
                  ):
         """
         Initialize a schematic of size width, height and length
-        name, author and description are used in metadatas
-        regions should be disctionnary {'regionname': region} to add to the schematic
+        name, author and description are used in metadata
+        regions should be dictionary {'regionname': region} to add to the schematic
         """
         self.author = author
         self.description = description
@@ -65,7 +65,8 @@ class Schematic:
         meta["Author"] = String(self.author)
         meta["Description"] = String(self.description)
         meta["Name"] = String(self.name)
-        meta["Software"] = String(LITEMAPY_NAME + "_" + LITEMAPY_VERSION)
+        if save_soft:
+            meta["Software"] = String(LITEMAPY_NAME + "_" + LITEMAPY_VERSION)
         meta["RegionCount"] = Int(len(self.regions))
         meta["TimeCreated"] = Long(self.created)
         meta["TimeModified"] = Long(self.modified)
