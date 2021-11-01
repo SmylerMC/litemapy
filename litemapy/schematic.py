@@ -1,23 +1,24 @@
-from nbtlib.tag import End, Byte, Short, Int, Long, Float, Double, ByteArray, String, List, Compound, IntArray, LongArray
-import nbtlib
-from math import ceil, log
-from .storage import LitematicaBitArray, DiscriminatingDictionnary
-from .info import *
-from .boxes import *
-from time import time
-import numpy as np
 from json import dumps
+from math import ceil, log
+from time import time
+
+import nbtlib
+import numpy as np
+from nbtlib.tag import Int, Long, String, List, Compound
+
+from .info import *
+from .storage import LitematicaBitArray, DiscriminatingDictionary
+
 
 class Schematic:
-
     """
     A schematic file
     """
 
-    def __init__(self, 
-                    name=DEFAULT_NAME, author="", description="",
-                    regions={}
-                ):
+    def __init__(self,
+                 name=DEFAULT_NAME, author="", description="",
+                 regions={}
+                 ):
         """
         Initialize a schematic of size width, height and length
         name, author and description are used in metadatas
@@ -28,7 +29,8 @@ class Schematic:
         self.name = name
         self.created = round(time() * 1000)
         self.modified = round(time() * 1000)
-        self.__regions = DiscriminatingDictionnary(self._can_add_region, onadd=self.__on_region_add, onremove=self.__on_region_remove)
+        self.__regions = DiscriminatingDictionary(self._can_add_region,
+                                                  onadd=self.__on_region_add, onremove=self.__on_region_remove)
         self.__compute_enclosure()
         if regions is not None and len(regions) > 0:
             self.__regions.update(regions)
@@ -67,7 +69,7 @@ class Schematic:
         meta["RegionCount"] = Int(len(self.regions))
         meta["TimeCreated"] = Long(self.created)
         meta["TimeModified"] = Long(self.modified)
-        meta["TotalBlocks"] = Int(sum([reg.getblockcount() for reg in self.regions.values()])) 
+        meta["TotalBlocks"] = Int(sum([reg.getblockcount() for reg in self.regions.values()]))
         meta["TotalVolume"] = Int(sum([reg.getvolume() for reg in self.regions.values()]))
         root["Metadata"] = meta
         regs = Compound()
@@ -76,6 +78,7 @@ class Schematic:
         root["Regions"] = regs
         return root
 
+    @staticmethod
     def fromnbt(nbt):
         """
         Read and return a schematic from an nbt tag
@@ -93,11 +96,14 @@ class Schematic:
             regions[str(key)] = reg
         sch = Schematic(name=name, author=author, description=desc, regions=regions)
         if sch.width != width:
-            raise CorruptedSchematicError("Invalid schematic width in metadata, excepted {} was {}".format(sch.width, width))
+            raise CorruptedSchematicError(
+                "Invalid schematic width in metadata, excepted {} was {}".format(sch.width, width))
         if sch.height != height:
-            raise CorruptedSchematicError("Invalid schematic height in metadata, excepted {} was {}".format(sch.height, height))
+            raise CorruptedSchematicError(
+                "Invalid schematic height in metadata, excepted {} was {}".format(sch.height, height))
         if sch.length != length:
-            raise CorruptedSchematicError("Invalid schematic length in metadata, excepted {} was {}".format(sch.length, length))
+            raise CorruptedSchematicError(
+                "Invalid schematic length in metadata, excepted {} was {}".format(sch.length, length))
         sch.created = int(meta["TimeCreated"])
         sch.modified = int(meta["TimeModified"])
         if "RegionCount" in meta and len(sch.regions) != meta["RegionCount"]:
@@ -110,13 +116,13 @@ class Schematic:
         """
         self.modified = round(time() * 1000)
 
+    @staticmethod
     def load(fname):
         """
         Read a schematic from disk
         fname: name of the file
         """
         nbt = nbtlib.File.load(fname, True)
-        print(nbt)
         return Schematic.fromnbt(nbt)
 
     def _can_add_region(self, name, region):
@@ -179,7 +185,7 @@ class Schematic:
     @property
     def regions(self):
         return self.__regions
-    
+
     @property
     def width(self):
         if self.__xmin is None or self.__xmax is None:
@@ -198,8 +204,8 @@ class Schematic:
             return 0
         return self.__zmax - self.__zmin + 1
 
-class Region:
 
+class Region:
     """
     A schematic region
     x, y, z: position in the schematic (read only)
@@ -213,8 +219,8 @@ class Region:
         self.__width, self.__height, self.__length = width, height, length
         self.__palette = [AIR, ]
         self.__blocks = np.zeros((abs(width), abs(height), abs(length)), dtype=np.uint32)
-        self.entities = [] #TODO Add support
-        self.tileentities = [] #TODO Add support
+        self.entities = []  # TODO Add support
+        self.tileentities = []  # TODO Add support
 
     def _tonbt(self):
         """
@@ -237,7 +243,7 @@ class Region:
         root["Entities"] = ents
         tilents = List[Compound]([ent._tonbt for ent in self.tileentities])
         root["TileEntities"] = tilents
-        root["PendingBlockTicks"] = List[Compound]() #TODO How does this work
+        root["PendingBlockTicks"] = List[Compound]()  # TODO How does this work
         root["PendingFluidTicks"] = List[Compound]()
         arr = LitematicaBitArray(self.getvolume(), self.__get_needed_nbits())
         for x in range(abs(self.__width)):
@@ -287,7 +293,6 @@ class Region:
             z -= self.__length + 1
         return x, y, z
 
-
     def getvolume(self):
         """
         Returns the region's volume
@@ -296,7 +301,8 @@ class Region:
 
     def __get_needed_nbits(self):
         return max(ceil(log(len(self.__palette), 2)), 2)
-    
+
+    @staticmethod
     def fromnbt(nbt):
         """
         Read a region from an nbt tag and return it
@@ -428,6 +434,7 @@ class Region:
             for y in self.yrange():
                 for z in self.zrange():
                     yield x, y, z
+
     @property
     def x(self):
         return self.__x
@@ -461,11 +468,12 @@ class Region:
         """
         return Schematic(name=name, author=author, description=description, regions={name: self})
 
+
 class BlockState:
 
     def __init__(self, blockid, properties={}):
         self.__blockid = blockid
-        self.__properties = DiscriminatingDictionnary(self.__validate, properties)
+        self.__properties = DiscriminatingDictionary(self.__validate, properties)
 
     def _tonbt(self):
         root = Compound()
@@ -475,6 +483,7 @@ class BlockState:
             root["Properties"] = Compound(properties)
         return root
 
+    @staticmethod
     def fromnbt(nbt):
         bid = str(nbt["Name"])
         if "Properties" in nbt:
@@ -503,28 +512,31 @@ class BlockState:
 
     def __getitem__(self, key):
         return self.__properties[key]
-    
+
     def __len__(self):
         return len(self.__properties)
+
 
 class Entity:
 
     def __init__(self):
-        pass #TODO
+        pass  # TODO
 
     def _tonbt(self):
         raise NotImplementedError("Entities are not supported yet")
 
+
 class TileEntity:
 
     def __init__(self):
-        pass #TODO
+        pass  # TODO
 
     def _tonbt(self):
         raise NotImplementedError("Tile entities are not supported yet")
 
+
 AIR = BlockState("minecraft:air")
+
 
 class CorruptedSchematicError(Exception):
     pass
-

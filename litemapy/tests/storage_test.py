@@ -40,7 +40,7 @@ class TestDiscriminatingDictionnary(unittest.TestCase):
         def discri(k, v):
             print("Discriminating ", type(k), k, "=>", type(v), v)
             return v >= 0, "Need pos"
-        posdi = storage.DiscriminatingDictionnary(discri)
+        posdi = storage.DiscriminatingDictionary(discri)
         posdi["0"] = 0
         self.assertTrue(posdi["0"] == 0)
         self.assertTrue("0" in posdi)
@@ -56,10 +56,10 @@ class TestDiscriminatingDictionnary(unittest.TestCase):
         self.assertTrue("2" in posdi)
         self.assertRaises(storage.DiscriminationError, posdi.update, {"-1": -1})
         otherdir = {"1": 1, "2": 2}
-        posdi = storage.DiscriminatingDictionnary(lambda k, v: (v>=0, "Need pos"), otherdir)
+        posdi = storage.DiscriminatingDictionary(lambda k, v: (v >= 0, "Need pos"), otherdir)
         self.assertTrue("1" in posdi)
         self.assertTrue("2" in posdi)
-        posdi = storage.DiscriminatingDictionnary(lambda k, v: (v>=0, "Need pos"), a=1, b=2)
+        posdi = storage.DiscriminatingDictionary(lambda k, v: (v >= 0, "Need pos"), a=1, b=2)
         self.assertTrue("a" in posdi)
         self.assertTrue("b" in posdi)
 
@@ -70,7 +70,7 @@ class TestDiscriminatingDictionnary(unittest.TestCase):
             def onadd(self, k, v):
                 self.counter += v
         c = Counter()
-        posdi = storage.DiscriminatingDictionnary(
+        posdi = storage.DiscriminatingDictionary(
                 lambda k, v: (v>=0, "Need pos"),
                 onadd=c.onadd,
                 x=10
@@ -89,7 +89,7 @@ class TestDiscriminatingDictionnary(unittest.TestCase):
             def onrm(self, k, v):
                 self.counter += v
         c = Counter()
-        posdi = storage.DiscriminatingDictionnary(
+        posdi = storage.DiscriminatingDictionary(
                 lambda k, v: (v>=0, "Need pos"),
                 onremove=c.onrm,
                 a=1, b=2, c=3, d=4, x=10
@@ -105,7 +105,7 @@ class TestDiscriminatingDictionnary(unittest.TestCase):
         posdi.popitem()
         self.assertEqual(c.counter, 20)
         c = Counter()
-        posdi = storage.DiscriminatingDictionnary(
+        posdi = storage.DiscriminatingDictionary(
                 lambda k, v: (v>=0, "Need pos"),
                 onremove=c.onrm,
                 a=1, b=2, c=3, d=4, x=10
@@ -123,7 +123,7 @@ class TestDiscriminatingDictionnary(unittest.TestCase):
             def onadd(self, k, v):
                 self.added += v
         c = Counter()
-        posdi = storage.DiscriminatingDictionnary(
+        posdi = storage.DiscriminatingDictionary(
                 lambda k, v: (v>=0, "Need pos"),
                 onadd=c.onadd,
                 onremove=c.onrm,
