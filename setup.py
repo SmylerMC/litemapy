@@ -32,7 +32,7 @@ setuptools.setup(
             ],
         python_requires=">=3.8",
         install_requires=[
-                'nbtlib>=2.0.0',
+                'nbtlib>=2.0.3',
           ],
         test_suite='nose.collector',
         tests_require=['nose'],
