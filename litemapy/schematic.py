@@ -124,7 +124,6 @@ class Schematic:
         fname: name of the file
         """
         nbt = nbtlib.File.load(fname, True)
-        # print(nbt)
         return Schematic.fromnbt(nbt)
 
     def _can_add_region(self, name, region):
@@ -210,8 +209,9 @@ class Schematic:
     def preview(self):
         return self.__preview
 
-    def set_preview(self, preview):
-        self.__preview = preview
+    @preview.setter
+    def preview(self, value):
+        self.__preview = value
 
 
 class Region:
@@ -358,7 +358,6 @@ class Region:
                     reg.__blocks[x][y][z] = arr[ind]
 
         for blockTick in nbt["PendingBlockTicks"]:
-            print(blockTick)
             reg.blockTicks.append(blockTick)
 
         for fluidTick in nbt["PendingFluidTicks"]:
