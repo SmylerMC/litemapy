@@ -550,13 +550,13 @@ class Entity:
     def __init__(self, str_or_nbt):
 
         if isinstance(str_or_nbt, str):
-            self._data = List(Compound)([Compound({'id': String(str_or_nbt)})])
+            self._data = Compound({'id': String(str_or_nbt)})
         else:
             self._data = str_or_nbt
 
         keys = self._data.keys()
         if 'id' not in keys:
-            self._data['id'] = String('minecraft:empty')
+            raise RequiredKeyMissingException('id')
         if 'Pos' not in keys:
             self._data['Pos'] = List[Double]([Double(0.), Double(0.), Double(0.)])
         if 'Rotation' not in keys:
@@ -646,13 +646,13 @@ class TileEntity:
     def __init__(self, str_or_nbt):
 
         if isinstance(str_or_nbt, str):
-            self._data = List(Compound)([Compound({'id': String(str_or_nbt)})])
+            self._data = Compound({'id': String(str_or_nbt)})
         else:
             self._data = str_or_nbt
 
         keys = self._data.keys()
         if 'id' not in keys:
-            self._data['id'] = String('minecraft:empty')
+            raise RequiredKeyMissingException('id')
         if 'x' not in keys:
             self._data['x'] = Int(0)
         if 'y' not in keys:
@@ -723,3 +723,14 @@ AIR = BlockState("minecraft:air")
 
 class CorruptedSchematicError(Exception):
     pass
+
+
+class RequiredKeyMissingException(Exception):
+
+    def __init__(self, key, message='The required key is missing in the (Tile)Entity\'s NBT Compound'):
+        self.key = key
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.key} -> {self.message}'
