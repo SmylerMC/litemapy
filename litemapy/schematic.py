@@ -278,6 +278,80 @@ class Region:
 
         return root
 
+    def to_structure_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big'):
+        structure = nbtlib.File(gzipped=gzipped, byteorder=byteorder)
+
+        structure['size'] = List[Int]([self.__width, self.__height, self.__length])
+        structure['DataVersion'] = Int(mc_version)
+
+        # process entities
+        entities = List[Compound]()
+        for entity in self.entities:
+            entity_cmp = Compound()
+            entity_cmp['nbt'] = entity.data
+            entity_cmp['pos'] = List[Double]([Double(coord) for coord in entity.position])
+            entity_cmp['blockPos'] = List[Int]([Int(coord) for coord in entity.position])
+            entities.append(entity_cmp)
+
+        structure['entities'] = entities
+
+        # create tile entity dictionary to add them correctly to the block list later
+        tile_entity_dict = {}
+        for tile_entity in self.tile_entities:
+            tile_entity_cmp = Compound()
+            for key, value in tile_entity.data.items():
+                if key not in ['x', 'y', 'z']:
+                    tile_entity_cmp[key] = value
+
+            tile_entity_dict[tile_entity.position] = tile_entity_cmp
+
+        # process palette
+        structure['palette'] = List[Compound]([block._tonbt() for block in self.__palette])
+
+        # process blocks
+        blocks = List[Compound]()
+        for x, y, z in self.allblockpos():
+            block = Compound()
+            position = (x, y, z)
+            if position in tile_entity_dict.keys():
+                block['nbt'] = tile_entity_dict[position]
+            block['pos'] = List[Int]([Int(coord) for coord in position])
+            block['state'] = Int(self.__blocks[x, y, z])
+            blocks.append(block)
+
+        structure['blocks'] = blocks
+
+        return structure
+
+    @staticmethod
+    def from_structure_nbt(structure):
+
+        mc_version = structure['DataVersion']
+        size = structure['size']
+        width = int(size[0])
+        height = int(size[1])
+        length = int(size[2])
+        region = Region(0, 0, 0, width, height, length)
+
+        # process entities
+        for entity in structure['entities']:
+            ent = Entity(entity['nbt'])
+            ent.position = entity['pos']
+            region.entities.append(ent)
+
+        # process blocks and let setblock() automatically generate the palette
+        palette = structure['palette']
+        for block in structure['blocks']:
+            x, y, z = block['pos']
+            state = block['state']
+            region.setblock(x, y, z, BlockState.fromnbt(palette[state]))
+            if 'nbt' in block.keys():
+                tile_entity = TileEntity(block['nbt'])
+                tile_entity.position = block['pos']
+                region.tile_entities.append(tile_entity)
+
+        return region, mc_version
+
     def getblock(self, x, y, z):
         """
         Return the block at the given coordinates
@@ -493,14 +567,14 @@ class Region:
     def length(self):
         return self.__length
 
-    def as_schematic(self, name=DEFAULT_NAME, author="", description=""):
+    def as_schematic(self, name=DEFAULT_NAME, author="", description="", mc_version=MC_DATA_VERSION):
         """
         Creates and returns a schematic that contains that region at the origin.
         name: A name for both the region and the schematic
         author: an author for the schematic
         description: a description for the schematic
         """
-        return Schematic(name=name, author=author, description=description, regions={name: self})
+        return Schematic(name=name, author=author, description=description, regions={name: self}, mc_version=mc_version)
 
 
 class BlockState:
