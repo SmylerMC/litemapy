@@ -16,5 +16,6 @@ def block_is_in_box(block, box):
     zmin, zmax = zs
     return xmin <= x <= xmax and ymin <= y <= ymax and zmin <= z <= zmax
 
+
 def box_is_in_box(box1, box2):
     return block_is_in_box(box1[0], box2) and block_is_in_box(box1[1], box2)
