@@ -23,7 +23,7 @@ setuptools.setup(
         packages=setuptools.find_packages(exclude=["tests"]),
         license="GNU General Public License v3 (GPLv3)",
         classifiers=[
-                "Development Status :: 3 - Alpha",
+                "Development Status :: 4 - Beta",
                 "Intended Audience :: Other Audience",
                 "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
                 "Operating System :: OS Independent",
