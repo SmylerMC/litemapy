@@ -72,10 +72,9 @@ Litemapy is available on pypi: ```pip install litemapy```
 
 ## Content
 Litemapy is still new and only has basic functionalities, it lacks support for some of Litematica's, notably:
-  * Entities are not supported.
-  * Tile entities are not supported.
-  * Pending block updates are not supported.
-  * Preview screenshots are not supported.
+  * Entities are partially supported.
+  * Tile entities are partially supported.
+  * Pending block updates are not supported, but retained when reading and saving.
   * Legacy Schematica schematics are not supported at all, only the newer Litematica format is.
 
 ## Documentation
