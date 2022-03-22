@@ -5,6 +5,7 @@ Litemapy's goal is to provide an easy to use way to read and edit Litematica's s
 
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/litemapy?style=flat-square)
 ![PyPI](https://img.shields.io/pypi/v/litemapy?style=flat-square)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/litemapy?style=flat-square)
 ![Commits since latest release](https://img.shields.io/github/commits-since/SmylerMC/litemapy/latest?include_prereleases&style=flat-square)
 
 
