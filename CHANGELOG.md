@@ -1,3 +1,16 @@
+### 0.5.0b0:
+* Basic support for entities
+* Basic support for tile entities
+* Basic support for preview images
+* Retain block and fluid pending ticks when reading and then saving a litematic
+
+### 0.4.1a0:
+* Uses nbtlib versions above 2.0.3, older 2.0.X versions are broken.
+
+### 0.4.0a0:
+*  Support for nbtlib 2.0
+*  Drop support for python 3.7
+
 #### 0.3.1a0:
  * Bugfix: Save timestamp as milliseconds instead of seconds
 
