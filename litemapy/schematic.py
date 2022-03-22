@@ -285,12 +285,13 @@ class Region:
         structure['DataVersion'] = Int(mc_version)
 
         # process entities
+        size = (self.__width, self.__height, self.__length)
         entities = List[Compound]()
         for entity in self.entities:
             entity_cmp = Compound()
             entity_cmp['nbt'] = entity.data
-            entity_cmp['pos'] = List[Double]([Double(coord) for coord in entity.position])
-            entity_cmp['blockPos'] = List[Int]([Int(coord) for coord in entity.position])
+            entity_cmp['pos'] = List[Double]([Double(coord - dim) for coord, dim in zip(entity.position, size)])
+            entity_cmp['blockPos'] = List[Int]([Int(coord - dim) for coord, dim in zip(entity.position, size)])
             entities.append(entity_cmp)
 
         structure['entities'] = entities
