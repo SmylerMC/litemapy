@@ -281,7 +281,7 @@ class Region:
     def to_structure_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big'):
         structure = nbtlib.File(gzipped=gzipped, byteorder=byteorder)
 
-        structure['size'] = List[Int]([self.__width, self.__height, self.__length])
+        structure['size'] = List[Int]([abs(self.__width), abs(self.__height), abs(self.__length)])
         structure['DataVersion'] = Int(mc_version)
 
         # process entities
@@ -310,7 +310,7 @@ class Region:
 
         # process blocks
         blocks = List[Compound]()
-        for x, y, z in self.allblockpos():
+        for x, y, z in np.ndindex(self.__blocks.shape):
             block = Compound()
             position = (x, y, z)
             if position in tile_entity_dict.keys():
