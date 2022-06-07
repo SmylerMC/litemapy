@@ -1,3 +1,6 @@
+### 0.6.0b0;
+* Method to convert regions to the vanilla Minecraft structure NBT format
+
 ### 0.5.0b0:
 * Basic support for entities
 * Basic support for tile entities
