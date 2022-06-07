@@ -1,21 +1,12 @@
-buildscript {
-    repositories {
-        jcenter()    
-        maven {
-            name = "Fabric"
-            url = "https://maven.fabricmc.net/"
-        }
-    }
-    dependencies {
-        classpath 'net.fabricmc:fabric-loom:0.2.6-SNAPSHOT'
-    }
+plugins {
+    id 'java'
+    id 'fabric-loom' version '0.11-SNAPSHOT'
 }
 
-apply plugin: "fabric-loom"
-apply plugin : 'java'
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 repositories {
-    jcenter()
     maven {
         name = "JitPack"
         url = "https://jitpack.io/"
@@ -25,11 +16,10 @@ repositories {
 dependencies {
     implementation 'net.sf.py4j:py4j:0.10.9.2'
 
-    modCompile "com.github.maruohon:litematica:b64b54c9ddaace55b6db8320ae23fda4dcb73fd7"
+    modImplementation "com.github.maruohon:litematica:ba2e17eeb478fc7839e41fca8eb097b170f449ab"
 
-//    runtime 'org.apache.commons:commons-lang3:3.5'
-    minecraft "com.mojang:minecraft:1.15.2"
-    mappings "net.fabricmc:yarn:1.15.2+build.14:v2"
+    minecraft "com.mojang:minecraft:1.18.2"
+    mappings "net.fabricmc:yarn:1.18.2+build.1"
 }
 
 task run(type: JavaExec) {
