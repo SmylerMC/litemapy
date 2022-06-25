@@ -4,7 +4,7 @@ from time import time
 
 import nbtlib
 import numpy as np
-from nbtlib.tag import Int, Long, Double, String, List, Compound, IntArray
+from nbtlib.tag import Short, Byte, Int, Long, Double, String, List, Compound, ByteArray, IntArray
 
 from .info import *
 from .storage import LitematicaBitArray, DiscriminatingDictionary
@@ -34,8 +34,8 @@ class Schematic:
         self.__compute_enclosure()
         if regions is not None and len(regions) > 0:
             self.__regions.update(regions)
-        self.mc_version = mc_version
-        self.lm_version = lm_version
+        self.__mc_version = mc_version
+        self.__lm_version = lm_version
         self.__preview = IntArray([])
 
     def save(self, fname, update_meta=True, save_soft=True, gzipped=True, byteorder='big'):
@@ -57,8 +57,8 @@ class Schematic:
         if len(self.__regions) < 1:
             raise ValueError("Empty schematic does not have any regions")
         root = Compound()
-        root["Version"] = Int(self.lm_version)
-        root["MinecraftDataVersion"] = Int(self.mc_version)
+        root["Version"] = Int(self.__lm_version)
+        root["MinecraftDataVersion"] = Int(self.__mc_version)
         meta = Compound()
         enclose = Compound()
         enclose["x"] = Int(self.width)
@@ -213,6 +213,22 @@ class Schematic:
         return self.__zmax - self.__zmin + 1
 
     @property
+    def mc_version(self):
+        return self.__mc_version
+
+    @mc_version.setter
+    def mc_version(self, value):
+        self.__mc_version = value
+
+    @property
+    def lm_version(self):
+        return self.__lm_version
+
+    @lm_version.setter
+    def lm_version(self, value):
+        self.__lm_version = value
+
+    @property
     def preview(self):
         return self.__preview
 
@@ -235,10 +251,10 @@ class Region:
         self.__width, self.__height, self.__length = width, height, length
         self.__palette = [AIR, ]
         self.__blocks = np.zeros((abs(width), abs(height), abs(length)), dtype=np.uint32)
-        self.entities = []
-        self.tile_entities = []
-        self.blockTicks = []
-        self.fluidTicks = []
+        self.__entities = []
+        self.__tile_entities = []
+        self.__block_ticks = []
+        self.__fluid_ticks = []
 
     def _tonbt(self):
         """
@@ -259,14 +275,14 @@ class Region:
         plt = List[Compound]([blk._tonbt() for blk in self.__palette])
         root["BlockStatePalette"] = plt
 
-        entities = List[Compound]([entity._tonbt() for entity in self.entities])
+        entities = List[Compound]([entity._tonbt() for entity in self.__entities])
         root["Entities"] = entities
 
-        tile_entities = List[Compound]([tile_entity._tonbt() for tile_entity in self.tile_entities])
+        tile_entities = List[Compound]([tile_entity._tonbt() for tile_entity in self.__tile_entities])
         root["TileEntities"] = tile_entities
 
-        root["PendingBlockTicks"] = List[Compound](self.blockTicks) #TODO How does this work
-        root["PendingFluidTicks"] = List[Compound](self.fluidTicks)
+        root["PendingBlockTicks"] = List[Compound](self.__block_ticks)
+        root["PendingFluidTicks"] = List[Compound](self.__fluid_ticks)
 
         arr = LitematicaBitArray(self.getvolume(), self.__get_needed_nbits())
         for x in range(abs(self.__width)):
@@ -278,6 +294,139 @@ class Region:
 
         return root
 
+    def to_sponge_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big'):
+        nbt = nbtlib.File(gzipped=gzipped, byteorder=byteorder)
+
+        nbt['DataVersion'] = Int(mc_version)
+        nbt['Version'] = Int(SPONGE_VERSION)
+
+        nbt['Width'] = Short(abs(self.__width))
+        nbt['Height'] = Short(abs(self.__height))
+        nbt['Length'] = Short(abs(self.__length))
+
+        nbt['Offset'] = IntArray([Int(0), Int(0), Int(0)])  # not strictly necessary
+
+        # process entities
+        size = (self.__width, self.__height, self.__length)
+        entities = List[Compound]()
+        for entity in self.__entities:
+            entity_cmp = Compound()
+            for key, value in entity.data.items():
+                entity_cmp[key] = value
+
+            entity_cmp['Pos'] = List[Double]([Double(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
+            keys = entity.data.keys()
+            if 'TileX' in keys:
+                entity_cmp['TileX'] = Int(entity_cmp['Pos'][0])
+                entity_cmp['TileY'] = Int(entity_cmp['Pos'][1])
+                entity_cmp['TileZ'] = Int(entity_cmp['Pos'][2])
+
+            entity_cmp['Id'] = entity_cmp['id']
+            del entity_cmp['id']
+            entities.append(entity_cmp)
+
+        nbt['Entities'] = entities
+
+        # process tile entities
+        tile_entities = List[Compound]()
+        for tile_entity in self.__tile_entities:
+            tile_entity_cmp = Compound()
+            for key, value in tile_entity.data.items():
+                tile_entity_cmp[key] = value
+
+            tile_entity_cmp['Pos'] = IntArray([Int(coord) for coord in tile_entity.position])
+            for key in ['x', 'y', 'z']:
+                del tile_entity_cmp[key]
+            tile_entities.append(tile_entity_cmp)
+
+        nbt['BlockEntities'] = tile_entities
+
+        # process block palette
+        nbt['PaletteMax'] = Int(len(self.__palette))
+        pal = Compound()
+        for i, block in enumerate(self.__palette):
+            state = block.to_block_state_identifier()
+            pal[state] = Int(i)
+
+        nbt['Palette'] = pal
+
+        # process blocks
+        block_array = []
+        for i in range(abs(self.__width * self.__height * self.__length)):
+            blocks_per_layer = abs(self.__width * self.__length)
+            y = int(i / blocks_per_layer)
+            i_in_layer = i % blocks_per_layer
+            z = int(i_in_layer / abs(self.__width))
+            x = i_in_layer % abs(self.__width)
+            block_array.append(self.__blocks[x, y, z])
+
+        nbt['BlockData'] = ByteArray([Byte(id) for id in block_array])
+
+        return nbt
+
+    @staticmethod
+    def from_sponge_nbt(nbt):
+        mc_version = nbt['DataVersion']
+        width = int(nbt['Width'])
+        height = int(nbt['Height'])
+        length = int(nbt['Length'])
+        region = Region(0, 0, 0, width, height, length)
+        offset = nbt['Offset']
+
+        # process entities
+        for entity in nbt['Entities']:
+            if 'Id' not in entity.keys():
+                raise RequiredKeyMissingException('Id')
+                exit()
+            entity['id'] = entity['Id']
+            del entity['Id']
+
+            ent = Entity(entity)
+            ent.position = tuple([coord - off for coord, off in zip(ent.position, offset)])
+            region.entities.append(ent)
+
+        # process tile entities
+        tile_entities = nbt['BlockEntities']
+        for tile_entity in tile_entities:
+            if 'Id' not in tile_entity.keys():
+                raise RequiredKeyMissingException('Id')
+                exit()
+            tile_entity['id'] = tile_entity['Id']
+            del tile_entity['Id']
+
+            tent = TileEntity.fromnbt(tile_entity)
+            tent.position = tent.data['Pos']
+            del tile_entity['Pos']
+            region.tile_entities.append(tent)
+
+        # process blocks and let setblock() automatically generate the palette
+        palette = nbt['Palette']
+        palette_dict = {}
+        for block, index in palette.items():
+            property_dict = {}
+            if block.find('[') == -1:
+                block_id = block
+            else:
+                entries = block.split('[')
+                block_id = entries[0]
+                properties = entries[1].replace(']', '').split(',')
+                for property in properties:
+                    key, value = property.split('=')
+                    property_dict[key] = value
+
+            block_state = BlockState(block_id, property_dict)
+            palette_dict[int(index)] = block_state
+
+        for i, index in enumerate(nbt['BlockData']):
+            blocks_per_layer = width * length
+            y = int(i / blocks_per_layer)
+            i_in_layer = i % blocks_per_layer
+            z = int(i_in_layer / width)
+            x = i_in_layer % width
+            region.setblock(x, y, z, palette_dict[int(index)])
+
+        return region, mc_version
+    
     def to_structure_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big'):
         structure = nbtlib.File(gzipped=gzipped, byteorder=byteorder)
 
@@ -287,18 +436,18 @@ class Region:
         # process entities
         size = (self.__width, self.__height, self.__length)
         entities = List[Compound]()
-        for entity in self.entities:
+        for entity in self.__entities:
             entity_cmp = Compound()
             entity_cmp['nbt'] = entity.data
-            entity_cmp['pos'] = List[Double]([Double(coord - dim) for coord, dim in zip(entity.position, size)])
-            entity_cmp['blockPos'] = List[Int]([Int(coord - dim) for coord, dim in zip(entity.position, size)])
+            entity_cmp['pos'] = List[Double]([Double(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
+            entity_cmp['blockPos'] = List[Int]([Int(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
             entities.append(entity_cmp)
 
         structure['entities'] = entities
 
         # create tile entity dictionary to add them correctly to the block list later
         tile_entity_dict = {}
-        for tile_entity in self.tile_entities:
+        for tile_entity in self.__tile_entities:
             tile_entity_cmp = Compound()
             for key, value in tile_entity.data.items():
                 if key not in ['x', 'y', 'z']:
@@ -326,7 +475,6 @@ class Region:
 
     @staticmethod
     def from_structure_nbt(structure):
-
         mc_version = structure['DataVersion']
         size = structure['size']
         width = int(size[0])
@@ -519,19 +667,19 @@ class Region:
 
     def xrange(self):
         """
-        Returns the range of coordinates this region contains along it's X axis
+        Returns the range of coordinates this region contains along its X axis
         """
         return range(self.minx(), self.maxx() + 1)
 
     def yrange(self):
         """
-        Returns the range of coordinates this region contains along it's Y axis
+        Returns the range of coordinates this region contains along its Y axis
         """
         return range(self.miny(), self.maxy() + 1)
 
     def zrange(self):
         """
-        Returns the range of coordinates this region contains along it's Z axis
+        Returns the range of coordinates this region contains along its Z axis
         """
         return range(self.minz(), self.maxz() + 1)
 
@@ -567,6 +715,46 @@ class Region:
     @property
     def length(self):
         return self.__length
+
+    @property
+    def palette(self):
+        return self.__palette
+
+    @property
+    def blocks(self):
+        return self.__blocks
+
+    @property
+    def entities(self):
+        return self.__entities
+
+    @entities.setter
+    def entities(self, value):
+        self.__entities = value
+
+    @property
+    def tile_entities(self):
+        return self.__tile_entities
+
+    @tile_entities.setter
+    def tile_entities(self, value):
+        self.__tile_entities = value
+
+    @property
+    def block_ticks(self):
+        return self.__block_ticks
+
+    @block_ticks.setter
+    def block_ticks(self, value):
+        self.__block_ticks = value
+
+    @property
+    def fluid_ticks(self):
+        return self.__fluid_ticks
+
+    @fluid_ticks.setter
+    def fluid_ticks(self, value):
+        self.__fluid_ticks = value
 
     def as_schematic(self, name=DEFAULT_NAME, author="", description="", mc_version=MC_DATA_VERSION):
         """
@@ -611,6 +799,16 @@ class BlockState:
             return False, "Blockstate properties should be a string => string dictionary"
         return True, ""
 
+    def to_block_state_identifier(self, skip_empty=True):
+        if skip_empty and not len(self.__properties):
+            return self.__blockid
+
+        state = dumps(self.__properties, separators=(',', '='), sort_keys=True)
+        state = state.replace('{', '[').replace('}', ']')
+        state = state.replace('"', '').replace("'", '')
+
+        return self.__blockid + state
+
     def __eq__(self, other):
         if not isinstance(other, BlockState):
             raise ValueError("Can only compare blockstates with blockstates")
@@ -638,6 +836,7 @@ class Entity:
         keys = self._data.keys()
         if 'id' not in keys:
             raise RequiredKeyMissingException('id')
+            exit()
         if 'Pos' not in keys:
             self._data['Pos'] = List[Double]([Double(0.), Double(0.), Double(0.)])
         if 'Rotation' not in keys:
@@ -725,16 +924,11 @@ class Entity:
 
 class TileEntity:
 
-    def __init__(self, str_or_nbt):
+    def __init__(self, nbt):
 
-        if isinstance(str_or_nbt, str):
-            self._data = Compound({'id': String(str_or_nbt)})
-        else:
-            self._data = str_or_nbt
-
+        self._data = nbt
         keys = self._data.keys()
-        if 'id' not in keys:
-            raise RequiredKeyMissingException('id')
+
         if 'x' not in keys:
             self._data['x'] = Int(0)
         if 'y' not in keys:
@@ -742,7 +936,6 @@ class TileEntity:
         if 'z' not in keys:
             self._data['z'] = Int(0)
 
-        self._id = self._data['id']
         self._position = tuple([int(self._data[coord]) for coord in ['x', 'y', 'z']])
 
     def _tonbt(self):
@@ -754,8 +947,6 @@ class TileEntity:
 
     def add_tag(self, key, tag):
         self._data[key] = tag
-        if key == 'id':
-            self._id = str(tag)
 
         pos = self._position
         if key == 'x':
@@ -778,17 +969,7 @@ class TileEntity:
     @data.setter
     def data(self, data):
         self._data = TileEntity(data).data
-        self._id = str(self._data['id'])
         self._position = tuple([int(self._data[coord]) for coord in ['x', 'y', 'z']])
-
-    @property
-    def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-        self._data['id'] = String(self._id)
 
     @property
     def position(self):
