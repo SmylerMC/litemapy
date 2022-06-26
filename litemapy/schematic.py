@@ -34,8 +34,8 @@ class Schematic:
         self.__compute_enclosure()
         if regions is not None and len(regions) > 0:
             self.__regions.update(regions)
-        self.__mc_version = mc_version
-        self.__lm_version = lm_version
+        self.mc_version = mc_version
+        self.lm_version = lm_version
         self.__preview = IntArray([])
 
     def save(self, fname, update_meta=True, save_soft=True, gzipped=True, byteorder='big'):
@@ -57,8 +57,8 @@ class Schematic:
         if len(self.__regions) < 1:
             raise ValueError("Empty schematic does not have any regions")
         root = Compound()
-        root["Version"] = Int(self.__lm_version)
-        root["MinecraftDataVersion"] = Int(self.__mc_version)
+        root["Version"] = Int(self.lm_version)
+        root["MinecraftDataVersion"] = Int(self.mc_version)
         meta = Compound()
         enclose = Compound()
         enclose["x"] = Int(self.width)
@@ -211,22 +211,6 @@ class Schematic:
         if self.__zmin is None or self.__zmax is None:
             return 0
         return self.__zmax - self.__zmin + 1
-
-    @property
-    def mc_version(self):
-        return self.__mc_version
-
-    @mc_version.setter
-    def mc_version(self, value):
-        self.__mc_version = value
-
-    @property
-    def lm_version(self):
-        return self.__lm_version
-
-    @lm_version.setter
-    def lm_version(self, value):
-        self.__lm_version = value
 
     @property
     def preview(self):
@@ -791,44 +775,20 @@ class Region:
         return self.__length
 
     @property
-    def palette(self):
-        return self.__palette
-
-    @property
-    def blocks(self):
-        return self.__blocks
-
-    @property
     def entities(self):
         return self.__entities
-
-    @entities.setter
-    def entities(self, value):
-        self.__entities = value
 
     @property
     def tile_entities(self):
         return self.__tile_entities
 
-    @tile_entities.setter
-    def tile_entities(self, value):
-        self.__tile_entities = value
-
     @property
     def block_ticks(self):
         return self.__block_ticks
 
-    @block_ticks.setter
-    def block_ticks(self, value):
-        self.__block_ticks = value
-
     @property
     def fluid_ticks(self):
         return self.__fluid_ticks
-
-    @fluid_ticks.setter
-    def fluid_ticks(self, value):
-        self.__fluid_ticks = value
 
     def as_schematic(self, name=DEFAULT_NAME, author="", description="", mc_version=MC_DATA_VERSION):
         """
