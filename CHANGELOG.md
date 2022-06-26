@@ -1,4 +1,11 @@
-### 0.6.0b0;
+### 0.7.0b0:
+* Method to convert regions to the sponge schematic NBT format
+* Fix crash with litematics created by newer versions of Litematica "id -> The required key is missing in the (Tile)Entity's NBT Compound",
+It was caused by Litematica no longer specifying a TileEntity's ID in its own NBT structure
+(it can be assumed by looking the block at the TileEntity's coordinates)
+* Made internal list fields access only (Region#entities, Region#tile_entities, Region#block_ticks, Region#fluid_ticks)
+
+### 0.6.0b0:
 * Method to convert regions to the vanilla Minecraft structure NBT format
 
 ### 0.5.0b0:

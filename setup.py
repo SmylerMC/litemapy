@@ -5,6 +5,7 @@ from litemapy import __version__ as LITEMAPY_VERSION
 
 DESCRIPTION = "Read and write Litematica's Minecraft schematics files"
 
+
 def readme():
     with open("README.md") as f:
         txt = f.read()
