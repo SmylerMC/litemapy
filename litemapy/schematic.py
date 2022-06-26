@@ -295,6 +295,27 @@ class Region:
         return root
 
     def to_sponge_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big'):
+        """
+        Returns the Region as an NBT Compound file that conforms to the Sponge Schematic Format (version 2) used by mods
+        like WorldEdit (https://github.com/SpongePowered/Schematic-Specification).
+
+        Parameters
+        ----------
+        mc_version : int, default=info.MC_DATA_VERSION
+            Minecraft data version that is being emulated (https://minecraft.fandom.com/wiki/Data_version). Should not
+            be critical for newer versions of Minecraft.
+        gzipped : bool, default=True
+            Whether the NBT Compound file should be compressed (WorldEdit only works with gzipped files).
+        byteorder : str, default='big'
+            Endianness of the resulting NBT Compound file ('big' or 'little', WorldEdit only works with big endian
+            files).
+
+        Returns
+        -------
+        nbt : nbtlib.File
+            The Region represented as a Sponge Schematic NBT Compound file.
+        """
+
         nbt = nbtlib.File(gzipped=gzipped, byteorder=byteorder)
 
         nbt['DataVersion'] = Int(mc_version)
@@ -366,6 +387,23 @@ class Region:
 
     @staticmethod
     def from_sponge_nbt(nbt):
+        """
+        Returns a Litematica Region based on an NBT Compound that conforms to the Sponge Schematic Format (version 2)
+        used by mods like WorldEdit (https://github.com/SpongePowered/Schematic-Specification).
+
+        Parameters
+        ----------
+        nbt : nbtlib.tag.Compound
+            The Sponge schematic NBT Compound.
+
+        Returns
+        -------
+        region : Region
+            A Litematica Region built from the Sponge schematic.
+        mc_version :
+            Minecraft data version that the Sponge schematic was created for.
+        """
+
         mc_version = nbt['DataVersion']
         width = int(nbt['Width'])
         height = int(nbt['Height'])
@@ -428,6 +466,26 @@ class Region:
         return region, mc_version
     
     def to_structure_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big'):
+        """
+        Returns the Region as an NBT Compound file that conforms to Minecraft's structure NBT files.
+
+        Parameters
+        ----------
+        mc_version : int, default=info.MC_DATA_VERSION
+            Minecraft data version that is being emulated (https://minecraft.fandom.com/wiki/Data_version). Should not
+            be critical for newer versions of Minecraft.
+        gzipped : bool, default=True
+            Whether the NBT Compound file should be compressed (Vanilla Minecraft only works with gzipped files).
+        byteorder : str, default='big'
+            Endianness of the resulting NBT Compound file ('big' or 'little', Vanilla Minecraft only works with
+            big endian files).
+
+        Returns
+        -------
+        nbt : nbtlib.File
+            The Region represented as a Minecraft structure NBT file.
+        """
+
         structure = nbtlib.File(gzipped=gzipped, byteorder=byteorder)
 
         structure['size'] = List[Int]([abs(self.__width), abs(self.__height), abs(self.__length)])
@@ -475,6 +533,22 @@ class Region:
 
     @staticmethod
     def from_structure_nbt(structure):
+        """
+        Returns a Litematica Region based on an NBT Compound that conforms to Minecraft's structure NBT files.
+
+        Parameters
+        ----------
+        structure : nbtlib.tag.Compound
+            The Minecraft structure NBT Compound.
+
+        Returns
+        -------
+        region : Region
+            A Litematica Region built from the Minecraft structure.
+        mc_version :
+            Minecraft data version that the structure was created for.
+        """
+
         mc_version = structure['DataVersion']
         size = structure['size']
         width = int(size[0])
@@ -800,6 +874,22 @@ class BlockState:
         return True, ""
 
     def to_block_state_identifier(self, skip_empty=True):
+        """
+        Returns an identifier that represents the BlockState in the Sponge Schematic Format (version 2).
+        Format: block_type[properties]
+        Example: minecraft:oak_sign[rotation=0,waterlogged=false]
+
+        Parameters
+        ----------
+        skip_empty : bool, default=True
+            Whether empty brackets should be excluded if the BlockState has no properties.
+
+        Returns
+        -------
+        identifier : str
+            An identifier that represents the BlockState in a Sponge schematic.
+        """
+
         if skip_empty and not len(self.__properties):
             return self.__blockid
 
@@ -807,7 +897,8 @@ class BlockState:
         state = state.replace('{', '[').replace('}', ']')
         state = state.replace('"', '').replace("'", '')
 
-        return self.__blockid + state
+        identifier = self.__blockid + state
+        return identifier
 
     def __eq__(self, other):
         if not isinstance(other, BlockState):
