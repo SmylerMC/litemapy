@@ -850,14 +850,15 @@ class BlockState:
             An identifier that represents the BlockState in a Sponge schematic.
         """
 
+        identifier = self.__blockid
         if skip_empty and not len(self.__properties):
-            return self.__blockid
+            return identifier
 
         state = dumps(self.__properties, separators=(',', '='), sort_keys=True)
         state = state.replace('{', '[').replace('}', ']')
         state = state.replace('"', '').replace("'", '')
 
-        identifier = self.__blockid + state
+        identifier += state
         return identifier
 
     def __eq__(self, other):
@@ -866,7 +867,7 @@ class BlockState:
         return other.__blockid == self.__blockid and other.__properties == self.__properties
 
     def __repr__(self):
-        return self.__blockid + dumps(self.__properties)
+        return self.to_block_state_identifier(skip_empty=True)
 
     def __getitem__(self, key):
         return self.__properties[key]
@@ -887,7 +888,6 @@ class Entity:
         keys = self._data.keys()
         if 'id' not in keys:
             raise RequiredKeyMissingException('id')
-            exit()
         if 'Pos' not in keys:
             self._data['Pos'] = List[Double]([Double(0.), Double(0.), Double(0.)])
         if 'Rotation' not in keys:
