@@ -1,7 +1,7 @@
 import unittest
 import litemapy.storage as storage
-import math
-from . import helper
+from tests import helper
+
 
 @unittest.skipUnless(helper.java_test_available(), "Cannot run java in this environment")
 class TestAgainstJavaLitematica(unittest.TestCase):

@@ -1,7 +1,7 @@
 import unittest
 import litemapy.storage as storage
 import math
-from . import helper
+
 
 class TestLitematicaBitArray(unittest.TestCase):
 

@@ -2,7 +2,6 @@ import unittest
 from litemapy import Schematic, Region, BlockState
 from os import walk
 from .constants import *
-import random
 from . import helper
 from tempfile import TemporaryDirectory
 
