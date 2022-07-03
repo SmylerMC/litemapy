@@ -3,7 +3,7 @@ import random
 import subprocess
 import py4j.java_gateway
 from litemapy import Schematic, Region, BlockState
-from .constants import *
+from constants import *
 
 SUB_PROC, GATEWAY = None, None
 

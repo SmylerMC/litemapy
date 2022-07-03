@@ -1,8 +1,8 @@
 import unittest
 from litemapy import Schematic, Region, BlockState
 from os import walk
-from .constants import *
-from . import helper
+from constants import *
+import helper
 from tempfile import TemporaryDirectory
 
 class TestAgainstSchematics(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 import litemapy.storage as storage
-from tests import helper
+import helper
 
 
 @unittest.skipUnless(helper.java_test_available(), "Cannot run java in this environment")
