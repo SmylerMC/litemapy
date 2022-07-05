@@ -13,6 +13,7 @@ class LitematicaBitArray:
 
     @staticmethod
     def fromnbtlongarray(arr, size, nbits):
+        # TODO Test loading and validating from an external source
         expected_len = ceil(size * nbits / 64)
         if expected_len != len(arr):
             raise ValueError(
