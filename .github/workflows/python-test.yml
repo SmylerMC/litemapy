@@ -26,6 +26,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install py4j
         python -m pip install nbtlib
+        python -m pip install pytest
     - name: Run unittest
       run: |
-        python setup.py test
+        python -m pytest
