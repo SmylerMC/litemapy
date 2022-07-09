@@ -17,13 +17,15 @@ class Schematic:
 
     def __init__(self,
                     name=DEFAULT_NAME, author="", description="",
-                    regions={}, lm_version=LITEMATIC_VERSION, mc_version=MC_DATA_VERSION
+                 regions=None, lm_version=LITEMATIC_VERSION, mc_version=MC_DATA_VERSION
                 ):
         """
         Initialize a schematic of size width, height and length
         name, author and description are used in metadata
         regions should be dictionary {'regionname': region} to add to the schematic
         """
+        if regions is None:
+            regions = {}
         self.author = author
         self.description = description
         self.name = name
@@ -808,7 +810,9 @@ class Region:
 
 class BlockState:
 
-    def __init__(self, blockid, properties={}):
+    def __init__(self, blockid, properties=None):
+        if properties is None:
+            properties = {}
         self.__blockid = blockid
         self.__properties = DiscriminatingDictionary(self.__validate, properties)
 
