@@ -16,9 +16,9 @@ class Schematic:
     """
 
     def __init__(self,
-                    name=DEFAULT_NAME, author="", description="",
+                 name=DEFAULT_NAME, author="", description="",
                  regions=None, lm_version=LITEMATIC_VERSION, mc_version=MC_DATA_VERSION
-                ):
+                 ):
         """
         Initialize a schematic of size width, height and length
         name, author and description are used in metadata
@@ -103,9 +103,11 @@ class Schematic:
         for key, value in nbt["Regions"].items():
             reg = Region.fromnbt(value)
             regions[str(key)] = reg
-        sch = Schematic(name=name, author=author, description=desc, regions=regions, lm_version=lm_version, mc_version=mc_version)
+        sch = Schematic(name=name, author=author, description=desc, regions=regions, lm_version=lm_version,
+                        mc_version=mc_version)
         if sch.width != width:
-            raise CorruptedSchematicError("Invalid schematic width in metadata, excepted {} was {}".format(sch.width, width))
+            raise CorruptedSchematicError(
+                "Invalid schematic width in metadata, excepted {} was {}".format(sch.width, width))
         if sch.height != height:
             raise CorruptedSchematicError(
                 "Invalid schematic height in metadata, excepted {} was {}".format(sch.height, height))
@@ -323,7 +325,8 @@ class Region:
             for key, value in entity.data.items():
                 entity_cmp[key] = value
 
-            entity_cmp['Pos'] = List[Double]([Double(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
+            entity_cmp['Pos'] = List[Double](
+                [Double(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
             keys = entity.data.keys()
             if 'TileX' in keys:
                 entity_cmp['TileX'] = Int(entity_cmp['Pos'][0])
@@ -487,8 +490,10 @@ class Region:
         for entity in self.__entities:
             entity_cmp = Compound()
             entity_cmp['nbt'] = entity.data
-            entity_cmp['pos'] = List[Double]([Double(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
-            entity_cmp['blockPos'] = List[Int]([Int(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
+            entity_cmp['pos'] = List[Double](
+                [Double(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
+            entity_cmp['blockPos'] = List[Int](
+                [Int(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
             entities.append(entity_cmp)
 
         structure['entities'] = entities
