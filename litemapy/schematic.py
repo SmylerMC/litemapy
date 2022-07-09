@@ -652,10 +652,10 @@ class Region:
                     reg.__blocks[x][y][z] = arr[ind]
 
         for blockTick in nbt["PendingBlockTicks"]:
-            reg.blockTicks.append(blockTick)
+            reg.__block_ticks.append(blockTick)
 
         for fluidTick in nbt["PendingFluidTicks"]:
-            reg.fluidTicks.append(fluidTick)
+            reg.__fluid_ticks.append(fluidTick)
 
         return reg
 
