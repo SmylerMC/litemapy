@@ -69,17 +69,20 @@ When ran, we get the expected output:
 ```
 
 ## Installation
-Litemapy is available on pypi: ```pip install litemapy```
+Litemapy is available on pypi:
+```bash
+pip install litemapy
+```
 
-## Content
-Litemapy is still new and only has basic functionalities, it lacks support for some of Litematica's, notably:
-  * Entities are partially supported.
-  * Tile entities are partially supported.
-  * Pending block updates are not supported, but retained when reading and saving.
-  * Legacy Schematica schematics are not supported at all, only the newer Litematica format is.
+## Features:
+  * Read and write .litematic files
+  * Full support for litematics' regions concept
+  * Full block storage support
+  * Full support for basic metadata handling (author, name, description, block count and total volume)
+  * Partial support for entities
+  * Partial support for tile entities
+  * Partial support for pending block updates
+  * Partial support for preview images
 
 ## Documentation
-Sadly, documentation is yet to be written.
-
-## Dependencies
-The only direct dependency is [nbtlib](https://github.com/vberlier/nbtlib), which is available on pypi and should install automatically with pip.
+Proper documentation is yet to be written, but the code's docstrings should do a decent job already.
