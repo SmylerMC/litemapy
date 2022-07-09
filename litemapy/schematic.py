@@ -300,6 +300,8 @@ class Region:
             The Region represented as a Sponge Schematic NBT Compound file.
         """
 
+        # TODO Needs unit tests
+
         nbt = nbtlib.File(gzipped=gzipped, byteorder=byteorder)
 
         nbt['DataVersion'] = Int(mc_version)
@@ -388,6 +390,8 @@ class Region:
             Minecraft data version that the Sponge schematic was created for.
         """
 
+        # TODO Needs unit tests
+
         mc_version = nbt['DataVersion']
         width = int(nbt['Width'])
         height = int(nbt['Height'])
@@ -448,7 +452,7 @@ class Region:
             region.setblock(x, y, z, palette_dict[int(index)])
 
         return region, mc_version
-    
+
     def to_structure_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big'):
         """
         Returns the Region as an NBT Compound file that conforms to Minecraft's structure NBT files.
@@ -469,6 +473,8 @@ class Region:
         nbt : nbtlib.File
             The Region represented as a Minecraft structure NBT file.
         """
+
+        # TODO Needs unit tests
 
         structure = nbtlib.File(gzipped=gzipped, byteorder=byteorder)
 
@@ -532,6 +538,8 @@ class Region:
         mc_version :
             Minecraft data version that the structure was created for.
         """
+
+        # TODO Needs unit tests
 
         mc_version = structure['DataVersion']
         size = structure['size']
@@ -850,6 +858,8 @@ class BlockState:
             An identifier that represents the BlockState in a Sponge schematic.
         """
 
+        # TODO Needs unit tests
+
         identifier = self.__blockid
         if skip_empty and not len(self.__properties):
             return identifier
@@ -877,6 +887,8 @@ class BlockState:
 
 
 class Entity:
+
+    # TODO Needs unit tests
 
     def __init__(self, str_or_nbt):
 
@@ -974,6 +986,8 @@ class Entity:
 
 
 class TileEntity:
+
+    # TODO Needs unit tests
 
     def __init__(self, nbt):
 
