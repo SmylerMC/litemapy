@@ -403,7 +403,6 @@ class Region:
         for entity in nbt['Entities']:
             if 'Id' not in entity.keys():
                 raise RequiredKeyMissingException('Id')
-                exit()
             entity['id'] = entity['Id']
             del entity['Id']
 
@@ -416,7 +415,6 @@ class Region:
         for tile_entity in tile_entities:
             if 'Id' not in tile_entity.keys():
                 raise RequiredKeyMissingException('Id')
-                exit()
             tile_entity['id'] = tile_entity['Id']
             del tile_entity['Id']
 
