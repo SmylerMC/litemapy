@@ -1,4 +1,4 @@
-import litemapy.boxes as boxes
+import litemapy.Boxes as boxes
 
 
 origin = (0, 0, 0)
