@@ -1,5 +1,5 @@
 import pytest
-import litemapy.storage as storage
+import litemapy.Storage as Storage
 import math
 
 
@@ -8,7 +8,7 @@ TEST_VALUES = 0, 0, 0, 12, 13, 0, 4, 0, 2, 4, 1, 3, 3, 7, 65, 9
 
 def test_write_read_to_litematica_bit_array():
     nbits = math.ceil(math.log(max(TEST_VALUES), 2)) + 1
-    arr = storage.LitematicaBitArray(len(TEST_VALUES), nbits)
+    arr = Storage.LitematicaBitArray(len(TEST_VALUES), nbits)
     for i, e in enumerate(TEST_VALUES):
         arr[i] = e
     for i, e in enumerate(TEST_VALUES):
@@ -17,7 +17,7 @@ def test_write_read_to_litematica_bit_array():
 
 
 def test_invalid_access_to_litematica_bit_array_raises_exceptions():
-    arr = storage.LitematicaBitArray(10, 4)
+    arr = Storage.LitematicaBitArray(10, 4)
     with pytest.raises(IndexError):
         arr[-1] = 0
     with pytest.raises(IndexError):
@@ -30,7 +30,7 @@ def test_invalid_access_to_litematica_bit_array_raises_exceptions():
 
 def test_litematica_bit_array_in():
     nbits = math.ceil(math.log(max(TEST_VALUES), 2)) + 1
-    array = storage.LitematicaBitArray(len(TEST_VALUES), nbits)
+    array = Storage.LitematicaBitArray(len(TEST_VALUES), nbits)
     for i, e in enumerate(TEST_VALUES):
         array[i] = e
     assert 13 in array
@@ -41,26 +41,26 @@ def test_basic_set_get():
     def discriminator(k, v):
         print("Discriminating ", type(k), k, "=>", type(v), v)
         return v >= 0, "Need pos"
-    discriminating_dictionary = storage.DiscriminatingDictionary(discriminator)
+    discriminating_dictionary = Storage.DiscriminatingDictionary(discriminator)
     discriminating_dictionary["0"] = 0
     assert discriminating_dictionary["0"] == 0
     assert "0" in discriminating_dictionary
     assert "0" in discriminating_dictionary.keys()
     assert 0 in discriminating_dictionary.values()
     assert discriminating_dictionary.get("1") is None
-    with pytest.raises(storage.DiscriminationError):
+    with pytest.raises(Storage.DiscriminationError):
         discriminating_dictionary['-1'] = -1
     other_dictionary = {"1": 1, "2": 2}
     discriminating_dictionary.update(other_dictionary)
     assert "1" in discriminating_dictionary
     assert "2" in discriminating_dictionary
-    with pytest.raises(storage.DiscriminationError):
+    with pytest.raises(Storage.DiscriminationError):
         discriminating_dictionary.update({"-1": -1})
     other_dictionary = {"1": 1, "2": 2}
-    discriminating_dictionary = storage.DiscriminatingDictionary(lambda k, v: (v >= 0, "Need pos"), other_dictionary)
+    discriminating_dictionary = Storage.DiscriminatingDictionary(lambda k, v: (v >= 0, "Need pos"), other_dictionary)
     assert "1" in discriminating_dictionary
     assert "2" in discriminating_dictionary
-    discriminating_dictionary = storage.DiscriminatingDictionary(lambda k, v: (v >= 0, "Need pos"), a=1, b=2)
+    discriminating_dictionary = Storage.DiscriminatingDictionary(lambda k, v: (v >= 0, "Need pos"), a=1, b=2)
     assert "a" in discriminating_dictionary
     assert "b" in discriminating_dictionary
 
@@ -74,7 +74,7 @@ def test_discriminating_dictionary_onadd():
         def on_add(self, k, v):
             self.counter += v
     c = Counter()
-    dictionary = storage.DiscriminatingDictionary(
+    dictionary = Storage.DiscriminatingDictionary(
             lambda k, v: (v >= 0, "Need pos"),
             onadd=c.on_add,
             x=10
@@ -95,7 +95,7 @@ def test_discriminating_dictionary_onremove():
         def on_remove(self, k, v):
             self.counter += v
     c = Counter()
-    dictionary = storage.DiscriminatingDictionary(
+    dictionary = Storage.DiscriminatingDictionary(
             lambda k, v: (v >= 0, "Need pos"),
             onremove=c.on_remove,
             a=1, b=2, c=3, d=4, x=10
@@ -111,7 +111,7 @@ def test_discriminating_dictionary_onremove():
     dictionary.popitem()
     assert c.counter == 20
     c = Counter()
-    dictionary = storage.DiscriminatingDictionary(
+    dictionary = Storage.DiscriminatingDictionary(
             lambda k, v: (v >= 0, "Need pos"),
             onremove=c.on_remove,
             a=1, b=2, c=3, d=4, x=10
@@ -132,7 +132,7 @@ def test_discriminating_dictionary_onadd_onremove():
         def on_add(self, k, v):
             self.added += v
     c = Counter()
-    dictionary = storage.DiscriminatingDictionary(
+    dictionary = Storage.DiscriminatingDictionary(
             lambda k, v: (v >= 0, "Need pos"),
             onadd=c.on_add,
             onremove=c.on_remove,
