@@ -12,7 +12,7 @@ from .storage import LitematicaBitArray, DiscriminatingDictionary
 
 class Schematic:
     """
-    A schematic file
+    Represents a schematic file in the Litematic format.
     """
 
     def __init__(self,
@@ -20,9 +20,14 @@ class Schematic:
                  regions=None, lm_version=LITEMATIC_VERSION, mc_version=MC_DATA_VERSION
                  ):
         """
-        Initialize a schematic of size width, height and length
-        name, author and description are used in metadata
-        regions should be dictionary {'regionname': region} to add to the schematic
+        Schematic can be created by optionally providing metadata and regions, or leaving them blank or default.
+
+        :param name:        The name of the schematic to write in the metadata
+        :param author:      The name of the author to write in the metadata
+        :param description: The description to write in the metadata
+        :param regions:     Regions to populate the schematic with
+        :param lm_version:  The litematic version (you are unlikely to ever need to use this)
+        :param mc_version:  The Minecraft data version (you are unlikely to ever need to use this)
         """
         if regions is None:
             regions = {}
@@ -42,9 +47,16 @@ class Schematic:
 
     def save(self, fname, update_meta=True, save_soft=True, gzipped=True, byteorder='big'):
         """
-        Save this schematic to the disk in a file name fname
-        update_meta: update metadata before writing to the disk (modified time)
-        save_soft: add a metadata entry with the software name and version
+        Save this schematic to a file.
+
+        :param fname:       the filesystem path the schematic should be saved to
+        :param update_meta: whether to update the schematic's metadata before saving
+                            (see :func:`~litemapy.Schematic.updatemeta`)
+        :param save_soft:   whether to add an entry to the metadata indicating the schematic was created with Litemapy
+        :param gzipped:     whether to compress the NBT content with gzip (this is the normal behavior)
+        :param byteorder:   whether to use big-endian or little-endian numbers (big-endian is the normal behavior)
+
+        :raises ValueError: if this schematic does not have any region
         """
         if update_meta:
             self.updatemeta()
@@ -53,8 +65,11 @@ class Schematic:
 
     def _tonbt(self, save_soft=True):
         """
-        Write the schematic to an nbt tag.
-        Raises ValueError if this schematic has no region.
+        Write the schematic to an NBT tag.
+
+        :param save_soft:   whether to add an entry to the metadata indicating the schematic was created with Litemapy
+
+        :raises ValueError: if this schematic does not have any region
         """
         if len(self.__regions) < 1:
             raise ValueError("Empty schematic does not have any regions")
@@ -88,7 +103,13 @@ class Schematic:
     @staticmethod
     def fromnbt(nbt):
         """
-        Read and return a schematic from an nbt tag
+        Read a schematic from an NBT tag.
+
+        :param nbt: a schematic serialized as an NBT tag
+
+        :returns: the :class:`~litemapy.Schematic` object read from the NBT tag
+
+        :raises CorruptedSchematicError: if the schematic tag is malformed
         """
         meta = nbt["Metadata"]
         lm_version = nbt["Version"]
@@ -124,15 +145,20 @@ class Schematic:
 
     def updatemeta(self):
         """
-        Update this schematic's metadata (modified time)
+        Update this schematic's metadata (set the modified time to the current time).
         """
         self.modified = round(time() * 1000)
 
     @staticmethod
     def load(fname):
         """
-        Read a schematic from disk
-        fname: name of the file
+        Read a schematic from a file.
+
+        :param fname: the filesystem path to the file to load
+
+        :returns: the :class:`~litemapy.Schematic` object read from the file
+
+        :raises CorruptedSchematicError: if the schematic file is malformed in any way
         """
         nbt = nbtlib.File.load(fname, True)
         return Schematic.fromnbt(nbt)
@@ -227,12 +253,20 @@ class Schematic:
 
 class Region:
     """
-    A schematic region
-    x, y, z: position in the schematic (read only)
-    width, height, length: size of the region (oriented, can be negative)
+    Represents a schematic's region.
     """
 
     def __init__(self, x, y, z, width, height, length):
+        """
+        :param x:       the X coordinate of the region in the schematic
+        :param y:       the Y coordinate of the region in the schematic
+        :param z:       the Z coordinate of the region in the schematic
+        :param width:   the size of the region along the x-axis (can be negative!)
+        :param height:  the size of the region along the y-axis (can be negative!)
+        :param length:  the size of the region along the z-axis (can be negative!)
+
+        :raises ValueError: if either width, height or length is 0
+        """
         if width == 0 or height == 0 or length == 0:
             raise ValueError("Region dimensions cannot be 0")
         self.__x, self.__y, self.__z = x, y, z
@@ -246,7 +280,9 @@ class Region:
 
     def _tonbt(self):
         """
-        Write this region to an nbt tab and return it
+        Write this region to an NBT tag.
+
+        :returns: an NBT tag which represents this region
         """
         root = Compound()
         pos = Compound()
@@ -287,21 +323,19 @@ class Region:
         Returns the Region as an NBT Compound file that conforms to the Sponge Schematic Format (version 2) used by mods
         like WorldEdit (https://github.com/SpongePowered/Schematic-Specification).
 
-        Parameters
-        ----------
-        mc_version : int, default=info.MC_DATA_VERSION
-            Minecraft data version that is being emulated (https://minecraft.fandom.com/wiki/Data_version). Should not
-            be critical for newer versions of Minecraft.
-        gzipped : bool, default=True
-            Whether the NBT Compound file should be compressed (WorldEdit only works with gzipped files).
-        byteorder : str, default='big'
-            Endianness of the resulting NBT Compound file ('big' or 'little', WorldEdit only works with big endian
-            files).
+        :param mc_version:  Minecraft data version that is being emulated
+                            (https://minecraft.fandom.com/wiki/Data_version).
+                            Should not be critical for newer versions of Minecraft.
+        :type mc_version:   int
+        :param gzipped:     Whether the NBT Compound file should be compressed
+                            (WorldEdit only works with gzipped files).
+        :type gzipped:      bool
+        :param byteorder:   Endianness of the resulting NBT Compound file
+                            ('big' or 'little', WorldEdit only works with big endian files).
+        :type byteorder:    str
 
-        Returns
-        -------
-        nbt : nbtlib.File
-            The Region represented as a Sponge Schematic NBT Compound file.
+        :returns:           The Region represented as a Sponge Schematic NBT Compound file.
+        :rtype:             nbtlib.File
         """
 
         # TODO Needs unit tests
@@ -382,17 +416,12 @@ class Region:
         Returns a Litematica Region based on an NBT Compound that conforms to the Sponge Schematic Format (version 2)
         used by mods like WorldEdit (https://github.com/SpongePowered/Schematic-Specification).
 
-        Parameters
-        ----------
-        nbt : nbtlib.tag.Compound
-            The Sponge schematic NBT Compound.
+        :param nbt: The Sponge schematic NBT Compound.
+        :type nbt:  nbtlib.tag.Compound
 
-        Returns
-        -------
-        region : Region
-            A Litematica Region built from the Sponge schematic.
-        mc_version :
-            Minecraft data version that the Sponge schematic was created for.
+        :returns:   a Litematica Region built from the Sponge schematic
+                    and the Minecraft data version that the Sponge schematic was created for.
+        :rtype:     tuple[Region, int]
         """
 
         # TODO Needs unit tests
@@ -460,21 +489,19 @@ class Region:
         """
         Returns the Region as an NBT Compound file that conforms to Minecraft's structure NBT files.
 
-        Parameters
-        ----------
-        mc_version : int, default=info.MC_DATA_VERSION
-            Minecraft data version that is being emulated (https://minecraft.fandom.com/wiki/Data_version). Should not
-            be critical for newer versions of Minecraft.
-        gzipped : bool, default=True
-            Whether the NBT Compound file should be compressed (Vanilla Minecraft only works with gzipped files).
-        byteorder : str, default='big'
-            Endianness of the resulting NBT Compound file ('big' or 'little', Vanilla Minecraft only works with
-            big endian files).
+        :param mc_version:  Minecraft data version that is being emulated
+                            (https://minecraft.fandom.com/wiki/Data_version).
+                            Should not be critical for newer versions of Minecraft.
+        :type mc_version:   int
+        :param gzipped:     Whether the NBT Compound file should be compressed
+                            (Vanilla Minecraft only works with gzipped files).
+        :type gzipped:      bool
+        :param byteorder:   Endianness of the resulting NBT Compound file
+                            ('big' or 'little', Vanilla Minecraft only works with big endian files).
+        :type byteorder:    str
 
-        Returns
-        -------
-        nbt : nbtlib.File
-            The Region represented as a Minecraft structure NBT file.
+        :returns:           The Region represented as a Minecraft structure NBT file.
+        :rtype:             nbtlib.File
         """
 
         # TODO Needs unit tests
@@ -531,17 +558,12 @@ class Region:
         """
         Returns a Litematica Region based on an NBT Compound that conforms to Minecraft's structure NBT files.
 
-        Parameters
-        ----------
-        structure : nbtlib.tag.Compound
-            The Minecraft structure NBT Compound.
+        :param structure:   The Minecraft structure NBT Compound.
+        :type structure:    nbtlib.tag.Compound
 
-        Returns
-        -------
-        region : Region
-            A Litematica Region built from the Minecraft structure.
-        mc_version :
-            Minecraft data version that the structure was created for.
+        :returns:           A Litematica Region built from the Minecraft structure
+                            and the Minecraft data version that the structure was created for
+        :rtype: tuple[Region, str]
         """
 
         # TODO Needs unit tests
@@ -574,14 +596,25 @@ class Region:
 
     def getblock(self, x, y, z):
         """
-        Return the block at the given coordinates
+        Get a :class:`~litemapy.BlockState` in the region.
+
+        :param x: the X coordinate to get the block at
+        :param y: the Y coordinate to get the block at
+        :param z: the Z coordinate to get the block at
+
+        :returns: the :class:`~litemapy.BlockState` at the given coordinates
         """
         x, y, z = self.__regcoordinates2storecoords(x, y, z)
         return self.__palette[self.__blocks[x, y, z]]
 
     def setblock(self, x, y, z, block):
         """
-        Set the block at the given coordinate
+        Set a :class:`~litemapy.BlockState` in the region.
+
+        :param x:       the X coordinate to set the block at
+        :param y:       the Y coordinate to set the block at
+        :param z:       the Z coordinate to set the block at
+        :param block:   the :class:`~litemapy.BlockState` to set the block to
         """
         x, y, z = self.__regcoordinates2storecoords(x, y, z)
         if block in self.__palette:
@@ -593,7 +626,9 @@ class Region:
 
     def getblockcount(self):
         """
-        Returns the number of non-air in the region
+        Counts the number of blocks in the region.
+
+        :returns: the number of non-air blocks in the region
         """
         airind = self.__palette.index(AIR)
         c = 0
@@ -613,7 +648,9 @@ class Region:
 
     def getvolume(self):
         """
-        Returns the region's volume
+        Computes this region's volume.
+
+        :returns: this region volume in blocks
         """
         return abs(self.__width * self.__height * self.__length)
 
@@ -623,7 +660,11 @@ class Region:
     @staticmethod
     def fromnbt(nbt):
         """
-        Read a region from an nbt tag and return it
+        Read a region from an NBT tag.
+
+        :param nbt: an NBT tag to read the region from
+
+        :returns:   the region from thee NBT tag
         """
         pos = nbt["Position"]
         x = int(pos["x"])
@@ -666,97 +707,97 @@ class Region:
 
     def minschemx(self):
         """
-        Returns the minimum X coordinate of this region in the schematics coordinate system
+        :returns: the minimum X coordinate of this region in the schematics coordinate system
         """
         return min(self.__x, self.__x + self.width + 1)
 
     def maxschemx(self):
         """
-        Returns the maximum X coordinate of this region in the schematics coordinate system
+        :returns: the maximum X coordinate of this region in the schematics coordinate system
         """
         return max(self.__x, self.__x + self.width - 1)
 
     def minschemy(self):
         """
-        Returns the minimum Y coordinate of this region in the schematics coordinate system
+        :returns: the minimum Y coordinate of this region in the schematics coordinate system
         """
         return min(self.__y, self.__y + self.height + 1)
 
     def maxschemy(self):
         """
-        Returns the maximum Y coordinate of this region in the schematics coordinate system
+        :returns: the maximum Y coordinate of this region in the schematics coordinate system
         """
         return max(self.__y, self.__y + self.height - 1)
 
     def minschemz(self):
         """
-        Returns the minimum Z coordinate of this region in the schematics coordinate system
+        :returns: the minimum Z coordinate of this region in the schematics coordinate system
         """
         return min(self.__z, self.__z + self.length + 1)
 
     def maxschemz(self):
         """
-        Returns the maximum Z coordinate of this region in the schematics coordinate system
+        :returns: the maximum Z coordinate of this region in the schematics coordinate system
         """
         return max(self.__z, self.__z + self.length - 1)
 
     def minx(self):
         """
-        Returns the minimum X coordinate of this region in its own coordinate system
+        :returns: the minimum X coordinate of this region in its own coordinate system
         """
         return min(0, self.width + 1)
 
     def maxx(self):
         """
-        Returns the maximum X coordinate of this region in its own coordinate system
+        :returns: the maximum X coordinate of this region in its own coordinate system
         """
         return max(0, self.width - 1)
 
     def miny(self):
         """
-        Returns the minimum Y coordinate of this region in its own coordinate system
+        :returns: the minimum Y coordinate of this region in its own coordinate system
         """
         return min(0, self.height + 1)
 
     def maxy(self):
         """
-        Returns the maximum Y coordinate of this region in its own coordinate system
+        :returns: the maximum Y coordinate of this region in its own coordinate system
         """
         return max(0, self.height - 1)
 
     def minz(self):
         """
-        Returns the minimum Z coordinate of this region in its own coordinate system
+        :returns: the minimum Z coordinate of this region in its own coordinate system
         """
         return min(0, self.length + 1)
 
     def maxz(self):
         """
-        Returns the maximum Z coordinate of this region in its own coordinate system
+        :returns: the maximum Z coordinate of this region in its own coordinate system
         """
         return max(0, self.length - 1)
 
     def xrange(self):
         """
-        Returns the range of coordinates this region contains along its X axis
+        :returns: the range of coordinates this region contains along its X axis
         """
         return range(self.minx(), self.maxx() + 1)
 
     def yrange(self):
         """
-        Returns the range of coordinates this region contains along its Y axis
+        :returns: the range of coordinates this region contains along its Y axis
         """
         return range(self.miny(), self.maxy() + 1)
 
     def zrange(self):
         """
-        Returns the range of coordinates this region contains along its Z axis
+        :returns: the range of coordinates this region contains along its Z axis
         """
         return range(self.minz(), self.maxz() + 1)
 
     def allblockpos(self):
         """
-        Returns an iterator over the coordinates this regions contains in its own coordinate system
+        :returns: an iterator over the coordinates this region contains in its own coordinate system
         """
         for x in self.xrange():
             for y in self.yrange():
@@ -805,15 +846,21 @@ class Region:
 
     def as_schematic(self, name=DEFAULT_NAME, author="", description="", mc_version=MC_DATA_VERSION):
         """
-        Creates and returns a schematic that contains that region at the origin.
-        name: A name for both the region and the schematic
-        author: an author for the schematic
-        description: a description for the schematic
+        Creates a schematic that contains that region at the origin.
+
+        :param name:        a name for both the region and the schematic
+        :param author:      an author for the schematic
+        :param description: a description for the schematic
+        :param mc_version:  The Minecraft data version (you are unlikely to ever need to use this)
         """
         return Schematic(name=name, author=author, description=description, regions={name: self}, mc_version=mc_version)
 
 
 class BlockState:
+
+    """
+    Represents an in game block.
+    """
 
     def __init__(self, blockid, properties=None):
         if properties is None:
@@ -854,15 +901,11 @@ class BlockState:
         Format: block_type[properties]
         Example: minecraft:oak_sign[rotation=0,waterlogged=false]
 
-        Parameters
-        ----------
-        skip_empty : bool, default=True
-            Whether empty brackets should be excluded if the BlockState has no properties.
+        :param skip_empty:  Whether empty brackets should be excluded if the BlockState has no properties.
+        :type skip_empty:   bool
 
-        Returns
-        -------
-        identifier : str
-            An identifier that represents the BlockState in a Sponge schematic.
+        :returns: An identifier that represents the BlockState in a Sponge schematic.
+        :rtype: str
         """
 
         # TODO Needs unit tests
