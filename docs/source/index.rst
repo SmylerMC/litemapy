@@ -10,6 +10,14 @@ Welcome to Litemapy's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   setup
+   litematics
+   schematic
+   region
+   blocks
+   entities
+   contributing
+
 
 
 Indices and tables
