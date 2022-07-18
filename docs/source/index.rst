@@ -1,10 +1,6 @@
-.. Litemapy documentation master file, created by
-   sphinx-quickstart on Fri Jul 15 01:08:38 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to Litemapy's documentation!
 ====================================
+Please be aware that this documentation is incomplete and a work in progress.
 
 .. toctree::
    :maxdepth: 2
@@ -17,12 +13,3 @@ Welcome to Litemapy's documentation!
    blocks
    entities
    contributing
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
