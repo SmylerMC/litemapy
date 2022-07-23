@@ -39,6 +39,8 @@ Each region is represented in Litemapy by a :class:`~litemapy.Region` object and
 
 Please refer to :doc:`the following page <region>` for a detailed description of the :class:`~litemapy.Region` class.
 
+.. _coordinates:
+
 Coordinate Systems
 ``````````````````
 Each region has its own coordinate system relative to its origin,

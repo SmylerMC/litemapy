@@ -23,11 +23,17 @@ class Schematic:
         Schematic can be created by optionally providing metadata and regions, or leaving them blank or default.
 
         :param name:        The name of the schematic to write in the metadata
+        :type name:         str
         :param author:      The name of the author to write in the metadata
+        :type author:       str
         :param description: The description to write in the metadata
+        :type description:  str
         :param regions:     Regions to populate the schematic with
+        :type regions:      dict[str, Region]
         :param lm_version:  The litematic version (you are unlikely to ever need to use this)
+        :type lm_version:   int
         :param mc_version:  The Minecraft data version (you are unlikely to ever need to use this)
+        :type mc_version:   int
         """
         if regions is None:
             regions = {}
@@ -50,11 +56,16 @@ class Schematic:
         Save this schematic to a file.
 
         :param fname:       the filesystem path the schematic should be saved to
+        :type fname:        str
         :param update_meta: whether to update the schematic's metadata before saving
                             (see :func:`~litemapy.Schematic.updatemeta`)
+        :type update_meta:  bool
         :param save_soft:   whether to add an entry to the metadata indicating the schematic was created with Litemapy
+        :type save_soft:    bool
         :param gzipped:     whether to compress the NBT content with gzip (this is the normal behavior)
-        :param byteorder:   whether to use big-endian or little-endian numbers (big-endian is the normal behavior)
+        :type gzipped:      bool
+        :param byteorder:   endianness of NBT numbers (either "little" or "big", default is "big")
+        :type byteorder:    str
 
         :raises ValueError: if this schematic does not have any region
         """
@@ -68,6 +79,9 @@ class Schematic:
         Write the schematic to an NBT tag.
 
         :param save_soft:   whether to add an entry to the metadata indicating the schematic was created with Litemapy
+        :type save_soft:    bool
+
+        :rtype: ~nbtlib.tag.Compound
 
         :raises ValueError: if this schematic does not have any region
         """
@@ -106,8 +120,9 @@ class Schematic:
         Read a schematic from an NBT tag.
 
         :param nbt: a schematic serialized as an NBT tag
+        :type nbt:  ~nbtlib.tag.Compound
 
-        :returns: the :class:`~litemapy.Schematic` object read from the NBT tag
+        :rtype:     Schematic
 
         :raises CorruptedSchematicError: if the schematic tag is malformed
         """
@@ -154,9 +169,9 @@ class Schematic:
         """
         Read a schematic from a file.
 
-        :param fname: the filesystem path to the file to load
+        :param fname:   the filesystem path to the file to load
 
-        :returns: the :class:`~litemapy.Schematic` object read from the file
+        :rtype:         Schematic
 
         :raises CorruptedSchematicError: if the schematic file is malformed in any way
         """
@@ -222,28 +237,58 @@ class Schematic:
 
     @property
     def regions(self):
+        """
+        The regions in this schematic, as a dictionary.
+        This is a read only property, and it is not possible to replace this dictionary.
+        It can however be edited, as long as the suitable types are used.
+        Using an incorrect type will raise a :class:`~litemapy.storage.DiscriminationError`.
+
+        :type: dict[str, Region]
+        """
         return self.__regions
 
     @property
     def width(self):
+        """
+        The width of this Schematic's bounding box.
+        See :ref:`Coordinate systems <coordinates>`.
+        This property is read-only.
+
+        :type: int
+        """
         if self.__xmin is None or self.__xmax is None:
             return 0
         return self.__xmax - self.__xmin + 1
 
     @property
     def height(self):
+        """
+        The height of this Schematic's bounding box.
+        See :ref:`Coordinate systems <coordinates>`.
+        This property is read-only.
+
+        :type: int
+        """
         if self.__ymin is None or self.__ymax is None:
             return 0
         return self.__ymax - self.__ymin + 1
 
     @property
     def length(self):
+        """
+        The length of this Schematic's bounding box.
+        See :ref:`Coordinate systems <coordinates>`.
+        This property is read-only.
+
+        :type: int
+        """
         if self.__zmin is None or self.__zmax is None:
             return 0
         return self.__zmax - self.__zmin + 1
 
     @property
     def preview(self):
+        # TODO This is not documented on purpose because ideally we would make it return a usable Pillow Image object.
         return self.__preview
 
     @preview.setter
@@ -253,17 +298,23 @@ class Schematic:
 
 class Region:
     """
-    Represents a schematic's region.
+    Represents a schematic region.
     """
 
     def __init__(self, x, y, z, width, height, length):
         """
         :param x:       the X coordinate of the region in the schematic
+        :type x:        int
         :param y:       the Y coordinate of the region in the schematic
+        :type y:        int
         :param z:       the Z coordinate of the region in the schematic
+        :type z:        int
         :param width:   the size of the region along the x-axis (can be negative!)
+        :type width:    int
         :param height:  the size of the region along the y-axis (can be negative!)
+        :type height:   int
         :param length:  the size of the region along the z-axis (can be negative!)
+        :type length:   int
 
         :raises ValueError: if either width, height or length is 0
         """
@@ -282,7 +333,7 @@ class Region:
         """
         Write this region to an NBT tag.
 
-        :returns: an NBT tag which represents this region
+        :rtype: ~nbtlib.tag.Compound
         """
         root = Compound()
         pos = Compound()
@@ -321,7 +372,9 @@ class Region:
     def to_sponge_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big'):
         """
         Returns the Region as an NBT Compound file that conforms to the Sponge Schematic Format (version 2) used by mods
-        like WorldEdit (https://github.com/SpongePowered/Schematic-Specification).
+        like WorldEdit.
+        Check `the file format specification <https://github.com/SpongePowered/Schematic-Specification>`_
+        for more information.
 
         :param mc_version:  Minecraft data version that is being emulated
                             (https://minecraft.fandom.com/wiki/Data_version).
@@ -335,7 +388,7 @@ class Region:
         :type byteorder:    str
 
         :returns:           The Region represented as a Sponge Schematic NBT Compound file.
-        :rtype:             nbtlib.File
+        :rtype:             ~nbtlib.nbt.File
         """
 
         # TODO Needs unit tests
@@ -414,7 +467,9 @@ class Region:
     def from_sponge_nbt(nbt):
         """
         Returns a Litematica Region based on an NBT Compound that conforms to the Sponge Schematic Format (version 2)
-        used by mods like WorldEdit (https://github.com/SpongePowered/Schematic-Specification).
+        used by mods like WorldEdit.
+        Check `the file format specification <https://github.com/SpongePowered/Schematic-Specification>`_
+        for more information.
 
         :param nbt: The Sponge schematic NBT Compound.
         :type nbt:  nbtlib.tag.Compound
@@ -501,7 +556,7 @@ class Region:
         :type byteorder:    str
 
         :returns:           The Region represented as a Minecraft structure NBT file.
-        :rtype:             nbtlib.File
+        :rtype:             ~nbtlib.nbt.File
         """
 
         # TODO Needs unit tests
@@ -559,11 +614,11 @@ class Region:
         Returns a Litematica Region based on an NBT Compound that conforms to Minecraft's structure NBT files.
 
         :param structure:   The Minecraft structure NBT Compound.
-        :type structure:    nbtlib.tag.Compound
+        :type structure:    ~nbtlib.tag.Compound
 
         :returns:           A Litematica Region built from the Minecraft structure
                             and the Minecraft data version that the structure was created for
-        :rtype: tuple[Region, str]
+        :rtype:             tuple[Region, str]
         """
 
         # TODO Needs unit tests
@@ -598,11 +653,14 @@ class Region:
         """
         Get a :class:`~litemapy.BlockState` in the region.
 
-        :param x: the X coordinate to get the block at
-        :param y: the Y coordinate to get the block at
-        :param z: the Z coordinate to get the block at
+        :param x:   the X coordinate to get the block at
+        :type x:    int
+        :param y:   the Y coordinate to get the block at
+        :type y:    int
+        :param z:   the Z coordinate to get the block at
+        :type z:    int
 
-        :returns: the :class:`~litemapy.BlockState` at the given coordinates
+        :rtype:     ~litemapy.BlockState
         """
         x, y, z = self.__regcoordinates2storecoords(x, y, z)
         return self.__palette[self.__blocks[x, y, z]]
@@ -612,9 +670,13 @@ class Region:
         Set a :class:`~litemapy.BlockState` in the region.
 
         :param x:       the X coordinate to set the block at
+        :type x:        int
         :param y:       the Y coordinate to set the block at
+        :type y:        int
         :param z:       the Z coordinate to set the block at
-        :param block:   the :class:`~litemapy.BlockState` to set the block to
+        :type z:        int
+        :param block:   the new block state
+        :type block:    ~litemapy.BlockState
         """
         x, y, z = self.__regcoordinates2storecoords(x, y, z)
         if block in self.__palette:
