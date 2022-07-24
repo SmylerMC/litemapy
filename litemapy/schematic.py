@@ -691,6 +691,7 @@ class Region:
         Counts the number of blocks in the region.
 
         :returns: the number of non-air blocks in the region
+        :rtype: int
         """
         airind = self.__palette.index(AIR)
         c = 0
@@ -713,6 +714,7 @@ class Region:
         Computes this region's volume.
 
         :returns: this region volume in blocks
+        :rtype: int
         """
         return abs(self.__width * self.__height * self.__length)
 
@@ -725,8 +727,9 @@ class Region:
         Read a region from an NBT tag.
 
         :param nbt: an NBT tag to read the region from
+        :type nbt:  ~nbtlib.tag.Compound
 
-        :returns:   the region from thee NBT tag
+        :rtype:     Region
         """
         pos = nbt["Position"]
         x = int(pos["x"])
@@ -769,97 +772,113 @@ class Region:
 
     def minschemx(self):
         """
-        :returns: the minimum X coordinate of this region in the schematics coordinate system
+        :returns:   the minimum X coordinate of this region in the schematics coordinate system
+        :rtype:     int
         """
         return min(self.__x, self.__x + self.width + 1)
 
     def maxschemx(self):
         """
-        :returns: the maximum X coordinate of this region in the schematics coordinate system
+        :returns:   the maximum X coordinate of this region in the schematics coordinate system
+        :rtype:     int
         """
         return max(self.__x, self.__x + self.width - 1)
 
     def minschemy(self):
         """
-        :returns: the minimum Y coordinate of this region in the schematics coordinate system
+        :returns:   the minimum Y coordinate of this region in the schematics coordinate system
+        :rtype:     int
         """
         return min(self.__y, self.__y + self.height + 1)
 
     def maxschemy(self):
         """
-        :returns: the maximum Y coordinate of this region in the schematics coordinate system
+        :returns:   the maximum Y coordinate of this region in the schematics coordinate system
+        :rtype:     int
         """
         return max(self.__y, self.__y + self.height - 1)
 
     def minschemz(self):
         """
-        :returns: the minimum Z coordinate of this region in the schematics coordinate system
+        :returns:   the minimum Z coordinate of this region in the schematics coordinate system
+        :rtype:     int
         """
         return min(self.__z, self.__z + self.length + 1)
 
     def maxschemz(self):
         """
-        :returns: the maximum Z coordinate of this region in the schematics coordinate system
+        :returns:   the maximum Z coordinate of this region in the schematics coordinate system
+        :rtype:     int
         """
         return max(self.__z, self.__z + self.length - 1)
 
     def minx(self):
         """
-        :returns: the minimum X coordinate of this region in its own coordinate system
+        :returns:   the minimum X coordinate of this region in its own coordinate system
+        :rtype:     int
         """
         return min(0, self.width + 1)
 
     def maxx(self):
         """
-        :returns: the maximum X coordinate of this region in its own coordinate system
+        :returns:   the maximum X coordinate of this region in its own coordinate system
+        :rtype:     int
         """
         return max(0, self.width - 1)
 
     def miny(self):
         """
-        :returns: the minimum Y coordinate of this region in its own coordinate system
+        :returns:   the minimum Y coordinate of this region in its own coordinate system
+        :rtype:     int
         """
         return min(0, self.height + 1)
 
     def maxy(self):
         """
-        :returns: the maximum Y coordinate of this region in its own coordinate system
+        :returns:   the maximum Y coordinate of this region in its own coordinate system
+        :rtype:     int
         """
         return max(0, self.height - 1)
 
     def minz(self):
         """
-        :returns: the minimum Z coordinate of this region in its own coordinate system
+        :returns:   the minimum Z coordinate of this region in its own coordinate system
+        :rtype:     int
         """
         return min(0, self.length + 1)
 
     def maxz(self):
         """
-        :returns: the maximum Z coordinate of this region in its own coordinate system
+        :returns:   the maximum Z coordinate of this region in its own coordinate system
+        :rtype:     int
         """
         return max(0, self.length - 1)
 
     def xrange(self):
         """
-        :returns: the range of coordinates this region contains along its X axis
+        :returns:   the range of coordinates this region contains along its X axis
+        :rtype:     range
         """
         return range(self.minx(), self.maxx() + 1)
 
     def yrange(self):
         """
-        :returns: the range of coordinates this region contains along its Y axis
+        :returns:   the range of coordinates this region contains along its Y axis
+        :rtype:     range
         """
         return range(self.miny(), self.maxy() + 1)
 
     def zrange(self):
         """
-        :returns: the range of coordinates this region contains along its Z axis
+        :returns:   the range of coordinates this region contains along its Z axis
+        :rtype:     range
         """
         return range(self.minz(), self.maxz() + 1)
 
     def allblockpos(self):
         """
-        :returns: an iterator over the coordinates this region contains in its own coordinate system
+        :returns:   an iterator over the coordinates this region contains in its own coordinate system
+        :rtype:     ~collections.abc.Iterator[tuple[int, int, int]]
         """
         for x in self.xrange():
             for y in self.yrange():
@@ -868,42 +887,82 @@ class Region:
 
     @property
     def x(self):
+        """
+        The X coordinate of the region within the schematic's coordinate system.
+        This property is read only.
+        :type:  int
+        """
         return self.__x
 
     @property
     def y(self):
+        """
+        The Y coordinate of the region within the schematic's coordinate system.
+        This property is read only.
+        :type:  int
+        """
         return self.__y
 
     @property
     def z(self):
+        """
+        The Z coordinate of the region within the schematic's coordinate system.
+        The property is read only.
+        :type:  int
+        """
         return self.__z
 
     @property
     def width(self):
+        """
+        The width of the region.
+        This property is read only.
+        :type:  int
+        """
         return self.__width
 
     @property
     def height(self):
+        """
+        The height of the region.
+        This property is read only.
+        :type:  int
+        """
         return self.__height
 
     @property
     def length(self):
+        """
+        The length of the region.
+        This property is read only.
+        :type:  int
+        """
         return self.__length
 
     @property
     def entities(self):
+        """
+        The entities within the region.
+        :type: list[Entity]
+        """
         return self.__entities
 
     @property
     def tile_entities(self):
+        """
+        The tile entities within the region.
+        :type: list[TileEntity]
+        """
         return self.__tile_entities
 
     @property
     def block_ticks(self):
+        # TODO We are not exporting the documentation for this because it still exposes the raw NBT data
         return self.__block_ticks
 
     @property
     def fluid_ticks(self):
+        # TODO We are not exporting the documentation for this because it still exposes the raw NBT data
         return self.__fluid_ticks
 
     def as_schematic(self, name=DEFAULT_NAME, author="", description="", mc_version=MC_DATA_VERSION):
@@ -911,9 +970,15 @@ class Region:
         Creates a schematic that contains that region at the origin.
 
         :param name:        a name for both the region and the schematic
+        :type name:         str
         :param author:      an author for the schematic
+        :type author:       str
         :param description: a description for the schematic
+        :type description:  str
         :param mc_version:  The Minecraft data version (you are unlikely to ever need to use this)
+        :type mc_version:   int
+
+        :rtype:             Schematic
         """
         return Schematic(name=name, author=author, description=description, regions={name: self}, mc_version=mc_version)
 
@@ -921,16 +986,30 @@ class Region:
 class BlockState:
 
     """
-    Represents an in game block.
+    Represents an in-game block.
+    :class:`BlockState` are immutable.
     """
 
     def __init__(self, blockid, properties=None):
+        """
+        A block state has a block ID and a dictionary of properties.
+
+        :param blockid:     the identifier of the block (e.g. *minecraft:stone*)
+        :type blockid:      str
+        :param properties:  the properties of the block state (e.g. *{"facing": "north"}*)
+        :type properties:   dict[str, str]
+        """
         if properties is None:
             properties = {}
         self.__blockid = blockid
         self.__properties = DiscriminatingDictionary(self.__validate, properties)
 
     def _tonbt(self):
+        """
+        Writes this block state to an nbt tag.
+
+        :rtype: ~nbtlib.tag.Compound
+        """
         root = Compound()
         root["Name"] = String(self.blockid)
         properties = {String(k): String(v) for k, v in self.__properties.items()}
@@ -940,6 +1019,11 @@ class BlockState:
 
     @staticmethod
     def fromnbt(nbt):
+        """
+        Reads a :class:`BlockState` from an nbt tag.
+
+        :rtype: BlockState
+        """
         bid = str(nbt["Name"])
         if "Properties" in nbt:
             properties = {str(k): str(v) for k, v in nbt["Properties"].items()}
@@ -950,6 +1034,11 @@ class BlockState:
 
     @property
     def blockid(self):
+        """
+        The block's identifier.
+
+        :type:  str
+        """
         return self.__blockid
 
     def __validate(self, k, v):
