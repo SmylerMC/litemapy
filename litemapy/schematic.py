@@ -1089,9 +1089,23 @@ class BlockState:
 
 class Entity:
 
+    """
+    A Minecraft entity.
+    Each entitiy is identified by a type identifier (e.g. minecraft:skeleton)
+    and has a position within a region, as well as a rotation and a velocity vector.
+    Most also have arbitrary data depending on their type
+    (e.g. a sheep has a tag for its color and one indicating whether it has been sheared).
+    """
+
     # TODO Needs unit tests
 
     def __init__(self, str_or_nbt):
+        # TODO Refactor to only have a from_nbt static method instead of allowing nbt into the constructor
+        """
+        :param str_or_nbt:  either the entity identifier as a string, in which case all other tag will be default,
+                            or an bnt compound tag with the entitie's data.
+        :type str_or_nbt:   ~typing.Union[str, ~nbtlib.tag.Compound]
+        """
 
         if isinstance(str_or_nbt, str):
             self._data = Compound({'id': String(str_or_nbt)})
@@ -1114,10 +1128,23 @@ class Entity:
         self._motion = tuple([float(coord) for coord in self._data['Motion']])
 
     def _tonbt(self):
+        """
+        Save this entity as an NBT tag.
+
+        :rtype: ~nbtlib.tag.Compound
+        """
         return self._data
 
     @staticmethod
     def fromnbt(nbt):
+        """
+        Read an entity from an nbt tag.
+
+        :param nbt: An NBT tag with the entity's data
+        :type nbt:  ~nbtlib.tag.Compound
+
+        :rtype:     Entity
+        """
         return Entity(nbt)
 
     def add_tag(self, key, tag):
@@ -1139,10 +1166,12 @@ class Entity:
 
     @property
     def data(self):
+        # TODO Not documented because it exposes NBT
         return self._data
 
     @data.setter
     def data(self, data):
+        # TODO Not documented because it exposes NBT
         self._data = Entity(data).data
         self._id = str(self._data['id'])
         self._position = tuple([float(coord) for coord in self._data['Pos']])
@@ -1151,6 +1180,11 @@ class Entity:
 
     @property
     def id(self):
+        """
+        This entity's type identifier (e.g. *minecraft:pig* )
+
+        :type: str
+        """
         return self._id
 
     @id.setter
@@ -1160,6 +1194,11 @@ class Entity:
 
     @property
     def position(self):
+        """
+        The position of the entity.
+
+        :type:  tuple[float, float, float]
+        """
         return self._position
 
     @position.setter
@@ -1169,6 +1208,11 @@ class Entity:
 
     @property
     def rotation(self):
+        """
+        The rotation of the entity.
+
+        :type:  tuple[float, float, float]
+        """
         return self._rotation
 
     @rotation.setter
@@ -1178,6 +1222,11 @@ class Entity:
 
     @property
     def motion(self):
+        """
+        The velocity vector of the entity.
+
+        :type:  tuple[float, float, float]
+        """
         return self._motion
 
     @motion.setter
@@ -1189,9 +1238,17 @@ class Entity:
 class TileEntity:
 
     # TODO Needs unit tests
+    """
+    A tile entity, also often referred to as block entities,
+    is a type of entity which complements a block state to store additional data
+    (e.g. containers like chest both have a block state that stores properties
+    like their id ( *minecraft:chest* ) and orientation, and tile entity that stores their content.
+    For this reason, the :class:`TileEntity` class does not store an ID  but only a position.
+    The ID can be inferred by looking up the :class:`BlockState` as the same position in the :class:`Region`.
+    """
 
     def __init__(self, nbt):
-
+        # TODO Not documented because it only exposes NBT
         self._data = nbt
         keys = self._data.keys()
 
@@ -1205,13 +1262,25 @@ class TileEntity:
         self._position = tuple([int(self._data[coord]) for coord in ['x', 'y', 'z']])
 
     def _tonbt(self):
+        """
+        Saves the tile entity to a an nbt tag.
+
+        :rtype: ~nbtlib.tag.Compound
+        """
         return self._data
 
     @staticmethod
     def fromnbt(nbt):
+        """
+        Reads a tile entity from an NBT tag.
+
+        :param nbt: ~nbtlib.tag.Compound
+        :rtype:     TileEntity
+        """
         return TileEntity(nbt)
 
     def add_tag(self, key, tag):
+        # TODO Not documented because it exposes NBT
         self._data[key] = tag
 
         pos = self._position
@@ -1223,6 +1292,7 @@ class TileEntity:
             self._position = (pos[0], pos[1], int(tag))
 
     def get_tag(self, key):
+        # TODO Not documented because it exposes NBT
         try:
             return self._data[key]
         except KeyError:
@@ -1230,6 +1300,7 @@ class TileEntity:
 
     @property
     def data(self):
+        # TODO Not documented because it exposes NBT
         return self._data
 
     @data.setter
@@ -1239,6 +1310,11 @@ class TileEntity:
 
     @property
     def position(self):
+        """
+        The tile entity's position within the :class:`Region`/
+
+        :type:  tuple[int, int, int]
+        """
         return self._position
 
     @position.setter
