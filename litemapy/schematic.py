@@ -1274,7 +1274,8 @@ class TileEntity:
         """
         Reads a tile entity from an NBT tag.
 
-        :param nbt: ~nbtlib.tag.Compound
+        :param nbt: the tile entity's data as an NBT tag
+        :type nbt:  ~nbtlib.tag.Compound
         :rtype:     TileEntity
         """
         return TileEntity(nbt)
