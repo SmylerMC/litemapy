@@ -1,4 +1,4 @@
-<div style="text-align: center">
+<div align="center">
 <h1>Litemapy</h1>
 Litemapy's goal is to provide an easy to use way to read and edit Litematica's schematic file format in python.
 <a href="https://github.com/maruohon/litematica">Litematica</a> is Minecraft mod by maruohon.
