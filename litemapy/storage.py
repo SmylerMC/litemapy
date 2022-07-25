@@ -97,12 +97,12 @@ class DiscriminatingDictionary(dict):
 
     def __init__(self, validator, *args, **options):
         """
-        :params validator: a function that takes as argument a key and an item and returns a tuple (canstore, msg)
-            canstore must be a boolean, True if the item is accepted, and False otherwise
-        if canstore is false, msg will be used as the error message
-        :param onadd: an optional function that gets called when an item is added to the dictionary,
-            with the key and item as arguments.
-            onadd is not called for the values that might have been passed in the constructor.
+        :params validator:  a function that takes as argument a key and an item and returns a tuple (canstore, msg)
+                            canstore must be a boolean, True if the item is accepted, and False otherwise
+                            if canstore is false, msg will be used as the error message
+        :param onadd:       an optional function that gets called when an item is added to the dictionary,
+                            with the key and item as arguments.
+                            onadd is not called for the values that might have been passed in the constructor.
         """
         # TODO Handle iterators in constructor
         self.validator = validator

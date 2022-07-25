@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 import setuptools
-from litemapy import __version__ as LITEMAPY_VERSION
+from sys import path
+path.append("litemapy")  # Import directly from inside the package
+
+from info import LITEMAPY_VERSION
 
 DESCRIPTION = "Read and write Litematica's Minecraft schematics files"
 
