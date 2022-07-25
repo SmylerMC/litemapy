@@ -5,7 +5,7 @@ Litemapy is `available on PyPi <https://https://pypi.org/project/litemapy/>`_ ca
 
 .. code-block:: sh
 
-    pip install litemapy
+    python -m pip install litemapy
 
 Litemapy itself is not complicated, but Litematica is quite powerful
 and its file format is therefore not as simple as other similar schematic file formats,
