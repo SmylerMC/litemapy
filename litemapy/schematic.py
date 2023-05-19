@@ -126,9 +126,9 @@ class Schematic:
 
         :raises CorruptedSchematicError: if the schematic tag is malformed
         """
-        meta = nbt["Metadata"]
-        lm_version = nbt["Version"]
-        mc_version = nbt["MinecraftDataVersion"]
+        meta = nbt.root["Metadata"]
+        lm_version = nbt.root["Version"]
+        mc_version = nbt.root["MinecraftDataVersion"]
         width = int(meta["EnclosingSize"]["x"])
         height = int(meta["EnclosingSize"]["y"])
         length = int(meta["EnclosingSize"]["z"])
@@ -136,7 +136,7 @@ class Schematic:
         name = str(meta["Name"])
         desc = str(meta["Description"])
         regions = {}
-        for key, value in nbt["Regions"].items():
+        for key, value in nbt.root["Regions"].items():
             reg = Region.fromnbt(value)
             regions[str(key)] = reg
         sch = Schematic(name=name, author=author, description=desc, regions=regions, lm_version=lm_version,
