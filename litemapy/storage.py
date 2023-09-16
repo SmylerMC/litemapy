@@ -114,7 +114,7 @@ class DiscriminatingDictionary(dict):
             self.onremove = options.pop("onremove")
         else:
             self.onremove = None
-        if len(args) == 1 and type(args[0]) == dict:
+        if len(args) == 1 and type(args[0]) in [dict, DiscriminatingDictionary]:
             for key, item in args[0].items():
                 self.validate(key, item)
             options = args[0]

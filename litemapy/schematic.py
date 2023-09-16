@@ -1041,6 +1041,15 @@ class BlockState:
         """
         return self.__blockid
 
+    @property
+    def properties(self):
+        """
+        The block's properties.
+
+        :type:  dict
+        """
+        return self.__properties
+
     def __validate(self, k, v):
         if type(k) is not str or type(v) is not str:
             return False, "Blockstate properties should be a string => string dictionary"
