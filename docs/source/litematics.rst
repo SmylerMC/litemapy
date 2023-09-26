@@ -2,7 +2,7 @@ The Litematic file format
 =========================
 
 A Litematic file is made up of an NBT compound, and is basically just some metadata and a list of regions.
-The Litematic version and `Minecraft data version <https://minecraft.fandom.com/wiki/Data_version>`_
+The Litematic version and `Minecraft data version <https://minecraft.wiki/w/Data_version>`_
 are also stored at the root of the compound.
 In Litemapy, a litematic schematic is represented by the :class:`~litemapy.Schematic` class.
 

@@ -377,7 +377,7 @@ class Region:
         for more information.
 
         :param mc_version:  Minecraft data version that is being emulated
-                            (https://minecraft.fandom.com/wiki/Data_version).
+                            (https://minecraft.wiki/w/Data_version).
                             Should not be critical for newer versions of Minecraft.
         :type mc_version:   int
         :param gzipped:     Whether the NBT Compound file should be compressed
@@ -545,7 +545,7 @@ class Region:
         Returns the Region as an NBT Compound file that conforms to Minecraft's structure NBT files.
 
         :param mc_version:  Minecraft data version that is being emulated
-                            (https://minecraft.fandom.com/wiki/Data_version).
+                            (https://minecraft.wiki/w/Data_version).
                             Should not be critical for newer versions of Minecraft.
         :type mc_version:   int
         :param gzipped:     Whether the NBT Compound file should be compressed
