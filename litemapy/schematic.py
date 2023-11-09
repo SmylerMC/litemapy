@@ -1041,6 +1041,26 @@ class BlockState:
         """
         return self.__blockid
 
+    def with_properties(self, **kwargs):
+        """
+        Returns a new copy of this :class:`BlockState` with new values for the properties given in keyword arguments.
+        Using `None` as a property value removes it.
+
+        :param kwargs:  the new properties as keyword arguments
+        :type kwargs:   dict[str, str]
+
+        :returns: A copy of this :class:`BlockState` with the given properties updated to new values
+        :rtype: BlockState
+        """
+        none_kwargs = list(map(lambda kv: kv[0], filter(lambda kv: kv[1] is None, kwargs.items())))
+        other = BlockState(self.blockid)
+        other.__properties.update(self.__properties)
+        for prop_name in none_kwargs:
+            other.__properties.pop(prop_name)
+            kwargs.pop(prop_name)
+        other.__properties.update(kwargs)
+        return other
+
     def __validate(self, k, v):
         if type(k) is not str or type(v) is not str:
             return False, "Blockstate properties should be a string => string dictionary"
