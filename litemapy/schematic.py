@@ -982,6 +982,45 @@ class Region:
         """
         return Schematic(name=name, author=author, description=description, regions={name: self}, mc_version=mc_version)
 
+    def __replace_palette_index(self, old_index: int, new_index: int):
+        if old_index == new_index:
+            return
+        self.__blocks[self.__blocks == old_index] = new_index
+
+    def _optimize_palette(self):
+        new_palette = []
+        for old_index, state in enumerate(self.__palette):
+            for i, other_state in enumerate(new_palette):
+                if state == other_state:
+                    new_index = i
+                    break
+            else:
+                new_index = len(new_palette)
+                new_palette.append(state)
+            self.__replace_palette_index(old_index, new_index)
+        self.__palette = new_palette
+
+    def filter(self, function):
+        """
+        Replaces all occurrences of :class:`BlockState` with others by providing a mapping function.
+        This method works with the palette directly and the mapping function is therefore only called
+        once per block state type in the region, and not for every position.
+        This is a lot faster than manually iterating over region coordinates.
+
+        :param function: a mapping function
+        :type function:  (BlockState) -> BlockState
+        """
+        self.__palette = list(map(function, self.__palette))
+
+        # We need to ensure we always have air at palette index 0
+        if self.__palette[0] != AIR:
+            self.__palette.append(self.__palette[0])
+            self.__replace_palette_index(0, len(self.__palette) - 1)
+            self.__palette[0] = AIR
+
+        # The filter function may have introduced duplicates in the palette
+        self._optimize_palette()
+
 
 class BlockState:
 
