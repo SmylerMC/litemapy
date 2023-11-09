@@ -106,15 +106,9 @@ class DiscriminatingDictionary(dict):
         """
         # TODO Handle iterators in constructor
         self.validator = validator
-        if "onadd" in options:
-            self.onadd = options.pop("onadd")
-        else:
-            self.onadd = None
-        if "onremove" in options:
-            self.onremove = options.pop("onremove")
-        else:
-            self.onremove = None
-        if len(args) == 1 and type(args[0]) == dict:
+        self.onadd = options.pop("onadd", None)
+        self.onremove = options.pop("onremove", None)
+        if len(args) == 1 and isinstance(args[0], dict):
             for key, item in args[0].items():
                 self.validate(key, item)
             options = args[0]
