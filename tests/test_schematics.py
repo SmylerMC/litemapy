@@ -149,13 +149,28 @@ def test_are_random_schematics_preserved_when_reading_and_writing():
     temporary_directory.cleanup()
 
 
-def test_blockstate():
+def test_blockstate_initialization():
     # TODO Split into multiple smaller tests
     prop = {"test1": "testval", "test2": "testval2"}
     b = BlockState("minecraft:stone", properties=prop)
     assert len(prop) == len(b)
     for k, v in prop.items():
         assert b[k] == v
-    nbt = b._tonbt()
-    b2 = BlockState.fromnbt(nbt)
-    assert b == b2
+
+
+def test_blockstate_nbt_is_identity():
+    prop = {"test1": "testval", "test2": "testval2"}
+    blockstate_1 = BlockState("minecraft:stone", properties=prop)
+    nbt = blockstate_1._tonbt()
+    blockstate_2 = BlockState.fromnbt(nbt)
+    assert blockstate_1 == blockstate_2
+
+
+def test_blockstate_with_properties():
+    prop = {"test1": "testval1", "test2": "testval2"}
+    blockstate_1 = BlockState("minecraft:stone", properties=prop)
+    blockstate_2 = blockstate_1.with_properties(test3="testval3", test4="testval4")
+    assert blockstate_2.to_block_state_identifier() == "minecraft:stone[test1=testval1,test2=testval2,test3=testval3,test4=testval4]"
+
+    blockstate_3 = blockstate_2.with_properties(test4=None)
+    assert blockstate_3.to_block_state_identifier() == "minecraft:stone[test1=testval1,test2=testval2,test3=testval3]"
