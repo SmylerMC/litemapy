@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 valid_files = []
 for directory, child_directory, file_names in walk(VALID_LITEMATIC_DIRECTORY):
     for file_name in file_names:
-        valid_files.append(directory + "/" + file_name)
+        valid_files.append(path.join(directory, file_name))
 
 
 def test_valid_litematics_do_not_raise_exception_when_loaded():
@@ -111,7 +111,7 @@ def test_are_random_schematics_preserved_when_reading_and_writing():
     temporary_directory = TemporaryDirectory()
     for i in range(100):
         write_schematic = helper.randomschematic()
-        file_path = temporary_directory.name + "/" + write_schematic.name + ".litematic"
+        file_path = path.join(temporary_directory.name, write_schematic.name + ".litematic")
         write_schematic.save(file_path)
         read_schematic = Schematic.load(file_path)
 
