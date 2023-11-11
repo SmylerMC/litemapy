@@ -71,10 +71,10 @@ class Schematic:
         """
         if update_meta:
             self.updatemeta()
-        f = nbtlib.File(self._tonbt(save_soft=save_soft), gzipped=gzipped, byteorder=byteorder)
+        f = nbtlib.File(self.to_nbt(save_soft=save_soft), gzipped=gzipped, byteorder=byteorder)
         f.save(fname)
 
-    def _tonbt(self, save_soft=True):
+    def to_nbt(self, save_soft=True):
         """
         Write the schematic to an NBT tag.
 
@@ -110,7 +110,7 @@ class Schematic:
         root["Metadata"] = meta
         regs = Compound()
         for regname, reg in self.regions.items():
-            regs[regname] = reg._tonbt()
+            regs[regname] = reg.to_nbt()
         root["Regions"] = regs
         return root
 
@@ -329,7 +329,7 @@ class Region:
         self.__block_ticks = []
         self.__fluid_ticks = []
 
-    def _tonbt(self):
+    def to_nbt(self):
         """
         Write this region to an NBT tag.
 
@@ -350,13 +350,13 @@ class Region:
         size["z"] = Int(self.__length)
         root["Size"] = size
 
-        plt = List[Compound]([blk._tonbt() for blk in self.__palette])
+        plt = List[Compound]([blk.to_nbt() for blk in self.__palette])
         root["BlockStatePalette"] = plt
 
-        entities = List[Compound]([entity._tonbt() for entity in self.__entities])
+        entities = List[Compound]([entity.to_nbt() for entity in self.__entities])
         root["Entities"] = entities
 
-        tile_entities = List[Compound]([tile_entity._tonbt() for tile_entity in self.__tile_entities])
+        tile_entities = List[Compound]([tile_entity.to_nbt() for tile_entity in self.__tile_entities])
         root["TileEntities"] = tile_entities
 
         root["PendingBlockTicks"] = List[Compound](self.__block_ticks)
@@ -598,7 +598,7 @@ class Region:
             tile_entity_dict[tile_entity.position] = tile_entity_cmp
 
         # process palette
-        structure['palette'] = List[Compound]([block._tonbt() for block in self.__palette])
+        structure['palette'] = List[Compound]([block.to_nbt() for block in self.__palette])
 
         # process blocks
         blocks = List[Compound]()

@@ -13,7 +13,7 @@ def test_blockstate_initialization():
 def test_blockstate_nbt_is_identity():
     prop = {"test1": "testval", "test2": "testval2"}
     blockstate_1 = BlockState("minecraft:stone", **prop)
-    nbt = blockstate_1._tonbt()
+    nbt = blockstate_1.to_nbt()
     blockstate_2 = BlockState.fromnbt(nbt)
     assert blockstate_1 == blockstate_2
 

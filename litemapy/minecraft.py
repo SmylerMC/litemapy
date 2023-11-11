@@ -22,7 +22,7 @@ class BlockState:
         self.__blockid = blockid
         self.__properties = DiscriminatingDictionary(self.__validate, properties)
 
-    def _tonbt(self):
+    def to_nbt(self):
         """
         Writes this block state to an nbt tag.
 
@@ -173,7 +173,7 @@ class Entity:
         self._rotation = tuple([float(coord) for coord in self._data['Rotation']])
         self._motion = tuple([float(coord) for coord in self._data['Motion']])
 
-    def _tonbt(self):
+    def to_nbt(self):
         """
         Save this entity as an NBT tag.
 
@@ -306,9 +306,9 @@ class TileEntity:
 
         self._position = tuple([int(self._data[coord]) for coord in ['x', 'y', 'z']])
 
-    def _tonbt(self):
+    def to_nbt(self):
         """
-        Saves the tile entity to a an nbt tag.
+        Saves the tile entity to NBT tag.
 
         :rtype: ~nbtlib.tag.Compound
         """
