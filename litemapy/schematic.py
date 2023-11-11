@@ -109,8 +109,8 @@ class Schematic:
         meta['PreviewImageData'] = self.__preview
         root["Metadata"] = meta
         regs = Compound()
-        for regname, reg in self.regions.items():
-            regs[regname] = reg.to_nbt()
+        for name, region in self.regions.items():
+            regs[name] = region.to_nbt()
         root["Regions"] = regs
         return root
 
@@ -139,24 +139,24 @@ class Schematic:
         for key, value in nbt["Regions"].items():
             reg = Region.fromnbt(value)
             regions[str(key)] = reg
-        sch = Schematic(name=name, author=author, description=desc, regions=regions, lm_version=lm_version,
-                        mc_version=mc_version)
-        if sch.width != width:
+        schematic = Schematic(name=name, author=author, description=desc, regions=regions, lm_version=lm_version,
+                              mc_version=mc_version)
+        if schematic.width != width:
             raise CorruptedSchematicError(
-                "Invalid schematic width in metadata, excepted {} was {}".format(sch.width, width))
-        if sch.height != height:
+                "Invalid schematic width in metadata, excepted {} was {}".format(schematic.width, width))
+        if schematic.height != height:
             raise CorruptedSchematicError(
-                "Invalid schematic height in metadata, excepted {} was {}".format(sch.height, height))
-        if sch.length != length:
+                "Invalid schematic height in metadata, excepted {} was {}".format(schematic.height, height))
+        if schematic.length != length:
             raise CorruptedSchematicError(
-                "Invalid schematic length in metadata, excepted {} was {}".format(sch.length, length))
-        sch.created = int(meta["TimeCreated"])
-        sch.modified = int(meta["TimeModified"])
-        if "RegionCount" in meta and len(sch.regions) != meta["RegionCount"]:
+                "Invalid schematic length in metadata, excepted {} was {}".format(schematic.length, length))
+        schematic.created = int(meta["TimeCreated"])
+        schematic.modified = int(meta["TimeModified"])
+        if "RegionCount" in meta and len(schematic.regions) != meta["RegionCount"]:
             raise CorruptedSchematicError("Number of regions in metadata does not match the number of parsed regions")
         if 'PreviewImageData' in meta.keys():
-            sch.__preview = meta['PreviewImageData']
-        return sch
+            schematic.__preview = meta['PreviewImageData']
+        return schematic
 
     def updatemeta(self):
         """
@@ -184,56 +184,56 @@ class Schematic:
         return True, ""
 
     def __on_region_add(self, name, region):
-        if self.__xmin is None:
-            self.__xmin = region.minschemx()
+        if self.__x_min is None:
+            self.__x_min = region.minschemx()
         else:
-            self.__xmin = min(self.__xmin, region.minschemx())
-        if self.__xmax is None:
-            self.__xmax = region.maxschemx()
+            self.__x_min = min(self.__x_min, region.minschemx())
+        if self.__x_max is None:
+            self.__x_max = region.maxschemx()
         else:
-            self.__xmax = max(self.__xmax, region.maxschemx())
-        if self.__ymin is None:
-            self.__ymin = region.minschemy()
+            self.__x_max = max(self.__x_max, region.maxschemx())
+        if self.__y_min is None:
+            self.__y_min = region.minschemy()
         else:
-            self.__ymin = min(self.__ymin, region.minschemy())
-        if self.__ymax is None:
-            self.__ymax = region.maxschemy()
+            self.__y_min = min(self.__y_min, region.minschemy())
+        if self.__y_max is None:
+            self.__y_max = region.maxschemy()
         else:
-            self.__ymax = max(self.__ymax, region.maxschemy())
-        if self.__zmin is None:
-            self.__zmin = region.minschemz()
+            self.__y_max = max(self.__y_max, region.maxschemy())
+        if self.__z_min is None:
+            self.__z_min = region.minschemz()
         else:
-            self.__zmin = min(self.__zmin, region.minschemz())
-        if self.__zmax is None:
-            self.__zmax = region.maxschemz()
+            self.__z_min = min(self.__z_min, region.minschemz())
+        if self.__z_max is None:
+            self.__z_max = region.maxschemz()
         else:
-            self.__zmax = max(self.__zmax, region.maxschemz())
+            self.__z_max = max(self.__z_max, region.maxschemz())
 
     def __on_region_remove(self, name, region):
-        b = self.__xmin == region.minschemx()
-        b = b or self.__xmax == region.maxschemx()
-        b = b or self.__ymin == region.minschemy()
-        b = b or self.__ymax == region.maxschemy()
-        b = b or self.__zmin == region.minschemz()
-        b = b or self.__zmax == region.maxschemz()
-        if b:
+        bounding_box_changed = self.__x_min == region.minschemx()
+        bounding_box_changed = bounding_box_changed or self.__x_max == region.maxschemx()
+        bounding_box_changed = bounding_box_changed or self.__y_min == region.minschemy()
+        bounding_box_changed = bounding_box_changed or self.__y_max == region.maxschemy()
+        bounding_box_changed = bounding_box_changed or self.__z_min == region.minschemz()
+        bounding_box_changed = bounding_box_changed or self.__z_max == region.maxschemz()
+        if bounding_box_changed:
             self.__compute_enclosure()
 
     def __compute_enclosure(self):
-        xmi, xma, ymi, yma, zmi, zma = None, None, None, None, None, None
+        x_min, x_max, y_min, y_max, z_min, z_max = None, None, None, None, None, None
         for region in self.__regions.values():
-            xmi = min(xmi, region.minschemx()) if xmi is not None else region.minschemx()
-            xma = max(xma, region.maxschemx()) if xma is not None else region.maxschemx()
-            ymi = min(ymi, region.minschemy()) if ymi is not None else region.minschemy()
-            yma = max(yma, region.maxschemy()) if yma is not None else region.maxschemy()
-            zmi = min(zmi, region.minschemz()) if zmi is not None else region.minschemz()
-            zma = max(zma, region.maxschemz()) if zma is not None else region.maxschemz()
-        self.__xmin = xmi
-        self.__xmax = xma
-        self.__ymin = ymi
-        self.__ymax = yma
-        self.__zmin = zmi
-        self.__zmax = zma
+            x_min = min(x_min, region.minschemx()) if x_min is not None else region.minschemx()
+            x_max = max(x_max, region.maxschemx()) if x_max is not None else region.maxschemx()
+            y_min = min(y_min, region.minschemy()) if y_min is not None else region.minschemy()
+            y_max = max(y_max, region.maxschemy()) if y_max is not None else region.maxschemy()
+            z_min = min(z_min, region.minschemz()) if z_min is not None else region.minschemz()
+            z_max = max(z_max, region.maxschemz()) if z_max is not None else region.maxschemz()
+        self.__x_min = x_min
+        self.__x_max = x_max
+        self.__y_min = y_min
+        self.__y_max = y_max
+        self.__z_min = z_min
+        self.__z_max = z_max
 
     @property
     def regions(self):
@@ -256,9 +256,9 @@ class Schematic:
 
         :type: int
         """
-        if self.__xmin is None or self.__xmax is None:
+        if self.__x_min is None or self.__x_max is None:
             return 0
-        return self.__xmax - self.__xmin + 1
+        return self.__x_max - self.__x_min + 1
 
     @property
     def height(self):
@@ -269,9 +269,9 @@ class Schematic:
 
         :type: int
         """
-        if self.__ymin is None or self.__ymax is None:
+        if self.__y_min is None or self.__y_max is None:
             return 0
-        return self.__ymax - self.__ymin + 1
+        return self.__y_max - self.__y_min + 1
 
     @property
     def length(self):
@@ -282,9 +282,9 @@ class Schematic:
 
         :type: int
         """
-        if self.__zmin is None or self.__zmax is None:
+        if self.__z_min is None or self.__z_max is None:
             return 0
-        return self.__zmax - self.__zmin + 1
+        return self.__z_max - self.__z_min + 1
 
     @property
     def preview(self):
@@ -372,7 +372,7 @@ class Region:
 
         return root
 
-    def to_sponge_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big'):
+    def to_sponge_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, endianness='big'):
         """
         Returns the Region as an NBT Compound file that conforms to the Sponge Schematic Format (version 2) used by mods
         like WorldEdit.
@@ -386,9 +386,9 @@ class Region:
         :param gzipped:     Whether the NBT Compound file should be compressed
                             (WorldEdit only works with gzipped files).
         :type gzipped:      bool
-        :param byteorder:   Endianness of the resulting NBT Compound file
+        :param endianness:  Endianness of the resulting NBT Compound file
                             ('big' or 'little', WorldEdit only works with big endian files).
-        :type byteorder:    str
+        :type endianness:   str
 
         :returns:           The Region represented as a Sponge Schematic NBT Compound file.
         :rtype:             ~nbtlib.nbt.File
@@ -398,7 +398,7 @@ class Region:
 
         # TODO Needs unit tests
 
-        nbt = nbtlib.File(gzipped=gzipped, byteorder=byteorder)
+        nbt = nbtlib.File(gzipped=gzipped, byteorder=endianness)
 
         nbt['DataVersion'] = Int(mc_version)
         nbt['Version'] = Int(SPONGE_VERSION)
@@ -413,46 +413,46 @@ class Region:
         size = (self.__width, self.__height, self.__length)
         entities = List[Compound]()
         for entity in self.__entities:
-            entity_cmp = Compound()
+            entity_tag = Compound()
             for key, value in entity.data.items():
-                entity_cmp[key] = value
+                entity_tag[key] = value
 
-            entity_cmp['Pos'] = List[Double](
+            entity_tag['Pos'] = List[Double](
                 [Double(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
             keys = entity.data.keys()
             if 'TileX' in keys:
-                entity_cmp['TileX'] = Int(entity_cmp['Pos'][0])
-                entity_cmp['TileY'] = Int(entity_cmp['Pos'][1])
-                entity_cmp['TileZ'] = Int(entity_cmp['Pos'][2])
+                entity_tag['TileX'] = Int(entity_tag['Pos'][0])
+                entity_tag['TileY'] = Int(entity_tag['Pos'][1])
+                entity_tag['TileZ'] = Int(entity_tag['Pos'][2])
 
-            entity_cmp['Id'] = entity_cmp['id']
-            del entity_cmp['id']
-            entities.append(entity_cmp)
+            entity_tag['Id'] = entity_tag['id']
+            del entity_tag['id']
+            entities.append(entity_tag)
 
         nbt['Entities'] = entities
 
         # process tile entities
         tile_entities = List[Compound]()
         for tile_entity in self.__tile_entities:
-            tile_entity_cmp = Compound()
+            tile_entity_tag = Compound()
             for key, value in tile_entity.data.items():
-                tile_entity_cmp[key] = value
+                tile_entity_tag[key] = value
 
-            tile_entity_cmp['Pos'] = IntArray([Int(coord) for coord in tile_entity.position])
+            tile_entity_tag['Pos'] = IntArray([Int(coord) for coord in tile_entity.position])
             for key in ['x', 'y', 'z']:
-                del tile_entity_cmp[key]
-            tile_entities.append(tile_entity_cmp)
+                del tile_entity_tag[key]
+            tile_entities.append(tile_entity_tag)
 
         nbt['BlockEntities'] = tile_entities
 
         # process block palette
         nbt['PaletteMax'] = Int(len(self.__palette))
-        pal = Compound()
+        palette = Compound()
         for i, block in enumerate(self.__palette):
             state = block.to_block_state_identifier()
-            pal[state] = Int(i)
+            palette[state] = Int(i)
 
-        nbt['Palette'] = pal
+        nbt['Palette'] = palette
 
         # process blocks
         block_array = []
@@ -577,25 +577,25 @@ class Region:
         size = (self.__width, self.__height, self.__length)
         entities = List[Compound]()
         for entity in self.__entities:
-            entity_cmp = Compound()
-            entity_cmp['nbt'] = entity.data
-            entity_cmp['pos'] = List[Double](
+            entity_tag = Compound()
+            entity_tag['nbt'] = entity.data
+            entity_tag['pos'] = List[Double](
                 [Double(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
-            entity_cmp['blockPos'] = List[Int](
+            entity_tag['blockPos'] = List[Int](
                 [Int(coord - (0 if dim > 0 else (dim + 1))) for coord, dim in zip(entity.position, size)])
-            entities.append(entity_cmp)
+            entities.append(entity_tag)
 
         structure['entities'] = entities
 
         # create tile entity dictionary to add them correctly to the block list later
         tile_entity_dict = {}
         for tile_entity in self.__tile_entities:
-            tile_entity_cmp = Compound()
+            tile_entity_tag = Compound()
             for key, value in tile_entity.data.items():
                 if key not in ['x', 'y', 'z']:
-                    tile_entity_cmp[key] = value
+                    tile_entity_tag[key] = value
 
-            tile_entity_dict[tile_entity.position] = tile_entity_cmp
+            tile_entity_dict[tile_entity.position] = tile_entity_tag
 
         # process palette
         structure['palette'] = List[Compound]([block.to_nbt() for block in self.__palette])
@@ -700,10 +700,10 @@ class Region:
         :returns: the number of non-air blocks in the region
         :rtype: int
         """
-        airind = self.__palette.index(AIR)
+        air_index = self.__palette.index(AIR)
         c = 0
         for block in self.__blocks.flat:
-            if block != airind:
+            if block != air_index:
                 c += 1
         return c
 
@@ -746,36 +746,36 @@ class Region:
         width = int(size["x"])
         height = int(size["y"])
         length = int(size["z"])
-        reg = Region(x, y, z, width, height, length)
-        del reg.__palette[0]
-        for bnbt in nbt["BlockStatePalette"]:
-            block = BlockState.fromnbt(bnbt)
-            reg.__palette.append(block)
+        region = Region(x, y, z, width, height, length)
+        del region.__palette[0]
+        for block_nbt in nbt["BlockStatePalette"]:
+            block = BlockState.fromnbt(block_nbt)
+            region.__palette.append(block)
 
         for entity_nbt in nbt["Entities"]:
             entity = Entity.fromnbt(entity_nbt)
-            reg.entities.append(entity)
+            region.entities.append(entity)
 
         for tile_entity_nbt in nbt["TileEntities"]:
             block = TileEntity.fromnbt(tile_entity_nbt)
-            reg.tile_entities.append(block)
+            region.tile_entities.append(block)
 
-        blks = nbt["BlockStates"]
-        nbits = reg.__get_needed_nbits()
-        arr = LitematicaBitArray.fromnbtlongarray(blks, reg.getvolume(), nbits)
+        blocks = nbt["BlockStates"]
+        nbits = region.__get_needed_nbits()
+        bit_array = LitematicaBitArray.from_nbt_long_array(blocks, region.getvolume(), nbits)
         for x in range(abs(width)):
             for y in range(abs(height)):
                 for z in range(abs(length)):
                     ind = (y * abs(width * length)) + z * abs(width) + x
-                    reg.__blocks[x][y][z] = arr[ind]
+                    region.__blocks[x][y][z] = bit_array[ind]
 
-        for blockTick in nbt["PendingBlockTicks"]:
-            reg.__block_ticks.append(blockTick)
+        for block_ticks in nbt["PendingBlockTicks"]:
+            region.__block_ticks.append(block_ticks)
 
-        for fluidTick in nbt["PendingFluidTicks"]:
-            reg.__fluid_ticks.append(fluidTick)
+        for fluid_ticks in nbt["PendingFluidTicks"]:
+            region.__fluid_ticks.append(fluid_ticks)
 
-        return reg
+        return region
 
     def minschemx(self):
         """

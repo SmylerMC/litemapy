@@ -42,12 +42,12 @@ class BlockState:
 
         :rtype: BlockState
         """
-        bid = str(nbt["Name"])
+        block_id = str(nbt["Name"])
         if "Properties" in nbt:
             properties = {str(k): str(v) for k, v in nbt["Properties"].items()}
         else:
             properties = {}
-        block = BlockState(bid, **properties)
+        block = BlockState(block_id, **properties)
         return block
 
     @property
@@ -59,14 +59,14 @@ class BlockState:
         """
         return self.__block_id
 
-    def with_blockid(self, blockid):
+    def with_blockid(self, block_id):
         """
         Returns a new :class:`BlockState` with the same properties as this one but a different block id.
 
-        :param blockid:  the block id for the new :class:`BlockState`
-        :type  blockid:  str
+        :param block_id:  the block id for the new :class:`BlockState`
+        :type  block_id:  str
         """
-        return BlockState(blockid, **self.__properties)
+        return BlockState(block_id, **self.__properties)
 
     def with_properties(self, **properties):
         """
@@ -79,10 +79,10 @@ class BlockState:
         :returns: A copy of this :class:`BlockState` with the given properties updated to new values
         :rtype: BlockState
         """
-        none_kwargs = list(map(lambda kv: kv[0], filter(lambda kv: kv[1] is None, properties.items())))
+        none_properties = list(map(lambda kv: kv[0], filter(lambda kv: kv[1] is None, properties.items())))
         other = BlockState(self.blockid)
         other.__properties.update(self.__properties)
-        for prop_name in none_kwargs:
+        for prop_name in none_properties:
             other.__properties.pop(prop_name)
             properties.pop(prop_name)
         other.__properties.update(properties)
@@ -90,7 +90,7 @@ class BlockState:
 
     def __validate(self, k, v):
         if type(k) is not str or type(v) is not str:
-            return False, "Blockstate properties should be a string => string dictionary"
+            return False, "BlockState properties should be a string => string dictionary"
         return True, ""
 
     def to_block_state_identifier(self, skip_empty=True):
@@ -121,7 +121,7 @@ class BlockState:
 
     def __eq__(self, other):
         if not isinstance(other, BlockState):
-            raise ValueError("Can only compare blockstates with blockstates")
+            raise ValueError("Can only compare BlockStates with BlockStates")
         return other.__block_id == self.__block_id and other.__properties == self.__properties
 
     def __repr__(self):
@@ -137,7 +137,7 @@ class BlockState:
 class Entity:
     """
     A Minecraft entity.
-    Each entitiy is identified by a type identifier (e.g. minecraft:skeleton)
+    Each entity is identified by a type identifier (e.g. minecraft:skeleton)
     and has a position within a region, as well as a rotation and a velocity vector.
     Most also have arbitrary data depending on their type
     (e.g. a sheep has a tag for its color and one indicating whether it has been sheared).
