@@ -18,9 +18,9 @@ class LitematicaBitArray:
         if expected_len != len(arr):
             raise ValueError(
                 "long array length does not match bit array size and nbits, expected {}, not {}".format(
-                        expected_len, len(arr)
-                    )
+                    expected_len, len(arr)
                 )
+            )
         r = LitematicaBitArray(size, nbits)
         m = (1 << 64) - 1
         r.array = [int(i) & m for i in arr]  # Remove the infinite trailing 1s of negative numbers
@@ -71,7 +71,8 @@ class LitematicaBitArray:
         if start_arr_index != end_arr_index:
             end_offset = 64 - start_bit_offset
             j1 = self.nbits - end_offset
-            self.array[end_arr_index] = (self.array[end_arr_index] >> j1 << j1 | (value & self.__mask) >> end_offset) & m
+            self.array[end_arr_index] = (self.array[end_arr_index] >> j1 << j1 | (
+                        value & self.__mask) >> end_offset) & m
 
     def __len__(self):
         return self.size

@@ -4,7 +4,6 @@ from constants import *
 import helper
 from tempfile import TemporaryDirectory
 
-
 valid_files = []
 for directory, child_directory, file_names in walk(VALID_LITEMATIC_DIRECTORY):
     for file_name in file_names:
@@ -150,7 +149,6 @@ def test_are_random_schematics_preserved_when_reading_and_writing():
 
 
 def test_region_filter():
-
     def do_filter(before_schematic, after_schematic, function):
         print(f"Comparing litematic files {before_schematic} and {after_schematic}")
         before_schematic = path.join(FILTER_LITEMATIC_DIRECTORY, before_schematic)
@@ -159,8 +157,8 @@ def test_region_filter():
         after_schematic = Schematic.load(after_schematic)
         assert len(before_schematic.regions) == 1, "Invalid test litematic"
         assert len(after_schematic.regions) == 1, "Invalid test litematic"
-        (before_schematic, ) = before_schematic.regions.values()
-        (after_schematic, ) = after_schematic.regions.values()
+        (before_schematic,) = before_schematic.regions.values()
+        (after_schematic,) = after_schematic.regions.values()
         assert before_schematic.width == after_schematic.width, "Invalid test litematic"
         assert before_schematic.height == after_schematic.height, "Invalid test litematic"
         assert before_schematic.length == after_schematic.length, "Invalid test litematic"
@@ -174,6 +172,7 @@ def test_region_filter():
 
     def all_blue_filter(b: BlockState):
         return BlockState("minecraft:light_blue_concrete")
+
     do_filter('rainbow-line.litematic', 'blue-line.litematic', all_blue_filter)
 
     red = BlockState("minecraft:red_concrete")
@@ -185,6 +184,7 @@ def test_region_filter():
         if b.blockid == "minecraft:white_concrete":
             return blue
         return b
+
     do_filter('black-white.litematic', 'red-blue.litematic', black_red_white_blue)
 
     def glassify(state: BlockState):
@@ -203,10 +203,13 @@ def test_region_filter():
         elif state.blockid == "minecraft:copper_ore":
             return BlockState("minecraft:orange_stained_glass")
         elif state.blockid == "minecraft:grass":
-            return BlockState("minecraft:green_stained_glass_pane", east="true", north="true", south="true", west="true", waterlogged="false")
+            return BlockState("minecraft:green_stained_glass_pane", east="true", north="true", south="true",
+                              west="true", waterlogged="false")
         return state
+
     do_filter('tree.litematic', 'tree-glass.litematic', glassify)
 
     def wool_to_concrete(b: BlockState):
         return b.with_blockid(b.blockid.replace('wool', 'concrete'))
+
     do_filter('concrete-wool.litematic', 'concrete-full.litematic', wool_to_concrete)

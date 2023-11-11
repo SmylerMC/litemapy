@@ -1,6 +1,5 @@
 import litemapy.boxes as boxes
 
-
 origin = (0, 0, 0)
 block1 = (-2, -2, -2)
 block2 = (2, 2, 2)

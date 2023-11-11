@@ -5,7 +5,6 @@ from .storage import DiscriminatingDictionary
 
 
 class BlockState:
-
     """
     Represents an in-game block.
     :class:`BlockState` are immutable.
@@ -136,7 +135,6 @@ class BlockState:
 
 
 class Entity:
-
     """
     A Minecraft entity.
     Each entitiy is identified by a type identifier (e.g. minecraft:skeleton)
@@ -284,7 +282,6 @@ class Entity:
 
 
 class TileEntity:
-
     # TODO Needs unit tests
     """
     A tile entity, also often referred to as block entities,

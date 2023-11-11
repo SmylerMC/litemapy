@@ -1034,5 +1034,3 @@ AIR = BlockState("minecraft:air")
 
 class CorruptedSchematicError(Exception):
     pass
-
-

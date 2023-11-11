@@ -12,11 +12,9 @@ which is a lot more efficient (like 10x faster).
 Here, we replace all blocks with stained-glass of a similar color.
 """
 
-
 from litemapy import Schematic, BlockState
 from sys import argv
 from time import time
-
 
 # Just a lookup for which blocks will be replaced with which
 # Has blocks for a mushroom-island / iceberg area.
@@ -72,7 +70,6 @@ def glassify(state: BlockState) -> BlockState:
 
 
 def glacify_litematic(in_file: str, out_file: str):
-
     # Load the schematic and print some metadata
     print(f"Loading {in_file}...")
     litematic = Schematic.load(in_file)
@@ -86,7 +83,6 @@ def glacify_litematic(in_file: str, out_file: str):
 
     # Schematics can contain multiple regions, we need to process them all
     for name, region in litematic.regions.items():
-
         # Update the stats
         volume = region.getvolume()
         total_blocks += volume

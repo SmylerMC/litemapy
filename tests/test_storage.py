@@ -2,7 +2,6 @@ import pytest
 import litemapy.storage as storage
 import math
 
-
 TEST_VALUES = 0, 0, 0, 12, 13, 0, 4, 0, 2, 4, 1, 3, 3, 7, 65, 9
 
 
@@ -41,6 +40,7 @@ def test_basic_set_get():
     def discriminator(k, v):
         print("Discriminating ", type(k), k, "=>", type(v), v)
         return v >= 0, "Need pos"
+
     discriminating_dictionary = storage.DiscriminatingDictionary(discriminator)
     discriminating_dictionary["0"] = 0
     assert discriminating_dictionary["0"] == 0
@@ -73,11 +73,12 @@ def test_discriminating_dictionary_onadd():
 
         def on_add(self, k, v):
             self.counter += v
+
     c = Counter()
     dictionary = storage.DiscriminatingDictionary(
-            lambda k, v: (v >= 0, "Need pos"),
-            onadd=c.on_add,
-            x=10
+        lambda k, v: (v >= 0, "Need pos"),
+        onadd=c.on_add,
+        x=10
     )
     dictionary["a"] = 1
     assert c.counter == 1
@@ -94,11 +95,12 @@ def test_discriminating_dictionary_onremove():
 
         def on_remove(self, k, v):
             self.counter += v
+
     c = Counter()
     dictionary = storage.DiscriminatingDictionary(
-            lambda k, v: (v >= 0, "Need pos"),
-            onremove=c.on_remove,
-            a=1, b=2, c=3, d=4, x=10
+        lambda k, v: (v >= 0, "Need pos"),
+        onremove=c.on_remove,
+        a=1, b=2, c=3, d=4, x=10
     )
     del dictionary["a"]
     assert c.counter == 1
@@ -112,9 +114,9 @@ def test_discriminating_dictionary_onremove():
     assert c.counter == 20
     c = Counter()
     dictionary = storage.DiscriminatingDictionary(
-            lambda k, v: (v >= 0, "Need pos"),
-            onremove=c.on_remove,
-            a=1, b=2, c=3, d=4, x=10
+        lambda k, v: (v >= 0, "Need pos"),
+        onremove=c.on_remove,
+        a=1, b=2, c=3, d=4, x=10
     )
     dictionary.clear()
     assert c.counter == 20
@@ -131,12 +133,13 @@ def test_discriminating_dictionary_onadd_onremove():
 
         def on_add(self, k, v):
             self.added += v
+
     c = Counter()
     dictionary = storage.DiscriminatingDictionary(
-            lambda k, v: (v >= 0, "Need pos"),
-            onadd=c.on_add,
-            onremove=c.on_remove,
-            a=1, b=2, c=3, d=4, x=10
+        lambda k, v: (v >= 0, "Need pos"),
+        onadd=c.on_add,
+        onremove=c.on_remove,
+        a=1, b=2, c=3, d=4, x=10
     )
     dictionary["c"] = 7
     assert c.added == 7
