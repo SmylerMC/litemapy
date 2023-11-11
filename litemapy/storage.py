@@ -26,7 +26,7 @@ class LitematicaBitArray:
         r.array = [int(i) & m for i in arr]  # Remove the infinite trailing 1s of negative numbers
         return r
 
-    def _tolonglist(self):
+    def _to_long_list(self):
         list_of_longs = []
         m1 = 1 << 63
         m2 = (1 << 64) - 1
@@ -36,8 +36,8 @@ class LitematicaBitArray:
             list_of_longs.append(i)
         return list_of_longs
 
-    def _tonbtlongarray(self):
-        return nbtlib.tag.LongArray(self._tolonglist())
+    def _to_nbt_long_array(self):
+        return nbtlib.tag.LongArray(self._to_long_list())
 
     def __getitem__(self, index):
         if not 0 <= index < len(self):
@@ -107,8 +107,8 @@ class DiscriminatingDictionary(dict):
         """
         # TODO Handle iterators in constructor
         self.validator = validator
-        self.onadd = options.pop("onadd", None)
-        self.onremove = options.pop("onremove", None)
+        self.on_add = options.pop("onadd", None)
+        self.on_remove = options.pop("onremove", None)
         if len(args) == 1 and isinstance(args[0], dict):
             for key, item in args[0].items():
                 self.validate(key, item)
@@ -131,15 +131,15 @@ class DiscriminatingDictionary(dict):
         old = self.get(key)
         super().__setitem__(key, item)
         if b:
-            self.__onrm(key, old)
-        self.__onadd(key, item)
+            self.__on_rm(key, old)
+        self.__on_add(key, item)
 
     def __delitem__(self, key):
         if key not in self:
             raise KeyError()
         v = self[key]
         super().__delitem__(key)
-        self.__onrm(key, v)
+        self.__on_rm(key, v)
 
     def setdefault(self, key, *args):
         default = args[0] if len(args) > 0 else None
@@ -147,7 +147,7 @@ class DiscriminatingDictionary(dict):
         b = key not in self
         r = super().setdefault(key, default)
         if b:
-            self.__onadd(key, default)
+            self.__on_add(key, default)
         return r
 
     def update(self, other):
@@ -157,25 +157,25 @@ class DiscriminatingDictionary(dict):
 
     def pop(self, key):
         v = super().pop(key)
-        self.__onrm(key, v)
+        self.__on_rm(key, v)
 
     def popitem(self):
         k, v = super().popitem()
-        self.__onrm(k, v)
+        self.__on_rm(k, v)
 
     def clear(self):
         c = self.copy()
         super().clear()
         for k, v in c.items():
-            self.__onrm(k, v)
+            self.__on_rm(k, v)
 
-    def __onadd(self, key, item):
-        if self.onadd is not None:
-            self.onadd(key, item)
+    def __on_add(self, key, item):
+        if self.on_add is not None:
+            self.on_add(key, item)
 
-    def __onrm(self, key, item):
-        if self.onremove is not None:
-            self.onremove(key, item)
+    def __on_rm(self, key, item):
+        if self.on_remove is not None:
+            self.on_remove(key, item)
 
 
 class DiscriminationError(Exception):

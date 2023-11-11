@@ -10,16 +10,16 @@ class BlockState:
     :class:`BlockState` are immutable.
     """
 
-    def __init__(self, blockid, **properties):
+    def __init__(self, block_id, **properties):
         """
         A block state has a block ID and a dictionary of properties.
 
-        :param blockid:     the identifier of the block (e.g. *minecraft:stone*)
-        :type blockid:      str
+        :param block_id:    the identifier of the block (e.g. *minecraft:stone*)
+        :type block_id:     str
         :param properties:  the properties of the block state as keyword parameters (e.g. *facing="north"*)
         :type properties:   str
         """
-        self.__blockid = blockid
+        self.__block_id = block_id
         self.__properties = DiscriminatingDictionary(self.__validate, properties)
 
     def to_nbt(self):
@@ -57,7 +57,7 @@ class BlockState:
 
         :type:  str
         """
-        return self.__blockid
+        return self.__block_id
 
     def with_blockid(self, blockid):
         """
@@ -108,7 +108,7 @@ class BlockState:
 
         # TODO Needs unit tests
 
-        identifier = self.__blockid
+        identifier = self.__block_id
         if skip_empty and not len(self.__properties):
             return identifier
 
@@ -122,7 +122,7 @@ class BlockState:
     def __eq__(self, other):
         if not isinstance(other, BlockState):
             raise ValueError("Can only compare blockstates with blockstates")
-        return other.__blockid == self.__blockid and other.__properties == self.__properties
+        return other.__block_id == self.__block_id and other.__properties == self.__properties
 
     def __repr__(self):
         return self.to_block_state_identifier(skip_empty=True)
