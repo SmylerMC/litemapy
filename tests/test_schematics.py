@@ -203,14 +203,7 @@ def test_region_filter():
         elif state.blockid == "minecraft:copper_ore":
             return BlockState("minecraft:orange_stained_glass")
         elif state.blockid == "minecraft:grass":
-            return BlockState("minecraft:green_stained_glass_pane",
-                              properties={
-                                  'east': "true",
-                                  'north': "true",
-                                  'south': "true",
-                                  'west': "true",
-                                  'waterlogged': "false",
-                              })
+            return BlockState("minecraft:green_stained_glass_pane", east="true", north="true", south="true", west="true", waterlogged="false")
         return state
     do_filter('tree.litematic', 'tree-glass.litematic', glassify)
 
@@ -222,7 +215,7 @@ def test_region_filter():
 def test_blockstate_initialization():
     # TODO Split into multiple smaller tests
     prop = {"test1": "testval", "test2": "testval2"}
-    b = BlockState("minecraft:stone", properties=prop)
+    b = BlockState("minecraft:stone", **prop)
     assert len(prop) == len(b)
     for k, v in prop.items():
         assert b[k] == v
@@ -230,7 +223,7 @@ def test_blockstate_initialization():
 
 def test_blockstate_nbt_is_identity():
     prop = {"test1": "testval", "test2": "testval2"}
-    blockstate_1 = BlockState("minecraft:stone", properties=prop)
+    blockstate_1 = BlockState("minecraft:stone", **prop)
     nbt = blockstate_1._tonbt()
     blockstate_2 = BlockState.fromnbt(nbt)
     assert blockstate_1 == blockstate_2
@@ -238,7 +231,7 @@ def test_blockstate_nbt_is_identity():
 
 def test_blockstate_with_properties():
     prop = {"test1": "testval1", "test2": "testval2"}
-    blockstate_1 = BlockState("minecraft:stone", properties=prop)
+    blockstate_1 = BlockState("minecraft:stone", **prop)
     blockstate_2 = blockstate_1.with_properties(test3="testval3", test4="testval4")
     assert blockstate_2.to_block_state_identifier() == "minecraft:stone[test1=testval1,test2=testval2,test3=testval3,test4=testval4]"
 

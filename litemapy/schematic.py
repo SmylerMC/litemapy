@@ -532,7 +532,7 @@ class Region:
                     key, value = property.split('=')
                     property_dict[key] = value
 
-            block_state = BlockState(block_id, property_dict)
+            block_state = BlockState(block_id, **property_dict)
             palette_dict[int(index)] = block_state
 
         for i, index in enumerate(nbt['BlockData']):
@@ -1036,17 +1036,15 @@ class BlockState:
     :class:`BlockState` are immutable.
     """
 
-    def __init__(self, blockid, properties=None):
+    def __init__(self, blockid, **properties):
         """
         A block state has a block ID and a dictionary of properties.
 
         :param blockid:     the identifier of the block (e.g. *minecraft:stone*)
         :type blockid:      str
-        :param properties:  the properties of the block state (e.g. *{"facing": "north"}*)
-        :type properties:   dict[str, str]
+        :param properties:  the properties of the block state as keyword parameters (e.g. *facing="north"*)
+        :type properties:   str
         """
-        if properties is None:
-            properties = {}
         self.__blockid = blockid
         self.__properties = DiscriminatingDictionary(self.__validate, properties)
 
@@ -1075,7 +1073,7 @@ class BlockState:
             properties = {str(k): str(v) for k, v in nbt["Properties"].items()}
         else:
             properties = {}
-        block = BlockState(bid, properties=properties)
+        block = BlockState(bid, **properties)
         return block
 
     @property
@@ -1094,26 +1092,26 @@ class BlockState:
         :param blockid:  the block id for the new :class:`BlockState`
         :type  blockid:  str
         """
-        return BlockState(blockid, properties=self.__properties)
+        return BlockState(blockid, **self.__properties)
 
-    def with_properties(self, **kwargs):
+    def with_properties(self, **properties):
         """
         Returns a new copy of this :class:`BlockState` with new values for the properties given in keyword arguments.
         Using `None` as a property value removes it.
 
-        :param kwargs:  the new properties as keyword arguments
-        :type kwargs:   dict[str, str]
+        :param properties:  the new properties as keyword arguments
+        :type properties:   str | None
 
         :returns: A copy of this :class:`BlockState` with the given properties updated to new values
         :rtype: BlockState
         """
-        none_kwargs = list(map(lambda kv: kv[0], filter(lambda kv: kv[1] is None, kwargs.items())))
+        none_kwargs = list(map(lambda kv: kv[0], filter(lambda kv: kv[1] is None, properties.items())))
         other = BlockState(self.blockid)
         other.__properties.update(self.__properties)
         for prop_name in none_kwargs:
             other.__properties.pop(prop_name)
-            kwargs.pop(prop_name)
-        other.__properties.update(kwargs)
+            properties.pop(prop_name)
+        other.__properties.update(properties)
         return other
 
     def __validate(self, k, v):
@@ -1179,7 +1177,7 @@ class Entity:
         """
         :param str_or_nbt:  either the entity identifier as a string, in which case all other tag will be default,
                             or an bnt compound tag with the entitie's data.
-        :type str_or_nbt:   ~typing.Union[str, ~nbtlib.tag.Compound]
+        :type str_or_nbt:   str | ~nbtlib.tag.Compound
         """
 
         if isinstance(str_or_nbt, str):
