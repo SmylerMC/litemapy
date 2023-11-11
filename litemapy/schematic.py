@@ -1087,6 +1087,15 @@ class BlockState:
         """
         return self.__blockid
 
+    def with_blockid(self, blockid):
+        """
+        Returns a new :class:`BlockState` with the same properties as this one but a different block id.
+
+        :param blockid:  the block id for the new :class:`BlockState`
+        :type  blockid:  str
+        """
+        return BlockState(blockid, properties=self.__properties)
+
     def with_properties(self, **kwargs):
         """
         Returns a new copy of this :class:`BlockState` with new values for the properties given in keyword arguments.

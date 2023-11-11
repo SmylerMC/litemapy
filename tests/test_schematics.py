@@ -215,7 +215,7 @@ def test_region_filter():
     do_filter('tree.litematic', 'tree-glass.litematic', glassify)
 
     def wool_to_concrete(b: BlockState):
-        return BlockState(b.blockid.replace('wool', 'concrete'))
+        return b.with_blockid(b.blockid.replace('wool', 'concrete'))
     do_filter('concrete-wool.litematic', 'concrete-full.litematic', wool_to_concrete)
 
 
