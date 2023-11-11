@@ -1,7 +1,6 @@
 import random
 from litemapy import Schematic, Region, BlockState
 
-
 SUB_PROC, GATEWAY = None, None
 
 
