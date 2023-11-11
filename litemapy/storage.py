@@ -12,7 +12,7 @@ class LitematicaBitArray:
         self.__mask = (1 << nbits) - 1  # nbits bits set to 1
 
     @staticmethod
-    def fromnbtlongarray(arr, size, nbits):
+    def from_nbt_long_array(arr, size, nbits):
         # TODO Test loading and validating from an external source
         expected_len = ceil(size * nbits / 64)
         if expected_len != len(arr):
