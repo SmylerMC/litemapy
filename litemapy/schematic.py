@@ -335,6 +335,9 @@ class Region:
 
         :rtype: ~nbtlib.tag.Compound
         """
+
+        self._optimize_palette()
+
         root = Compound()
         pos = Compound()
         pos["x"] = Int(self.__x)
@@ -390,6 +393,8 @@ class Region:
         :returns:           The Region represented as a Sponge Schematic NBT Compound file.
         :rtype:             ~nbtlib.nbt.File
         """
+
+        self._optimize_palette()
 
         # TODO Needs unit tests
 
@@ -560,6 +565,8 @@ class Region:
         """
 
         # TODO Needs unit tests
+
+        self._optimize_palette()
 
         structure = nbtlib.File(gzipped=gzipped, byteorder=byteorder)
 
