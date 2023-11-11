@@ -51,12 +51,12 @@ class Schematic:
         self.lm_version = lm_version
         self.__preview = IntArray([])
 
-    def save(self, fname, update_meta=True, save_soft=True, gzipped=True, byteorder='big'):
+    def save(self, file_path, update_meta=True, save_soft=True, gzipped=True, byteorder='big'):
         """
         Save this schematic to a file.
 
-        :param fname:       the filesystem path the schematic should be saved to
-        :type fname:        str
+        :param file_path:   the filesystem path the schematic should be saved to
+        :type file_path:    str
         :param update_meta: whether to update the schematic's metadata before saving
                             (see :func:`~litemapy.Schematic.updatemeta`)
         :type update_meta:  bool
@@ -72,7 +72,7 @@ class Schematic:
         if update_meta:
             self.updatemeta()
         f = nbtlib.File(self.to_nbt(save_soft=save_soft), gzipped=gzipped, byteorder=byteorder)
-        f.save(fname)
+        f.save(file_path)
 
     def to_nbt(self, save_soft=True):
         """
@@ -165,17 +165,17 @@ class Schematic:
         self.modified = round(time() * 1000)
 
     @staticmethod
-    def load(fname):
+    def load(file_path):
         """
         Read a schematic from a file.
 
-        :param fname:   the filesystem path to the file to load
+        :param file_path:   the filesystem path to the file to load
 
-        :rtype:         Schematic
+        :rtype:             Schematic
 
         :raises CorruptedSchematicError: if the schematic file is malformed in any way
         """
-        nbt = nbtlib.File.load(fname, True)
+        nbt = nbtlib.File.load(file_path, True)
         return Schematic.fromnbt(nbt)
 
     def _can_add_region(self, name, region):
@@ -368,7 +368,7 @@ class Region:
                 for z in range(abs(self.__length)):
                     ind = (y * abs(self.__width * self.__length)) + z * abs(self.__width) + x
                     arr[ind] = int(self.__blocks[x, y, z])
-        root["BlockStates"] = arr._tonbtlongarray()
+        root["BlockStates"] = arr._to_nbt_long_array()
 
         return root
 
@@ -669,7 +669,7 @@ class Region:
 
         :rtype:     ~litemapy.BlockState
         """
-        x, y, z = self.__regcoordinates2storecoords(x, y, z)
+        x, y, z = self.__region_coordinates_to_store_coordinates(x, y, z)
         return self.__palette[self.__blocks[x, y, z]]
 
     def setblock(self, x, y, z, block):
@@ -685,7 +685,7 @@ class Region:
         :param block:   the new block state
         :type block:    ~litemapy.BlockState
         """
-        x, y, z = self.__regcoordinates2storecoords(x, y, z)
+        x, y, z = self.__region_coordinates_to_store_coordinates(x, y, z)
         if block in self.__palette:
             i = self.__palette.index(block)
         else:
@@ -707,7 +707,7 @@ class Region:
                 c += 1
         return c
 
-    def __regcoordinates2storecoords(self, x, y, z):
+    def __region_coordinates_to_store_coordinates(self, x, y, z):
         if self.__width < 0:
             x -= self.__width + 1
         if self.__height < 0:
