@@ -1,3 +1,12 @@
+### 0.8.0b0
+* Breaking change: the `BlockState` constructor no longer takes properties as a single `properties` argument.
+Each property must be supplied as its own keyword argument instead.
+E.g. `BlockState("minecraft:acacia_log", facing="west")`
+* Added `BlockState.with_properties()` and `BlockState.with_blockid()` to create copies of block states
+but with different ids and properties.
+* Added `Region.filter()` to allow for efficient block replacement.
+* Schematic palettes are now always optimized before saving
+
 ### 0.7.0b0:
 * Method to convert regions to the sponge schematic NBT format
 * Fix crash with litematics created by newer versions of Litematica "id -> The required key is missing in the (Tile)Entity's NBT Compound",
