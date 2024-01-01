@@ -700,12 +700,9 @@ class Region:
         :returns: the number of non-air blocks in the region
         :rtype: int
         """
-        air_index = self.__palette.index(AIR)
-        c = 0
-        for block in self.__blocks.flat:
-            if block != air_index:
-                c += 1
-        return c
+
+        # air is index zero
+        return np.count_nonzero(self.__blocks)
 
     def __region_coordinates_to_store_coordinates(self, x, y, z):
         if self.__width < 0:
