@@ -55,7 +55,7 @@ class BlockState:
         """
         The block's identifier.
 
-        :type:  str
+        :type: str
         """
         return self.__block_id
 
@@ -243,7 +243,7 @@ class Entity:
         """
         The position of the entity.
 
-        :type:  tuple[float, float, float]
+        :type: tuple[float, float, float]
         """
         return self._position
 
@@ -257,7 +257,7 @@ class Entity:
         """
         The rotation of the entity.
 
-        :type:  tuple[float, float, float]
+        :type: tuple[float, float, float]
         """
         return self._rotation
 
@@ -271,7 +271,7 @@ class Entity:
         """
         The velocity vector of the entity.
 
-        :type:  tuple[float, float, float]
+        :type: tuple[float, float, float]
         """
         return self._motion
 
@@ -359,7 +359,7 @@ class TileEntity:
         """
         The tile entity's position within the :class:`Region`/
 
-        :type:  tuple[int, int, int]
+        :type: tuple[int, int, int]
         """
         return self._position
 
