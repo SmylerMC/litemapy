@@ -894,7 +894,8 @@ class Region:
         """
         The X coordinate of the region within the schematic's coordinate system.
         This property is read only.
-        :type:  int
+
+        :type: int
         """
         return self.__x
 
@@ -903,7 +904,8 @@ class Region:
         """
         The Y coordinate of the region within the schematic's coordinate system.
         This property is read only.
-        :type:  int
+
+        :type: int
         """
         return self.__y
 
@@ -912,7 +914,8 @@ class Region:
         """
         The Z coordinate of the region within the schematic's coordinate system.
         The property is read only.
-        :type:  int
+
+        :type: int
         """
         return self.__z
 
@@ -921,7 +924,8 @@ class Region:
         """
         The width of the region.
         This property is read only.
-        :type:  int
+
+        :type: int
         """
         return self.__width
 
@@ -930,7 +934,8 @@ class Region:
         """
         The height of the region.
         This property is read only.
-        :type:  int
+
+        :type: int
         """
         return self.__height
 
@@ -939,7 +944,8 @@ class Region:
         """
         The length of the region.
         This property is read only.
-        :type:  int
+
+        :type: int
         """
         return self.__length
 
@@ -947,6 +953,7 @@ class Region:
     def entities(self):
         """
         The entities within the region.
+
         :type: list[Entity]
         """
         return self.__entities
@@ -955,6 +962,7 @@ class Region:
     def tile_entities(self):
         """
         The tile entities within the region.
+
         :type: list[TileEntity]
         """
         return self.__tile_entities
