@@ -1,8 +1,10 @@
 from litemapy import Schematic, Region, BlockState
-from os import walk, path
+from os import walk
 from constants import *
 import helper
 from tempfile import TemporaryDirectory
+
+AIR = BlockState("minecraft:air")
 
 valid_files = []
 for directory, child_directory, file_names in walk(VALID_LITEMATIC_DIRECTORY):
@@ -145,6 +147,8 @@ def test_are_random_schematics_preserved_when_reading_and_writing():
                 rs = read_region.getblock(x, y, z)
                 assert ws == rs
 
+            assert_valid_palette(write_region)
+
     temporary_directory.cleanup()
 
 
@@ -169,6 +173,7 @@ def test_region_filter():
                     state_1 = before_schematic.getblock(x, y, z)
                     state_2 = after_schematic.getblock(x, y, z)
                     assert state_1 == state_2
+        assert_valid_palette(before_schematic)
 
     def all_blue_filter(b: BlockState):
         return BlockState("minecraft:light_blue_concrete")
@@ -213,3 +218,27 @@ def test_region_filter():
         return b.with_blockid(b.blockid.replace('wool', 'concrete'))
 
     do_filter('concrete-wool.litematic', 'concrete-full.litematic', wool_to_concrete)
+
+
+def assert_valid_palette(region: Region):
+    palette = region.palette
+
+    assert palette[0] == AIR, "Palette does not have air at index 0"
+
+    entries = set()
+    for entry in palette:
+        assert entry not in entries, f"Palette has duplicate entry: {entry}"
+        entries.add(entry)
+
+    blocks = {region.getblock(*p) for p in region.allblockpos()}
+    for entry in palette:
+        if entry == AIR:
+            continue
+        assert entry in blocks, f"Palette contains an unused entry"
+
+
+def test_unused_palette_entries_get_pruned():
+    region = Region(0, 0, 0, 10, 10, 10)
+    region.setblock(0, 0, 0, BlockState("minecraft:stone"))
+    region.setblock(0, 0, 0, AIR)
+    assert_valid_palette(region)
