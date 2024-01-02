@@ -1,3 +1,9 @@
+### 0.8.1b0
+* Massively improve saving performance by using Numpy to count non-air blocks (by @llGaetanll).
+* Obsolete region palette entries are now pruned.
+* `BlockState` is now hashable.
+* Region palettes are now exposed as read-only properties.
+
 ### 0.8.0b0
 * Breaking change: the `BlockState` constructor no longer takes properties as a single `properties` argument.
 Each property must be supplied as its own keyword argument instead.
