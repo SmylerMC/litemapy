@@ -977,6 +977,19 @@ class Region:
         # TODO We are not exporting the documentation for this because it still exposes the raw NBT data
         return self.__fluid_ticks
 
+    @property
+    def palette(self):
+        """
+        The palette used to store blocks within the region.
+        Each entry in the palette is assured to be unique.
+        Expected the first palette entry which is always "minecraft:air",
+        each entry is assured to have at least one instance in the region.
+
+        :type: tuple[BlockState]
+        """
+        self._optimize_palette()
+        return tuple(self.__palette)
+
     def as_schematic(self, name=DEFAULT_NAME, author="", description="", mc_version=MC_DATA_VERSION):
         """
         Creates a schematic that contains that region at the origin.
@@ -1002,6 +1015,9 @@ class Region:
     def _optimize_palette(self):
         new_palette = []
         for old_index, state in enumerate(self.__palette):
+            if old_index != 0 and old_index not in self.__blocks:
+                # Non-air block that no longer exists in the schematic
+                continue
             for i, other_state in enumerate(new_palette):
                 if state == other_state:
                     new_index = i
