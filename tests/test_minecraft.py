@@ -26,3 +26,11 @@ def test_blockstate_with_properties():
 
     blockstate_3 = blockstate_2.with_properties(test4=None)
     assert blockstate_3.to_block_state_identifier() == "minecraft:stone[test1=testval1,test2=testval2,test3=testval3]"
+
+
+def test_blockstate_is_hashable():
+    state1 = BlockState("minecraft:air")
+    state2 = BlockState("minecraft:air")
+    assert state1 == state2
+    assert hash(state1) == hash(state2)
+    assert hash(state1) == hash(state1)

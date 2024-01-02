@@ -21,6 +21,7 @@ class BlockState:
         """
         self.__block_id = block_id
         self.__properties = DiscriminatingDictionary(self.__validate, properties)
+        self.__identifier_cache = None
 
     def to_nbt(self):
         """
@@ -106,23 +107,33 @@ class BlockState:
         :rtype: str
         """
 
+        if skip_empty and self.__identifier_cache is not None:
+            # The result is cached when skip_empty is True,
+            # but this function is used to implement __hash__,
+            # so we can use functools.cache
+            return self.__identifier_cache
+
         # TODO Needs unit tests
 
         identifier = self.__block_id
-        if skip_empty and not len(self.__properties):
-            return identifier
+        if not skip_empty or len(self.__properties) > 0:
+            state = dumps(self.__properties, separators=(',', '='), sort_keys=True)
+            state = state.replace('{', '[').replace('}', ']')
+            state = state.replace('"', '').replace("'", '')
+            identifier += state
 
-        state = dumps(self.__properties, separators=(',', '='), sort_keys=True)
-        state = state.replace('{', '[').replace('}', ']')
-        state = state.replace('"', '').replace("'", '')
+        if skip_empty:
+            self.__identifier_cache = identifier
 
-        identifier += state
         return identifier
 
     def __eq__(self, other):
         if not isinstance(other, BlockState):
             raise ValueError("Can only compare BlockStates with BlockStates")
         return other.__block_id == self.__block_id and other.__properties == self.__properties
+
+    def __hash__(self):
+        return hash(self.to_block_state_identifier())
 
     def __repr__(self):
         return self.to_block_state_identifier(skip_empty=True)
