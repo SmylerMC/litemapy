@@ -667,6 +667,9 @@ class Region:
     def setblock(self, x: int, y: int, z: int, block: BlockState):
         return self.__setitem__((x, y, z), block)
 
+    def __contains__(self, block: BlockState) -> bool:
+        return block in self.__palette and self.__palette.index(block) in self.__blocks
+
     def getblockcount(self) -> int:
         """
         Counts the number of blocks in the region.
