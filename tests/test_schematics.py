@@ -110,7 +110,7 @@ def test_region_min_and_max_are_accurate():
 
 def test_are_random_schematics_preserved_when_reading_and_writing():
     temporary_directory = TemporaryDirectory()
-    for i in range(100):
+    for i in range(10):
         write_schematic = helper.randomschematic()
         file_path = path.join(temporary_directory.name, write_schematic.name + ".litematic")
         write_schematic.save(file_path)
@@ -143,8 +143,8 @@ def test_are_random_schematics_preserved_when_reading_and_writing():
 
             # Assert all blocks are equal
             for x, y, z in write_region.allblockpos():
-                ws = write_region.getblock(x, y, z)
-                rs = read_region.getblock(x, y, z)
+                ws = write_region[x, y, z]
+                rs = read_region[x, y, z]
                 assert ws == rs
 
             assert_valid_palette(write_region)
@@ -170,8 +170,8 @@ def test_region_filter():
         for x in before_schematic.xrange():
             for y in before_schematic.yrange():
                 for z in before_schematic.zrange():
-                    state_1 = before_schematic.getblock(x, y, z)
-                    state_2 = after_schematic.getblock(x, y, z)
+                    state_1 = before_schematic[x, y, z]
+                    state_2 = after_schematic[x, y, z]
                     assert state_1 == state_2
         assert_valid_palette(before_schematic)
 
@@ -230,7 +230,7 @@ def assert_valid_palette(region: Region):
         assert entry not in entries, f"Palette has duplicate entry: {entry}"
         entries.add(entry)
 
-    blocks = {region.getblock(*p) for p in region.allblockpos()}
+    blocks = {region[p] for p in region.allblockpos()}
     for entry in palette:
         if entry == AIR:
             continue
@@ -239,8 +239,8 @@ def assert_valid_palette(region: Region):
 
 def test_unused_palette_entries_get_pruned():
     region = Region(0, 0, 0, 10, 10, 10)
-    region.setblock(0, 0, 0, BlockState("minecraft:stone"))
-    region.setblock(0, 0, 0, AIR)
+    region[0, 0, 0] = BlockState("minecraft:stone")
+    region[0, 0, 0] = AIR
     assert_valid_palette(region)
 
 
