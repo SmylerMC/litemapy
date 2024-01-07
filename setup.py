@@ -36,6 +36,7 @@ setuptools.setup(
             ],
         python_requires=">=3.9",
         install_requires=[
-                'nbtlib>=2.0.3'
+                'nbtlib>=2.0.3',
+                'typing_extensions',
           ]
     )
