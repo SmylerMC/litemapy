@@ -656,6 +656,10 @@ class Region:
 
         return region, mc_version
 
+    def __getitem__(self, position: tuple[int, int, int]) -> BlockState:
+        x, y, z = self.__region_coordinates_to_store_coordinates(*position)
+        return self.__palette[self.__blocks[x, y, z]]
+
     def getblock(self, x, y, z):
         """
         Get a :class:`~litemapy.BlockState` in the region.
@@ -669,8 +673,16 @@ class Region:
 
         :rtype:     ~litemapy.BlockState
         """
-        x, y, z = self.__region_coordinates_to_store_coordinates(x, y, z)
-        return self.__palette[self.__blocks[x, y, z]]
+        return self.__getitem__((x, y, z))
+
+    def __setitem__(self, position: tuple[int, int, int], block: BlockState) -> None:
+        x, y, z = self.__region_coordinates_to_store_coordinates(*position)
+        if block in self.__palette:
+            i = self.__palette.index(block)
+        else:
+            self.__palette.append(block)
+            i = len(self.__palette) - 1
+        self.__blocks[x, y, z] = i
 
     def setblock(self, x, y, z, block):
         """
@@ -685,13 +697,7 @@ class Region:
         :param block:   the new block state
         :type block:    ~litemapy.BlockState
         """
-        x, y, z = self.__region_coordinates_to_store_coordinates(x, y, z)
-        if block in self.__palette:
-            i = self.__palette.index(block)
-        else:
-            self.__palette.append(block)
-            i = len(self.__palette) - 1
-        self.__blocks[x, y, z] = i
+        return self.__setitem__((x, y, z), block)
 
     def getblockcount(self):
         """

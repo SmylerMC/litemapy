@@ -242,3 +242,10 @@ def test_unused_palette_entries_get_pruned():
     region.setblock(0, 0, 0, BlockState("minecraft:stone"))
     region.setblock(0, 0, 0, AIR)
     assert_valid_palette(region)
+
+
+def test_region_getitem_setitem():
+    region = Region(0, 0, 0, 1, 1, 1)
+    stone = BlockState("minecraft:stone")
+    region[0, 0, 0] = stone
+    assert region[0, 0, 0] == stone
