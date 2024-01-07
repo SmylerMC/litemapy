@@ -249,3 +249,13 @@ def test_region_getitem_setitem():
     stone = BlockState("minecraft:stone")
     region[0, 0, 0] = stone
     assert region[0, 0, 0] == stone
+
+
+def test_region_in():
+    region = Region(0, 0, 0, 10, 10, 10)
+    stone = BlockState("minecraft:stone")
+    assert stone not in region
+    region[0, 0, 0] = stone
+    assert stone in region
+    region[0, 0, 0] = AIR
+    assert stone not in region
