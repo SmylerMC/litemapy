@@ -4,6 +4,7 @@ from time import time
 import nbtlib
 import numpy as np
 from nbtlib.tag import Short, Byte, Int, Long, Double, String, List, Compound, ByteArray, IntArray
+from typing_extensions import deprecated
 
 from typing import Any, Generator, Callable, Optional
 
@@ -512,7 +513,7 @@ class Region:
             del tile_entity['Pos']
             region.tile_entities.append(tent)
 
-        # process blocks and let setblock() automatically generate the palette
+        # process blocks and let __setitem__() automatically generate the palette
         palette = nbt['Palette']
         palette_dict = {}
         for block, index in palette.items():
@@ -536,7 +537,7 @@ class Region:
             i_in_layer = i % blocks_per_layer
             z = int(i_in_layer / width)
             x = i_in_layer % width
-            region.setblock(x, y, z, palette_dict[int(index)])
+            region[x, y, z] = palette_dict[int(index)]
 
         return region, mc_version
 
@@ -632,12 +633,12 @@ class Region:
             ent.position = entity['pos']
             region.entities.append(ent)
 
-        # process blocks and let setblock() automatically generate the palette
+        # process blocks and let __setitem__() automatically generate the palette
         palette = structure['palette']
         for block in structure['blocks']:
             x, y, z = block['pos']
             state = block['state']
-            region.setblock(x, y, z, BlockState.fromnbt(palette[state]))
+            region[x, y, z] = BlockState.fromnbt(palette[state])
             if 'nbt' in block.keys():
                 tile_entity = TileEntity(block['nbt'])
                 tile_entity.position = block['pos']
@@ -649,14 +650,8 @@ class Region:
         x, y, z = self.__region_coordinates_to_store_coordinates(*position)
         return self.__palette[self.__blocks[x, y, z]]
 
+    @deprecated("Region.getblock() is deprecated. Use array style syntax instead: region[x, y, z]")
     def getblock(self, x: int, y: int, z: int) -> BlockState:
-        """
-        Get a :class:`~litemapy.BlockState` in the region.
-
-        :param x:   the X coordinate to get the block at
-        :param y:   the Y coordinate to get the block at
-        :param z:   the Z coordinate to get the block at
-        """
         return self.__getitem__((x, y, z))
 
     def __setitem__(self, position: tuple[int, int, int], block: BlockState) -> None:
@@ -668,15 +663,8 @@ class Region:
             i = len(self.__palette) - 1
         self.__blocks[x, y, z] = i
 
-    def setblock(self, x: int, y: int, z: int, block: BlockState) -> None:
-        """
-        Set a :class:`~litemapy.BlockState` in the region.
-
-        :param x:       the X coordinate to set the block at
-        :param y:       the Y coordinate to set the block at
-        :param z:       the Z coordinate to set the block at
-        :param block:   the new block state
-        """
+    @deprecated("Region.setblock() is deprecated. Use array style syntax instead: region[x, y, z]")
+    def setblock(self, x: int, y: int, z: int, block: BlockState):
         return self.__setitem__((x, y, z), block)
 
     def getblockcount(self) -> int:

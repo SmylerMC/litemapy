@@ -39,6 +39,5 @@ def randomschematic(regsize=20, regspread=20, regprob=0.8, blockprob=0.999):
             x = random.randint(mix, max)
             y = random.randint(miy, may)
             z = random.randint(miz, maz)
-            print("schemblock", mix, max, miy, may, miz, maz, x, y, z)
-            reg.setblock(x, y, z, s)
+            reg[x, y, z] = s
     return sch
