@@ -1,8 +1,9 @@
 from json import dumps
-from nbtlib.tag import Int, Double, String, List, Compound
+from nbtlib.tag import Int, Double, String, List, Compound, Base
 
 from .storage import DiscriminatingDictionary
 
+from typing import Any
 
 class BlockState:
     """
@@ -10,7 +11,11 @@ class BlockState:
     :class:`BlockState` are immutable.
     """
 
-    def __init__(self, block_id, **properties):
+    __block_id: str
+    __properties: DiscriminatingDictionary
+    __identifier_cache: None | str
+
+    def __init__(self, block_id: str, **properties: str) -> None:
         """
         A block state has a block ID and a dictionary of properties.
 
@@ -23,7 +28,7 @@ class BlockState:
         self.__properties = DiscriminatingDictionary(self.__validate, properties)
         self.__identifier_cache = None
 
-    def to_nbt(self):
+    def to_nbt(self) -> Compound:
         """
         Writes this block state to an nbt tag.
 
@@ -31,13 +36,13 @@ class BlockState:
         """
         root = Compound()
         root["Name"] = String(self.blockid)
-        properties = {String(k): String(v) for k, v in self.__properties.items()}
+        properties: dict[str, str] = {String(k): String(v) for k, v in self.__properties.items()}
         if len(properties) > 0:
             root["Properties"] = Compound(properties)
         return root
 
     @staticmethod
-    def fromnbt(nbt):
+    def fromnbt(nbt: Compound) -> 'BlockState':
         """
         Reads a :class:`BlockState` from an nbt tag.
 
@@ -45,14 +50,14 @@ class BlockState:
         """
         block_id = str(nbt["Name"])
         if "Properties" in nbt:
-            properties = {str(k): str(v) for k, v in nbt["Properties"].items()}
+            properties: dict[str, str] = {str(k): str(v) for k, v in nbt["Properties"].items()}
         else:
-            properties = {}
+            properties: dict[str, str] = {}
         block = BlockState(block_id, **properties)
         return block
 
     @property
-    def blockid(self):
+    def blockid(self) -> str:
         """
         The block's identifier.
 
@@ -60,7 +65,7 @@ class BlockState:
         """
         return self.__block_id
 
-    def with_blockid(self, block_id):
+    def with_blockid(self, block_id: str) -> 'BlockState':
         """
         Returns a new :class:`BlockState` with the same properties as this one but a different block id.
 
@@ -69,7 +74,7 @@ class BlockState:
         """
         return BlockState(block_id, **self.__properties)
 
-    def with_properties(self, **properties):
+    def with_properties(self, **properties: str | None) -> 'BlockState':
         """
         Returns a new copy of this :class:`BlockState` with new values for the properties given in keyword arguments.
         Using `None` as a property value removes it.
@@ -89,12 +94,12 @@ class BlockState:
         other.__properties.update(properties)
         return other
 
-    def __validate(self, k, v):
+    def __validate(self, k: Any, v: Any) -> tuple[bool, str]:
         if type(k) is not str or type(v) is not str:
             return False, "BlockState properties should be a string => string dictionary"
         return True, ""
 
-    def to_block_state_identifier(self, skip_empty=True):
+    def to_block_state_identifier(self, skip_empty :bool=True) -> str:
         """
         Returns an identifier that represents the BlockState in the Sponge Schematic Format (version 2).
         Format: block_type[properties]
@@ -115,7 +120,7 @@ class BlockState:
 
         # TODO Needs unit tests
 
-        identifier = self.__block_id
+        identifier: str = self.__block_id
         if not skip_empty or len(self.__properties) > 0:
             state = dumps(self.__properties, separators=(',', '='), sort_keys=True)
             state = state.replace('{', '[').replace('}', ']')
@@ -127,21 +132,21 @@ class BlockState:
 
         return identifier
 
-    def __eq__(self, other):
+    def __eq__(self, other: 'BlockState') -> bool:
         if not isinstance(other, BlockState):
             raise ValueError("Can only compare BlockStates with BlockStates")
         return other.__block_id == self.__block_id and other.__properties == self.__properties
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.to_block_state_identifier())
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.to_block_state_identifier(skip_empty=True)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> str | None:
         return self.__properties[key]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.__properties)
 
 
@@ -154,9 +159,14 @@ class Entity:
     (e.g. a sheep has a tag for its color and one indicating whether it has been sheared).
     """
 
+    _data: Compound
+    _position: tuple[float, float, float]
+    _rotation: tuple[float, float, float]
+    _motion: tuple[float, float, float]
+
     # TODO Needs unit tests
 
-    def __init__(self, str_or_nbt):
+    def __init__(self, str_or_nbt: str | Compound) -> None:
         # TODO Refactor to only have a from_nbt static method instead of allowing nbt into the constructor
         """
         :param str_or_nbt:  either the entity identifier as a string, in which case all other tag will be default,
@@ -180,11 +190,14 @@ class Entity:
             self._data['Motion'] = List[Double]([Double(0.), Double(0.), Double(0.)])
 
         self._id = self._data['id']
-        self._position = tuple([float(coord) for coord in self._data['Pos']])
-        self._rotation = tuple([float(coord) for coord in self._data['Rotation']])
-        self._motion = tuple([float(coord) for coord in self._data['Motion']])
+        position = [float(coord) for coord in self._data['Pos']]
+        self._position = (position[0], position[1], position[2])
+        rotation = [float(coord) for coord in self._data['Rotation']]
+        self._rotation = (rotation[0], rotation[1], rotation[2])
+        motion = [float(coord) for coord in self._data['Motion']]
+        self._motion = (motion[0], motion[1], motion[2])
 
-    def to_nbt(self):
+    def to_nbt(self) -> Compound:
         """
         Save this entity as an NBT tag.
 
@@ -193,7 +206,7 @@ class Entity:
         return self._data
 
     @staticmethod
-    def fromnbt(nbt):
+    def fromnbt(nbt: Compound) -> 'Entity':
         """
         Read an entity from an nbt tag.
 
@@ -204,39 +217,45 @@ class Entity:
         """
         return Entity(nbt)
 
-    def add_tag(self, key, tag):
+    def add_tag(self, key: str, tag) -> None:
         self._data[key] = tag
         if key == 'id':
             self._id = str(tag)
         if key == 'Pos':
-            self._position = (float(coord) for coord in tag)
+            position = [float(coord) for coord in tag]
+            self._position = (position[0], position[1], position[2])
         if key == 'Rotation':
-            self._rotation = (float(coord) for coord in tag)
+            rotation = [float(coord) for coord in tag]
+            self._rotation = (rotation[0], rotation[1], rotation[2])
         if key == 'Motion':
-            self._motion = (float(coord) for coord in tag)
+            motion = [float(coord) for coord in tag]
+            self._motion = (motion[0], motion[1], motion[2])
 
-    def get_tag(self, key):
+    def get_tag(self, key: str) -> Base:
         try:
             return self._data[key]
         except KeyError:
             raise
 
     @property
-    def data(self):
+    def data(self) -> Compound:
         # TODO Not documented because it exposes NBT
         return self._data
 
     @data.setter
-    def data(self, data):
+    def data(self, data: Compound) -> None:
         # TODO Not documented because it exposes NBT
         self._data = Entity(data).data
         self._id = str(self._data['id'])
-        self._position = tuple([float(coord) for coord in self._data['Pos']])
-        self._rotation = tuple([float(coord) for coord in self._data['Rotation']])
-        self._motion = tuple([float(coord) for coord in self._data['Motion']])
+        position = [float(coord) for coord in self._data['Pos']]
+        self._position = (position[0], position[1], position[2])
+        rotation = [float(coord) for coord in self._data['Rotation']]
+        self._rotation = (rotation[0], rotation[1], rotation[2])
+        motion = [float(coord) for coord in self._data['Motion']]
+        self._motion = (motion[0], motion[1], motion[2])
 
     @property
-    def id(self):
+    def id(self) -> str:
         """
         This entity's type identifier (e.g. *minecraft:pig* )
 
@@ -245,12 +264,12 @@ class Entity:
         return self._id
 
     @id.setter
-    def id(self, id):
+    def id(self, id: str) -> None:
         self._id = id
         self._data['id'] = String(self._id)
 
     @property
-    def position(self):
+    def position(self) -> tuple[float, float, float]:
         """
         The position of the entity.
 
@@ -259,12 +278,12 @@ class Entity:
         return self._position
 
     @position.setter
-    def position(self, position):
+    def position(self, position: tuple[float, float, float]) -> None:
         self._position = position
         self._data['Pos'] = List[Double]([Double(coord) for coord in self._position])
 
     @property
-    def rotation(self):
+    def rotation(self) -> tuple[float, float, float]:
         """
         The rotation of the entity.
 
@@ -273,12 +292,12 @@ class Entity:
         return self._rotation
 
     @rotation.setter
-    def rotation(self, rotation):
+    def rotation(self, rotation: tuple[float, float, float]) -> None:
         self._rotation = rotation
         self._data['Rotation'] = List[Double]([Double(coord) for coord in self._rotation])
 
     @property
-    def motion(self):
+    def motion(self) -> tuple[float, float, float]:
         """
         The velocity vector of the entity.
 
@@ -287,7 +306,7 @@ class Entity:
         return self._motion
 
     @motion.setter
-    def motion(self, motion):
+    def motion(self, motion: tuple[float, float, float]) -> None:
         self._motion = motion
         self._data['Motion'] = List[Double]([Double(coord) for coord in self._motion])
 
@@ -302,8 +321,10 @@ class TileEntity:
     For this reason, the :class:`TileEntity` class does not store an ID  but only a position.
     The ID can be inferred by looking up the :class:`BlockState` as the same position in the :class:`Region`.
     """
+    _data: Compound
+    _position: tuple[int, int, int]
 
-    def __init__(self, nbt):
+    def __init__(self, nbt: Compound) -> None:
         # TODO Not documented because it only exposes NBT
         self._data = nbt
         keys = self._data.keys()
@@ -314,10 +335,10 @@ class TileEntity:
             self._data['y'] = Int(0)
         if 'z' not in keys:
             self._data['z'] = Int(0)
+        position = [int(self._data[coord]) for coord in ['x', 'y', 'z']]
+        self._position = (position[0], position[1], position[2])
 
-        self._position = tuple([int(self._data[coord]) for coord in ['x', 'y', 'z']])
-
-    def to_nbt(self):
+    def to_nbt(self) -> Compound:
         """
         Saves the tile entity to NBT tag.
 
@@ -326,7 +347,7 @@ class TileEntity:
         return self._data
 
     @staticmethod
-    def fromnbt(nbt):
+    def fromnbt(nbt: Compound) -> 'TileEntity':
         """
         Reads a tile entity from an NBT tag.
 
@@ -336,11 +357,11 @@ class TileEntity:
         """
         return TileEntity(nbt)
 
-    def add_tag(self, key, tag):
+    def add_tag(self, key: str, tag) -> None:
         # TODO Not documented because it exposes NBT
         self._data[key] = tag
 
-        pos = self._position
+        pos: tuple[int, int, int] = self._position
         if key == 'x':
             self._position = (int(tag), pos[1], pos[2])
         if key == 'y':
@@ -348,7 +369,7 @@ class TileEntity:
         if key == 'z':
             self._position = (pos[0], pos[1], int(tag))
 
-    def get_tag(self, key):
+    def get_tag(self, key: str) -> Base:
         # TODO Not documented because it exposes NBT
         try:
             return self._data[key]
@@ -356,17 +377,18 @@ class TileEntity:
             raise
 
     @property
-    def data(self):
+    def data(self) -> Compound:
         # TODO Not documented because it exposes NBT
         return self._data
 
     @data.setter
-    def data(self, data):
+    def data(self, data: Compound):
         self._data = TileEntity(data).data
-        self._position = tuple([int(self._data[coord]) for coord in ['x', 'y', 'z']])
+        position = [int(self._data[coord]) for coord in ['x', 'y', 'z']]
+        self._position = (position[0], position[1], position[2])
 
     @property
-    def position(self):
+    def position(self) -> tuple[int, int, int]:
         """
         The tile entity's position within the :class:`Region`/
 
@@ -375,7 +397,7 @@ class TileEntity:
         return self._position
 
     @position.setter
-    def position(self, position):
+    def position(self, position: tuple[int, int, int]):
         self._position = position
         for coord, index in [('x', 0), ('y', 1), ('z', 2)]:
             self._data[coord] = Int(self._position[index])
@@ -383,10 +405,10 @@ class TileEntity:
 
 class RequiredKeyMissingException(Exception):
 
-    def __init__(self, key, message='The required key is missing in the (Tile)Entity\'s NBT Compound'):
+    def __init__(self, key: str, message: str='The required key is missing in the (Tile)Entity\'s NBT Compound'):
         self.key = key
         self.message = message
         super().__init__(self.message)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.key} -> {self.message}'
