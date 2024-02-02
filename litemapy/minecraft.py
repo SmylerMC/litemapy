@@ -20,9 +20,7 @@ class BlockState:
         A block state has a block ID and a dictionary of properties.
 
         :param block_id:    the identifier of the block (e.g. *minecraft:stone*)
-        :type block_id:     str
         :param properties:  the properties of the block state as keyword parameters (e.g. *facing="north"*)
-        :type properties:   str
         """
         self.__block_id = block_id
         self.__properties = DiscriminatingDictionary(self.__validate, properties)
@@ -31,8 +29,6 @@ class BlockState:
     def to_nbt(self) -> Compound:
         """
         Writes this block state to an nbt tag.
-
-        :rtype: ~nbtlib.tag.Compound
         """
         root = Compound()
         root["Name"] = String(self.blockid)
@@ -45,8 +41,6 @@ class BlockState:
     def fromnbt(nbt: Compound) -> 'BlockState':
         """
         Reads a :class:`BlockState` from an nbt tag.
-
-        :rtype: BlockState
         """
         block_id = str(nbt["Name"])
         if "Properties" in nbt:
@@ -60,8 +54,6 @@ class BlockState:
     def blockid(self) -> str:
         """
         The block's identifier.
-
-        :type: str
         """
         return self.__block_id
 
@@ -70,7 +62,6 @@ class BlockState:
         Returns a new :class:`BlockState` with the same properties as this one but a different block id.
 
         :param block_id:  the block id for the new :class:`BlockState`
-        :type  block_id:  str
         """
         return BlockState(block_id, **self.__properties)
 
@@ -80,10 +71,8 @@ class BlockState:
         Using `None` as a property value removes it.
 
         :param properties:  the new properties as keyword arguments
-        :type properties:   str | None
 
         :returns: A copy of this :class:`BlockState` with the given properties updated to new values
-        :rtype: BlockState
         """
         none_properties = list(map(lambda kv: kv[0], filter(lambda kv: kv[1] is None, properties.items())))
         other = BlockState(self.blockid)
@@ -106,10 +95,8 @@ class BlockState:
         Example: minecraft:oak_sign[rotation=0,waterlogged=false]
 
         :param skip_empty:  Whether empty brackets should be excluded if the BlockState has no properties.
-        :type skip_empty:   bool
 
         :returns: An identifier that represents the BlockState in a Sponge schematic.
-        :rtype: str
         """
 
         if skip_empty and self.__identifier_cache is not None:
@@ -171,7 +158,6 @@ class Entity:
         """
         :param str_or_nbt:  either the entity identifier as a string, in which case all other tag will be default,
                             or an bnt compound tag with the entitie's data.
-        :type str_or_nbt:   str | ~nbtlib.tag.Compound
         """
 
         if isinstance(str_or_nbt, str):
@@ -200,8 +186,6 @@ class Entity:
     def to_nbt(self) -> Compound:
         """
         Save this entity as an NBT tag.
-
-        :rtype: ~nbtlib.tag.Compound
         """
         return self._data
 
@@ -211,9 +195,6 @@ class Entity:
         Read an entity from an nbt tag.
 
         :param nbt: An NBT tag with the entity's data
-        :type nbt:  ~nbtlib.tag.Compound
-
-        :rtype:     Entity
         """
         return Entity(nbt)
 
@@ -258,8 +239,6 @@ class Entity:
     def id(self) -> str:
         """
         This entity's type identifier (e.g. *minecraft:pig* )
-
-        :type: str
         """
         return self._id
 
@@ -272,8 +251,6 @@ class Entity:
     def position(self) -> tuple[float, float, float]:
         """
         The position of the entity.
-
-        :type: tuple[float, float, float]
         """
         return self._position
 
@@ -286,8 +263,6 @@ class Entity:
     def rotation(self) -> tuple[float, float, float]:
         """
         The rotation of the entity.
-
-        :type: tuple[float, float, float]
         """
         return self._rotation
 
@@ -300,8 +275,6 @@ class Entity:
     def motion(self) -> tuple[float, float, float]:
         """
         The velocity vector of the entity.
-
-        :type: tuple[float, float, float]
         """
         return self._motion
 
@@ -341,8 +314,6 @@ class TileEntity:
     def to_nbt(self) -> Compound:
         """
         Saves the tile entity to NBT tag.
-
-        :rtype: ~nbtlib.tag.Compound
         """
         return self._data
 
@@ -352,8 +323,6 @@ class TileEntity:
         Reads a tile entity from an NBT tag.
 
         :param nbt: the tile entity's data as an NBT tag
-        :type nbt:  ~nbtlib.tag.Compound
-        :rtype:     TileEntity
         """
         return TileEntity(nbt)
 
@@ -391,8 +360,6 @@ class TileEntity:
     def position(self) -> tuple[int, int, int]:
         """
         The tile entity's position within the :class:`Region`/
-
-        :type: tuple[int, int, int]
         """
         return self._position
 

@@ -35,17 +35,11 @@ class Schematic:
         Schematic can be created by optionally providing metadata and regions, or leaving them blank or default.
 
         :param name:        The name of the schematic to write in the metadata
-        :type name:         str
         :param author:      The name of the author to write in the metadata
-        :type author:       str
         :param description: The description to write in the metadata
-        :type description:  str
         :param regions:     Regions to populate the schematic with
-        :type regions:      dict[str, Region]
         :param lm_version:  The litematic version (you are unlikely to ever need to use this)
-        :type lm_version:   int
         :param mc_version:  The Minecraft data version (you are unlikely to ever need to use this)
-        :type mc_version:   int
         """
         if regions is None:
             regions = {}
@@ -68,16 +62,11 @@ class Schematic:
         Save this schematic to a file.
 
         :param file_path:   the filesystem path the schematic should be saved to
-        :type file_path:    str
         :param update_meta: whether to update the schematic's metadata before saving
                             (see :func:`~litemapy.Schematic.updatemeta`)
-        :type update_meta:  bool
         :param save_soft:   whether to add an entry to the metadata indicating the schematic was created with Litemapy
-        :type save_soft:    bool
         :param gzipped:     whether to compress the NBT content with gzip (this is the normal behavior)
-        :type gzipped:      bool
         :param byteorder:   endianness of NBT numbers (either "little" or "big", default is "big")
-        :type byteorder:    str
 
         :raises ValueError: if this schematic does not have any region
         """
@@ -91,7 +80,6 @@ class Schematic:
         Write the schematic to an NBT tag.
 
         :param save_soft:   whether to add an entry to the metadata indicating the schematic was created with Litemapy
-        :type save_soft:    bool
 
         :rtype: ~nbtlib.tag.Compound
 
@@ -132,7 +120,6 @@ class Schematic:
         Read a schematic from an NBT tag.
 
         :param nbt: a schematic serialized as an NBT tag
-        :type nbt:  ~nbtlib.tag.Compound
 
         :rtype:     Schematic
 
@@ -254,8 +241,6 @@ class Schematic:
         This is a read only property, and it is not possible to replace this dictionary.
         It can however be edited, as long as the suitable types are used.
         Using an incorrect type will raise a :class:`~litemapy.storage.DiscriminationError`.
-
-        :type: dict[str, Region]
         """
         return self.__regions
 
@@ -265,8 +250,6 @@ class Schematic:
         The width of this Schematic's bounding box.
         See :ref:`Coordinate systems <coordinates>`.
         This property is read-only.
-
-        :type: int
         """
         if self.__x_min is None or self.__x_max is None:
             return 0
@@ -278,8 +261,6 @@ class Schematic:
         The height of this Schematic's bounding box.
         See :ref:`Coordinate systems <coordinates>`.
         This property is read-only.
-
-        :type: int
         """
         if self.__y_min is None or self.__y_max is None:
             return 0
@@ -291,8 +272,6 @@ class Schematic:
         The length of this Schematic's bounding box.
         See :ref:`Coordinate systems <coordinates>`.
         This property is read-only.
-
-        :type: int
         """
         if self.__z_min is None or self.__z_max is None:
             return 0
@@ -328,17 +307,11 @@ class Region:
     def __init__(self, x, y, z, width, height, length) -> None:
         """
         :param x:       the X coordinate of the region in the schematic
-        :type x:        int
         :param y:       the Y coordinate of the region in the schematic
-        :type y:        int
         :param z:       the Z coordinate of the region in the schematic
-        :type z:        int
         :param width:   the size of the region along the x-axis (can be negative!)
-        :type width:    int
         :param height:  the size of the region along the y-axis (can be negative!)
-        :type height:   int
         :param length:  the size of the region along the z-axis (can be negative!)
-        :type length:   int
 
         :raises ValueError: if either width, height or length is 0
         """
@@ -357,7 +330,6 @@ class Region:
         """
         Write this region to an NBT tag.
 
-        :rtype: ~nbtlib.tag.Compound
         """
 
         self._optimize_palette()
@@ -406,16 +378,12 @@ class Region:
         :param mc_version:  Minecraft data version that is being emulated
                             (https://minecraft.wiki/w/Data_version).
                             Should not be critical for newer versions of Minecraft.
-        :type mc_version:   int
         :param gzipped:     Whether the NBT Compound file should be compressed
                             (WorldEdit only works with gzipped files).
-        :type gzipped:      bool
         :param endianness:  Endianness of the resulting NBT Compound file
                             ('big' or 'little', WorldEdit only works with big endian files).
-        :type endianness:   str
 
         :returns:           The Region represented as a Sponge Schematic NBT Compound file.
-        :rtype:             ~nbtlib.nbt.File
         """
 
         self._optimize_palette()
@@ -501,11 +469,9 @@ class Region:
         for more information.
 
         :param nbt: The Sponge schematic NBT Compound.
-        :type nbt:  nbtlib.tag.Compound
 
         :returns:   a Litematica Region built from the Sponge schematic
                     and the Minecraft data version that the Sponge schematic was created for.
-        :rtype:     tuple[Region, int]
         """
 
         # TODO Needs unit tests
@@ -577,16 +543,12 @@ class Region:
         :param mc_version:  Minecraft data version that is being emulated
                             (https://minecraft.wiki/w/Data_version).
                             Should not be critical for newer versions of Minecraft.
-        :type mc_version:   int
         :param gzipped:     Whether the NBT Compound file should be compressed
                             (Vanilla Minecraft only works with gzipped files).
-        :type gzipped:      bool
         :param byteorder:   Endianness of the resulting NBT Compound file
                             ('big' or 'little', Vanilla Minecraft only works with big endian files).
-        :type byteorder:    str
 
         :returns:           The Region represented as a Minecraft structure NBT file.
-        :rtype:             ~nbtlib.nbt.File
         """
 
         # TODO Needs unit tests
@@ -646,11 +608,9 @@ class Region:
         Returns a Litematica Region based on an NBT Compound that conforms to Minecraft's structure NBT files.
 
         :param structure:   The Minecraft structure NBT Compound.
-        :type structure:    ~nbtlib.tag.Compound
 
         :returns:           A Litematica Region built from the Minecraft structure
                             and the Minecraft data version that the structure was created for
-        :rtype:             tuple[Region, str]
         """
 
         # TODO Needs unit tests
@@ -686,13 +646,8 @@ class Region:
         Get a :class:`~litemapy.BlockState` in the region.
 
         :param x:   the X coordinate to get the block at
-        :type x:    int
         :param y:   the Y coordinate to get the block at
-        :type y:    int
         :param z:   the Z coordinate to get the block at
-        :type z:    int
-
-        :rtype:     ~litemapy.BlockState
         """
         x, y, z = self.__region_coordinates_to_store_coordinates(x, y, z)
         return self.__palette[self.__blocks[x, y, z]]
@@ -702,13 +657,9 @@ class Region:
         Set a :class:`~litemapy.BlockState` in the region.
 
         :param x:       the X coordinate to set the block at
-        :type x:        int
         :param y:       the Y coordinate to set the block at
-        :type y:        int
         :param z:       the Z coordinate to set the block at
-        :type z:        int
         :param block:   the new block state
-        :type block:    ~litemapy.BlockState
         """
         x, y, z = self.__region_coordinates_to_store_coordinates(x, y, z)
         if block in self.__palette:
@@ -723,7 +674,6 @@ class Region:
         Counts the number of blocks in the region.
 
         :returns: the number of non-air blocks in the region
-        :rtype: int
         """
 
         # air is index zero
@@ -743,7 +693,6 @@ class Region:
         Computes this region's volume.
 
         :returns: this region volume in blocks
-        :rtype: int
         """
         return abs(self.__width * self.__height * self.__length)
 
@@ -751,14 +700,11 @@ class Region:
         return max(ceil(log(len(self.__palette), 2)), 2)
 
     @staticmethod
-    def fromnbt(nbt) -> 'Region':
+    def fromnbt(nbt: Compound) -> 'Region':
         """
         Read a region from an NBT tag.
 
         :param nbt: an NBT tag to read the region from
-        :type nbt:  ~nbtlib.tag.Compound
-
-        :rtype:     Region
         """
         pos = nbt["Position"]
         x = int(pos["x"])
@@ -802,112 +748,96 @@ class Region:
     def minschemx(self) -> int:
         """
         :returns:   the minimum X coordinate of this region in the schematics coordinate system
-        :rtype:     int
         """
         return min(self.__x, self.__x + self.width + 1)
 
     def maxschemx(self) -> int:
         """
         :returns:   the maximum X coordinate of this region in the schematics coordinate system
-        :rtype:     int
         """
         return max(self.__x, self.__x + self.width - 1)
 
     def minschemy(self) -> int:
         """
         :returns:   the minimum Y coordinate of this region in the schematics coordinate system
-        :rtype:     int
         """
         return min(self.__y, self.__y + self.height + 1)
 
     def maxschemy(self) -> int:
         """
         :returns:   the maximum Y coordinate of this region in the schematics coordinate system
-        :rtype:     int
         """
         return max(self.__y, self.__y + self.height - 1)
 
     def minschemz(self) -> int:
         """
         :returns:   the minimum Z coordinate of this region in the schematics coordinate system
-        :rtype:     int
         """
         return min(self.__z, self.__z + self.length + 1)
 
     def maxschemz(self) -> int:
         """
         :returns:   the maximum Z coordinate of this region in the schematics coordinate system
-        :rtype:     int
         """
         return max(self.__z, self.__z + self.length - 1)
 
     def minx(self) -> int:
         """
         :returns:   the minimum X coordinate of this region in its own coordinate system
-        :rtype:     int
         """
         return min(0, self.width + 1)
 
     def maxx(self) -> int:
         """
         :returns:   the maximum X coordinate of this region in its own coordinate system
-        :rtype:     int
         """
         return max(0, self.width - 1)
 
     def miny(self) -> int:
         """
         :returns:   the minimum Y coordinate of this region in its own coordinate system
-        :rtype:     int
         """
         return min(0, self.height + 1)
 
     def maxy(self) -> int:
         """
         :returns:   the maximum Y coordinate of this region in its own coordinate system
-        :rtype:     int
         """
         return max(0, self.height - 1)
 
     def minz(self) -> int:
         """
         :returns:   the minimum Z coordinate of this region in its own coordinate system
-        :rtype:     int
         """
         return min(0, self.length + 1)
 
     def maxz(self) -> int:
         """
         :returns:   the maximum Z coordinate of this region in its own coordinate system
-        :rtype:     int
         """
         return max(0, self.length - 1)
 
     def xrange(self) -> range:
         """
         :returns:   the range of coordinates this region contains along its X axis
-        :rtype:     range
         """
         return range(self.minx(), self.maxx() + 1)
 
     def yrange(self) -> range:
         """
         :returns:   the range of coordinates this region contains along its Y axis
-        :rtype:     range
         """
         return range(self.miny(), self.maxy() + 1)
 
     def zrange(self) -> range:
         """
         :returns:   the range of coordinates this region contains along its Z axis
-        :rtype:     range
         """
         return range(self.minz(), self.maxz() + 1)
 
     def allblockpos(self) -> Generator[tuple[int, int, int], None, None]:
         """
         :returns:   an iterator over the coordinates this region contains in its own coordinate system
-        :rtype:     ~collections.abc.Iterator[tuple[int, int, int]]
         """
         for x in self.xrange():
             for y in self.yrange():
@@ -919,8 +849,6 @@ class Region:
         """
         The X coordinate of the region within the schematic's coordinate system.
         This property is read only.
-
-        :type: int
         """
         return self.__x
 
@@ -929,8 +857,6 @@ class Region:
         """
         The Y coordinate of the region within the schematic's coordinate system.
         This property is read only.
-
-        :type: int
         """
         return self.__y
 
@@ -939,8 +865,6 @@ class Region:
         """
         The Z coordinate of the region within the schematic's coordinate system.
         The property is read only.
-
-        :type: int
         """
         return self.__z
 
@@ -949,8 +873,6 @@ class Region:
         """
         The width of the region.
         This property is read only.
-
-        :type: int
         """
         return self.__width
 
@@ -959,8 +881,6 @@ class Region:
         """
         The height of the region.
         This property is read only.
-
-        :type: int
         """
         return self.__height
 
@@ -969,8 +889,6 @@ class Region:
         """
         The length of the region.
         This property is read only.
-
-        :type: int
         """
         return self.__length
 
@@ -978,8 +896,6 @@ class Region:
     def entities(self) -> list[Entity]:
         """
         The entities within the region.
-
-        :type: list[Entity]
         """
         return self.__entities
 
@@ -987,8 +903,6 @@ class Region:
     def tile_entities(self) -> list[TileEntity]:
         """
         The tile entities within the region.
-
-        :type: list[TileEntity]
         """
         return self.__tile_entities
 
@@ -1009,8 +923,6 @@ class Region:
         Each entry in the palette is assured to be unique.
         Expected the first palette entry which is always "minecraft:air",
         each entry is assured to have at least one instance in the region.
-
-        :type: tuple[BlockState]
         """
         self._optimize_palette()
         return tuple(self.__palette)
@@ -1020,15 +932,9 @@ class Region:
         Creates a schematic that contains that region at the origin.
 
         :param name:        a name for both the region and the schematic
-        :type name:         str
         :param author:      an author for the schematic
-        :type author:       str
         :param description: a description for the schematic
-        :type description:  str
         :param mc_version:  The Minecraft data version (you are unlikely to ever need to use this)
-        :type mc_version:   int
-
-        :rtype:             Schematic
         """
         return Schematic(name=name, author=author, description=description, regions={name: self}, mc_version=mc_version)
 
@@ -1061,7 +967,6 @@ class Region:
         This is a lot faster than manually iterating over region coordinates.
 
         :param function: a mapping function
-        :type function:  (BlockState) -> BlockState
         """
         self.__palette = list(map(function, self.__palette))
 
