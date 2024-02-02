@@ -1,10 +1,14 @@
 from math import ceil
 import nbtlib.tag
-
+from nbtlib import LongArray
+from typing import Generator, Callable, Any
 
 class LitematicaBitArray:
-
-    def __init__(self, size, nbits):
+    size: int
+    nbit: int
+    array: list[int]
+    __mask: int
+    def __init__(self, size: int, nbits: int) -> None:
         self.size = size
         self.nbits = nbits
         s = ceil(nbits * size / 64)
@@ -12,7 +16,7 @@ class LitematicaBitArray:
         self.__mask = (1 << nbits) - 1  # nbits bits set to 1
 
     @staticmethod
-    def from_nbt_long_array(arr, size, nbits):
+    def from_nbt_long_array(arr: LongArray, size: int, nbits: int) -> 'LitematicaBitArray':
         # TODO Test loading and validating from an external source
         expected_len = ceil(size * nbits / 64)
         if expected_len != len(arr):
@@ -26,7 +30,7 @@ class LitematicaBitArray:
         r.array = [int(i) & m for i in arr]  # Remove the infinite trailing 1s of negative numbers
         return r
 
-    def _to_long_list(self):
+    def _to_long_list(self) -> list[int]:
         list_of_longs = []
         m1 = 1 << 63
         m2 = (1 << 64) - 1
@@ -36,10 +40,10 @@ class LitematicaBitArray:
             list_of_longs.append(i)
         return list_of_longs
 
-    def _to_nbt_long_array(self):
+    def _to_nbt_long_array(self) -> LongArray:
         return nbtlib.tag.LongArray(self._to_long_list())
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> int:
         if not 0 <= index < len(self):
             raise IndexError("Invalid index {}".format(index))
         start_offset = index * self.nbits
@@ -54,7 +58,7 @@ class LitematicaBitArray:
             val = self.array[start_arr_index] >> start_bit_offset | self.array[end_arr_index] << end_offset
             return val & self.__mask
 
-    def __setitem__(self, index, value):
+    def __setitem__(self, index: int, value: int) -> None:
         if not 0 <= index < len(self):
             raise IndexError("Invalid index {}".format(index))
         if not 0 <= value <= self.__mask:
@@ -74,20 +78,20 @@ class LitematicaBitArray:
             self.array[end_arr_index] = (self.array[end_arr_index] >> j1 << j1 | (
                         value & self.__mask) >> end_offset) & m
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.size
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[int, None, None]:
         for i in range(len(self)):
             yield self[i]
 
-    def __reversed__(self):
+    def __reversed__(self) -> 'LitematicaBitArray':
         arr = LitematicaBitArray(self.size, self.nbits)
         for i in range(len(self)):
             arr[i] = self[len(self) - i - 1]
         return arr
 
-    def __contains__(self, value):
+    def __contains__(self, value: int) -> bool:
         for v in self:
             if v == value:
                 return True
@@ -95,8 +99,11 @@ class LitematicaBitArray:
 
 
 class DiscriminatingDictionary(dict):
+    validator: Callable[[Any],tuple[bool, str]]
+    on_add: Callable[[Any,Any],None] | None
+    on_remove: Callable[[Any,Any],None] | None
 
-    def __init__(self, validator, *args, **options):
+    def __init__(self, validator: Callable[[Any],tuple[bool, str]], *args, onadd: Callable[[Any,Any],None] | None = None,onremove: Callable[[Any,Any],None] | None = None) -> None:
         """
         :params validator:  a function that takes as argument a key and an item and returns a tuple (canstore, msg)
                             canstore must be a boolean, True if the item is accepted, and False otherwise
@@ -107,8 +114,8 @@ class DiscriminatingDictionary(dict):
         """
         # TODO Handle iterators in constructor
         self.validator = validator
-        self.on_add = options.pop("onadd", None)
-        self.on_remove = options.pop("onremove", None)
+        self.on_add = onadd
+        self.on_remove = onremove
         if len(args) == 1 and isinstance(args[0], dict):
             for key, item in args[0].items():
                 self.validate(key, item)
@@ -120,12 +127,12 @@ class DiscriminatingDictionary(dict):
             self.validate(key, item)
         super().__init__(*args, **options)
 
-    def validate(self, key, item):
+    def validate(self, key: Any, item: Any) -> None:
         canstore, msg = self.validator(key, item)
         if not canstore:
             raise DiscriminationError(msg)
 
-    def __setitem__(self, key, item):
+    def __setitem__(self, key: Any, item: Any) -> None:
         self.validate(key, item)
         b = key in self
         old = self.get(key)
@@ -134,14 +141,14 @@ class DiscriminatingDictionary(dict):
             self.__on_rm(key, old)
         self.__on_add(key, item)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: Any) -> None:
         if key not in self:
             raise KeyError()
         v = self[key]
         super().__delitem__(key)
         self.__on_rm(key, v)
 
-    def setdefault(self, key, *args):
+    def setdefault(self, key: Any, *args) -> Any | None:
         default = args[0] if len(args) > 0 else None
         self.validate(key, default)
         b = key not in self
@@ -150,30 +157,30 @@ class DiscriminatingDictionary(dict):
             self.__on_add(key, default)
         return r
 
-    def update(self, other):
+    def update(self, other: 'DiscriminatingDictionary') -> None:
         other = DiscriminatingDictionary(self.validator, other)
         for k, v in other.items():
             self[k] = v
 
-    def pop(self, key):
+    def pop(self, key: Any) -> None:
         v = super().pop(key)
         self.__on_rm(key, v)
 
-    def popitem(self):
+    def popitem(self) -> None:
         k, v = super().popitem()
         self.__on_rm(k, v)
 
-    def clear(self):
+    def clear(self) -> None:
         c = self.copy()
         super().clear()
         for k, v in c.items():
             self.__on_rm(k, v)
 
-    def __on_add(self, key, item):
+    def __on_add(self, key: Any, item: Any) -> None:
         if self.on_add is not None:
             self.on_add(key, item)
 
-    def __on_rm(self, key, item):
+    def __on_rm(self, key: Any, item: Any) -> None:
         if self.on_remove is not None:
             self.on_remove(key, item)
 
