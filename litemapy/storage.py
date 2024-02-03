@@ -1,7 +1,7 @@
 from math import ceil
 import nbtlib.tag
 from nbtlib import LongArray
-from typing import Generator, Callable, Any, Optional
+from typing import Generator, Callable, Any, Optional, Union
 
 class LitematicaBitArray:
     size: int
@@ -159,7 +159,7 @@ class DiscriminatingDictionary(dict):
             self.__on_add(key, default)
         return r
 
-    def update(self, other: 'DiscriminatingDictionary') -> None:
+    def update(self, other: Union['DiscriminatingDictionary', dict]) -> None:
         other = DiscriminatingDictionary(self.validator, other)
         for k, v in other.items():
             self[k] = v
