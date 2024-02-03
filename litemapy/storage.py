@@ -99,11 +99,11 @@ class LitematicaBitArray:
 
 
 class DiscriminatingDictionary(dict):
-    validator: Callable[[Any],tuple[bool, str]]
+    validator: Callable[[Any, Any],tuple[bool, str]]
     on_add: Callable[[Any,Any],None] | None
     on_remove: Callable[[Any,Any],None] | None
 
-    def __init__(self, validator: Callable[[Any],tuple[bool, str]], *args, onadd: Callable[[Any,Any],None] | None = None,onremove: Callable[[Any,Any],None] | None = None, **options) -> None:
+    def __init__(self, validator: Callable[[Any, Any],tuple[bool, str]], *args, onadd: Callable[[Any,Any],None] | None = None,onremove: Callable[[Any,Any],None] | None = None, **options) -> None:
         """
         :params validator:  a function that takes as argument a key and an item and returns a tuple (canstore, msg)
                             canstore must be a boolean, True if the item is accepted, and False otherwise
