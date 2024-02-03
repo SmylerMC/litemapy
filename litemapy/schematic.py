@@ -11,6 +11,7 @@ from .info import *
 from .minecraft import BlockState, Entity, TileEntity, RequiredKeyMissingException
 from .storage import LitematicaBitArray, DiscriminatingDictionary
 
+
 class Schematic:
     """
     Represents a schematic file in the Litematic format.
@@ -28,8 +29,8 @@ class Schematic:
     __preview: IntArray
 
     def __init__(self,
-                 name: str=DEFAULT_NAME, author: str="", description: str="",
-                 regions: Optional[dict[str, 'Region']]=None, lm_version: int=LITEMATIC_VERSION, mc_version: int=MC_DATA_VERSION
+                 name: str = DEFAULT_NAME, author: str = "", description: str = "",
+                 regions: Optional[dict[str, 'Region']] = None, lm_version: int = LITEMATIC_VERSION, mc_version: int = MC_DATA_VERSION
                  ) -> None:
         """
         Schematic can be created by optionally providing metadata and regions, or leaving them blank or default.
@@ -57,7 +58,7 @@ class Schematic:
         self.lm_version = lm_version
         self.__preview = IntArray([])
 
-    def save(self, file_path: str, update_meta: bool=True, save_soft: bool=True, gzipped: bool=True, byteorder: str='big') -> None:
+    def save(self, file_path: str, update_meta: bool = True, save_soft: bool = True, gzipped: bool = True, byteorder: str = 'big') -> None:
         """
         Save this schematic to a file.
 
@@ -75,7 +76,7 @@ class Schematic:
         f = nbtlib.File(self.to_nbt(save_soft=save_soft), gzipped=gzipped, byteorder=byteorder)
         f.save(file_path)
 
-    def to_nbt(self, save_soft: bool=True) -> Compound:
+    def to_nbt(self, save_soft: bool = True) -> Compound:
         """
         Write the schematic to an NBT tag.
 
@@ -368,7 +369,7 @@ class Region:
 
         return root
 
-    def to_sponge_nbt(self, mc_version: int=MC_DATA_VERSION, gzipped: bool=True, endianness: str='big') -> nbtlib.nbt.File:
+    def to_sponge_nbt(self, mc_version: int = MC_DATA_VERSION, gzipped: bool = True, endianness: str = 'big') -> nbtlib.nbt.File:
         """
         Returns the Region as an NBT Compound file that conforms to the Sponge Schematic Format (version 2) used by mods
         like WorldEdit.
@@ -536,7 +537,7 @@ class Region:
 
         return region, mc_version
 
-    def to_structure_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big') -> nbtlib.nbt.File:
+    def to_structure_nbt(self, mc_version = MC_DATA_VERSION, gzipped = True, byteorder = 'big') -> nbtlib.nbt.File:
         """
         Returns the Region as an NBT Compound file that conforms to Minecraft's structure NBT files.
 

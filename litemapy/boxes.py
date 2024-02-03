@@ -1,5 +1,6 @@
 Coordinate = tuple[int, int, int]
 
+
 def block_is_in_box(block: Coordinate, box: tuple[Coordinate, Coordinate]) -> bool:
     """
     Returns True id the block is in the box

@@ -3,6 +3,7 @@ import nbtlib.tag
 from nbtlib import LongArray
 from typing import Generator, Callable, Any, Optional, Union
 
+
 class LitematicaBitArray:
     size: int
     nbit: int

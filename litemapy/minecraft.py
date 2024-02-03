@@ -5,6 +5,7 @@ from .storage import DiscriminatingDictionary
 
 from typing import Any, Optional, Union
 
+
 class BlockState:
     """
     Represents an in-game block.
