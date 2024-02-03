@@ -917,7 +917,7 @@ class Region:
         return self.__fluid_ticks
 
     @property
-    def palette(self) -> tuple[BlockState]:
+    def palette(self) -> tuple[BlockState, ...]:
         """
         The palette used to store blocks within the region.
         Each entry in the palette is assured to be unique.
