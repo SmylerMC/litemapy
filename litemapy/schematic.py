@@ -5,7 +5,7 @@ import nbtlib
 import numpy as np
 from nbtlib.tag import Short, Byte, Int, Long, Double, String, List, Compound, ByteArray, IntArray
 
-from typing import Any, Generator, Callable
+from typing import Any, Generator, Callable, Optional, Union
 
 from .info import *
 from .minecraft import BlockState, Entity, TileEntity, RequiredKeyMissingException
@@ -29,7 +29,7 @@ class Schematic:
 
     def __init__(self,
                  name: str=DEFAULT_NAME, author: str="", description: str="",
-                 regions: dict[str, 'Region'] | None=None, lm_version: int=LITEMATIC_VERSION, mc_version: int=MC_DATA_VERSION
+                 regions: Optional[dict[str, 'Region']]=None, lm_version: int=LITEMATIC_VERSION, mc_version: int=MC_DATA_VERSION
                  ) -> None:
         """
         Schematic can be created by optionally providing metadata and regions, or leaving them blank or default.

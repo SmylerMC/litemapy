@@ -3,7 +3,7 @@ from nbtlib.tag import Int, Double, String, List, Compound, Base
 
 from .storage import DiscriminatingDictionary
 
-from typing import Any
+from typing import Any, Optional, Union
 
 class BlockState:
     """
@@ -13,7 +13,7 @@ class BlockState:
 
     __block_id: str
     __properties: DiscriminatingDictionary
-    __identifier_cache: None | str
+    __identifier_cache: Optional[str]
 
     def __init__(self, block_id: str, **properties: str) -> None:
         """
@@ -65,7 +65,7 @@ class BlockState:
         """
         return BlockState(block_id, **self.__properties)
 
-    def with_properties(self, **properties: str | None) -> 'BlockState':
+    def with_properties(self, **properties: Optional[str]) -> 'BlockState':
         """
         Returns a new copy of this :class:`BlockState` with new values for the properties given in keyword arguments.
         Using `None` as a property value removes it.
@@ -130,7 +130,7 @@ class BlockState:
     def __repr__(self) -> str:
         return self.to_block_state_identifier(skip_empty=True)
 
-    def __getitem__(self, key: str) -> str | None:
+    def __getitem__(self, key: str) -> Optional[str]:
         return self.__properties[key]
 
     def __len__(self) -> int:
@@ -153,7 +153,7 @@ class Entity:
 
     # TODO Needs unit tests
 
-    def __init__(self, str_or_nbt: str | Compound) -> None:
+    def __init__(self, str_or_nbt: Union[str, Compound]) -> None:
         # TODO Refactor to only have a from_nbt static method instead of allowing nbt into the constructor
         """
         :param str_or_nbt:  either the entity identifier as a string, in which case all other tag will be default,

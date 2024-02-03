@@ -1,7 +1,7 @@
 from math import ceil
 import nbtlib.tag
 from nbtlib import LongArray
-from typing import Generator, Callable, Any
+from typing import Generator, Callable, Any, Optional
 
 class LitematicaBitArray:
     size: int
@@ -98,12 +98,14 @@ class LitematicaBitArray:
         return False
 
 
+
+
 class DiscriminatingDictionary(dict):
     validator: Callable[[Any, Any],tuple[bool, str]]
-    on_add: Callable[[Any,Any],None] | None
-    on_remove: Callable[[Any,Any],None] | None
+    on_add: Optional[Callable[[Any,Any],None]]
+    on_remove: Optional[Callable[[Any,Any],None]]
 
-    def __init__(self, validator: Callable[[Any, Any],tuple[bool, str]], *args, onadd: Callable[[Any,Any],None] | None = None,onremove: Callable[[Any,Any],None] | None = None, **options) -> None:
+    def __init__(self, validator: Callable[[Any, Any],tuple[bool, str]], *args, onadd: Optional[Callable[[Any,Any],None]] = None,onremove: Optional[Callable[[Any,Any],None]] = None, **options) -> None:
         """
         :params validator:  a function that takes as argument a key and an item and returns a tuple (canstore, msg)
                             canstore must be a boolean, True if the item is accepted, and False otherwise
@@ -148,7 +150,7 @@ class DiscriminatingDictionary(dict):
         super().__delitem__(key)
         self.__on_rm(key, v)
 
-    def setdefault(self, key: Any, *args) -> Any | None:
+    def setdefault(self, key: Any, *args) -> Optional[Any]:
         default = args[0] if len(args) > 0 else None
         self.validate(key, default)
         b = key not in self
