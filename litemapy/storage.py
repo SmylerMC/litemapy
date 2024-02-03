@@ -98,14 +98,16 @@ class LitematicaBitArray:
         return False
 
 
+ValidatorFunction = Callable[[Any, Any],tuple[bool, str]]
+ReactionFunction = Callable[[Any,Any],None]
 
 
 class DiscriminatingDictionary(dict):
-    validator: Callable[[Any, Any],tuple[bool, str]]
-    on_add: Optional[Callable[[Any,Any],None]]
-    on_remove: Optional[Callable[[Any,Any],None]]
+    validator: ValidatorFunction
+    on_add: Optional[ReactionFunction]
+    on_remove: Optional[ReactionFunction]
 
-    def __init__(self, validator: Callable[[Any, Any],tuple[bool, str]], *args, onadd: Optional[Callable[[Any,Any],None]] = None,onremove: Optional[Callable[[Any,Any],None]] = None, **options) -> None:
+    def __init__(self, validator: ValidatorFunction, *args, onadd: Optional[ReactionFunction] = None, onremove: Optional[ReactionFunction] = None, **options) -> None:
         """
         :params validator:  a function that takes as argument a key and an item and returns a tuple (canstore, msg)
                             canstore must be a boolean, True if the item is accepted, and False otherwise
