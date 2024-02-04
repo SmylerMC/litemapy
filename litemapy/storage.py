@@ -164,8 +164,8 @@ class DiscriminatingDictionary(dict):
             self.__on_add(key, default)
         return r
 
-    def update(self, other: dict) -> None:
-        other = DiscriminatingDictionary(self.validator, other)
+    def update(self, other: dict, **kwargs) -> None:
+        other = DiscriminatingDictionary(self.validator, other | kwargs)
         for k, v in other.items():
             self[k] = v
 
