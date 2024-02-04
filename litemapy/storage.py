@@ -1,7 +1,7 @@
 from math import ceil
 import nbtlib.tag
 from nbtlib import LongArray
-from typing import Generator, Callable, Any, Optional, Union
+from typing import Generator, Callable, Any, Optional
 
 
 class LitematicaBitArray:
@@ -9,6 +9,7 @@ class LitematicaBitArray:
     nbit: int
     array: list[int]
     __mask: int
+
     def __init__(self, size: int, nbits: int) -> None:
         self.size = size
         self.nbits = nbits
@@ -77,7 +78,7 @@ class LitematicaBitArray:
             end_offset = 64 - start_bit_offset
             j1 = self.nbits - end_offset
             self.array[end_arr_index] = (self.array[end_arr_index] >> j1 << j1 | (
-                        value & self.__mask) >> end_offset) & m
+                    value & self.__mask) >> end_offset) & m
 
     def __len__(self) -> int:
         return self.size
@@ -99,8 +100,8 @@ class LitematicaBitArray:
         return False
 
 
-ValidatorFunction = Callable[[Any, Any],tuple[bool, str]]
-ReactionFunction = Callable[[Any,Any],None]
+ValidatorFunction = Callable[[Any, Any], tuple[bool, str]]
+ReactionFunction = Callable[[Any, Any], None]
 
 
 class DiscriminatingDictionary(dict):
@@ -108,7 +109,8 @@ class DiscriminatingDictionary(dict):
     on_add: Optional[ReactionFunction]
     on_remove: Optional[ReactionFunction]
 
-    def __init__(self, validator: ValidatorFunction, *args, onadd: Optional[ReactionFunction] = None, onremove: Optional[ReactionFunction] = None, **options) -> None:
+    def __init__(self, validator: ValidatorFunction, *args, onadd: Optional[ReactionFunction] = None,
+                 onremove: Optional[ReactionFunction] = None, **options) -> None:
         """
         :params validator:  a function that takes as argument a key and an item and returns a tuple (canstore, msg)
                             canstore must be a boolean, True if the item is accepted, and False otherwise
@@ -162,7 +164,7 @@ class DiscriminatingDictionary(dict):
             self.__on_add(key, default)
         return r
 
-    def update(self, other: Union['DiscriminatingDictionary', dict]) -> None:
+    def update(self, other: dict) -> None:
         other = DiscriminatingDictionary(self.validator, other)
         for k, v in other.items():
             self[k] = v

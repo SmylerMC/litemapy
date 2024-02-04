@@ -5,7 +5,7 @@ import nbtlib
 import numpy as np
 from nbtlib.tag import Short, Byte, Int, Long, Double, String, List, Compound, ByteArray, IntArray
 
-from typing import Any, Generator, Callable, Optional, Union
+from typing import Any, Generator, Callable, Optional
 
 from .info import *
 from .minecraft import BlockState, Entity, TileEntity, RequiredKeyMissingException
@@ -30,7 +30,8 @@ class Schematic:
 
     def __init__(self,
                  name: str = DEFAULT_NAME, author: str = "", description: str = "",
-                 regions: Optional[dict[str, 'Region']] = None, lm_version: int = LITEMATIC_VERSION, mc_version: int = MC_DATA_VERSION
+                 regions: Optional[dict[str, 'Region']] = None,
+                 lm_version: int = LITEMATIC_VERSION, mc_version: int = MC_DATA_VERSION
                  ) -> None:
         """
         Schematic can be created by optionally providing metadata and regions, or leaving them blank or default.
@@ -58,7 +59,8 @@ class Schematic:
         self.lm_version = lm_version
         self.__preview = IntArray([])
 
-    def save(self, file_path: str, update_meta: bool = True, save_soft: bool = True, gzipped: bool = True, byteorder: str = 'big') -> None:
+    def save(self, file_path: str, update_meta: bool = True, save_soft: bool = True, gzipped: bool = True,
+             byteorder: str = 'big') -> None:
         """
         Save this schematic to a file.
 
@@ -299,12 +301,12 @@ class Region:
     __height: int
     __length: int
     __palette: list[BlockState]
-    __blocks: np.ndarray[np.uint32, Any] # TODO replace any with the right shape when numpy supports its
+    __blocks: np.ndarray[np.uint32, Any]  # TODO replace any with the right shape when numpy supports its
     __entities: list[Entity]
     __block_ticks: list[Compound]
     __fluid_ticks: list[Compound]
     __tile_entities: list[TileEntity]
-    
+
     def __init__(self, x, y, z, width, height, length) -> None:
         """
         :param x:       the X coordinate of the region in the schematic
@@ -369,7 +371,8 @@ class Region:
 
         return root
 
-    def to_sponge_nbt(self, mc_version: int = MC_DATA_VERSION, gzipped: bool = True, endianness: str = 'big') -> nbtlib.nbt.File:
+    def to_sponge_nbt(self, mc_version: int = MC_DATA_VERSION, gzipped: bool = True,
+                      endianness: str = 'big') -> nbtlib.nbt.File:
         """
         Returns the Region as an NBT Compound file that conforms to the Sponge Schematic Format (version 2) used by mods
         like WorldEdit.
@@ -493,7 +496,7 @@ class Region:
 
             ent = Entity(entity)
             position = [coord - off for coord, off in zip(ent.position, offset)]
-            ent.position = (position[0],position[1],position[2])
+            ent.position = (position[0], position[1], position[2])
             region.entities.append(ent)
 
         # process tile entities
@@ -537,7 +540,7 @@ class Region:
 
         return region, mc_version
 
-    def to_structure_nbt(self, mc_version = MC_DATA_VERSION, gzipped = True, byteorder = 'big') -> nbtlib.nbt.File:
+    def to_structure_nbt(self, mc_version=MC_DATA_VERSION, gzipped=True, byteorder='big') -> nbtlib.nbt.File:
         """
         Returns the Region as an NBT Compound file that conforms to Minecraft's structure NBT files.
 
@@ -928,7 +931,8 @@ class Region:
         self._optimize_palette()
         return tuple(self.__palette)
 
-    def as_schematic(self, name: str=DEFAULT_NAME, author: str="", description: str="", mc_version: int=MC_DATA_VERSION) -> Schematic:
+    def as_schematic(self, name: str = DEFAULT_NAME, author: str = "", description: str = "",
+                     mc_version: int = MC_DATA_VERSION) -> Schematic:
         """
         Creates a schematic that contains that region at the origin.
 

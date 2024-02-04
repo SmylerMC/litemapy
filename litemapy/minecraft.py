@@ -89,7 +89,7 @@ class BlockState:
             return False, "BlockState properties should be a string => string dictionary"
         return True, ""
 
-    def to_block_state_identifier(self, skip_empty :bool=True) -> str:
+    def to_block_state_identifier(self, skip_empty: bool = True) -> str:
         """
         Returns an identifier that represents the BlockState in the Sponge Schematic Format (version 2).
         Format: block_type[properties]
@@ -373,7 +373,7 @@ class TileEntity:
 
 class RequiredKeyMissingException(Exception):
 
-    def __init__(self, key: str, message: str='The required key is missing in the (Tile)Entity\'s NBT Compound'):
+    def __init__(self, key: str, message: str = 'The required key is missing in the (Tile)Entity\'s NBT Compound'):
         self.key = key
         self.message = message
         super().__init__(self.message)
