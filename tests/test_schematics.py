@@ -4,11 +4,12 @@ from constants import *
 import helper
 from tempfile import TemporaryDirectory
 
+AIR = BlockState("minecraft:air")
 
 valid_files = []
 for directory, child_directory, file_names in walk(VALID_LITEMATIC_DIRECTORY):
     for file_name in file_names:
-        valid_files.append(directory + "/" + file_name)
+        valid_files.append(path.join(directory, file_name))
 
 
 def test_valid_litematics_do_not_raise_exception_when_loaded():
@@ -111,7 +112,7 @@ def test_are_random_schematics_preserved_when_reading_and_writing():
     temporary_directory = TemporaryDirectory()
     for i in range(100):
         write_schematic = helper.randomschematic()
-        file_path = temporary_directory.name + "/" + write_schematic.name + ".litematic"
+        file_path = path.join(temporary_directory.name, write_schematic.name + ".litematic")
         write_schematic.save(file_path)
         read_schematic = Schematic.load(file_path)
 
@@ -146,16 +147,98 @@ def test_are_random_schematics_preserved_when_reading_and_writing():
                 rs = read_region.getblock(x, y, z)
                 assert ws == rs
 
+            assert_valid_palette(write_region)
+
     temporary_directory.cleanup()
 
 
-def test_blockstate():
-    # TODO Split into multiple smaller tests
-    prop = {"test1": "testval", "test2": "testval2"}
-    b = BlockState("minecraft:stone", properties=prop)
-    assert len(prop) == len(b)
-    for k, v in prop.items():
-        assert b[k] == v
-    nbt = b._tonbt()
-    b2 = BlockState.fromnbt(nbt)
-    assert b == b2
+def test_region_filter():
+    def do_filter(before_schematic, after_schematic, function):
+        print(f"Comparing litematic files {before_schematic} and {after_schematic}")
+        before_schematic = path.join(FILTER_LITEMATIC_DIRECTORY, before_schematic)
+        after_schematic = path.join(FILTER_LITEMATIC_DIRECTORY, after_schematic)
+        before_schematic = Schematic.load(before_schematic)
+        after_schematic = Schematic.load(after_schematic)
+        assert len(before_schematic.regions) == 1, "Invalid test litematic"
+        assert len(after_schematic.regions) == 1, "Invalid test litematic"
+        (before_schematic,) = before_schematic.regions.values()
+        (after_schematic,) = after_schematic.regions.values()
+        assert before_schematic.width == after_schematic.width, "Invalid test litematic"
+        assert before_schematic.height == after_schematic.height, "Invalid test litematic"
+        assert before_schematic.length == after_schematic.length, "Invalid test litematic"
+        before_schematic.filter(function)
+        for x in before_schematic.xrange():
+            for y in before_schematic.yrange():
+                for z in before_schematic.zrange():
+                    state_1 = before_schematic.getblock(x, y, z)
+                    state_2 = after_schematic.getblock(x, y, z)
+                    assert state_1 == state_2
+        assert_valid_palette(before_schematic)
+
+    def all_blue_filter(b: BlockState):
+        return BlockState("minecraft:light_blue_concrete")
+
+    do_filter('rainbow-line.litematic', 'blue-line.litematic', all_blue_filter)
+
+    red = BlockState("minecraft:red_concrete")
+    blue = BlockState("minecraft:blue_concrete")
+
+    def black_red_white_blue(b: BlockState):
+        if b.blockid == "minecraft:black_concrete":
+            return red
+        if b.blockid == "minecraft:white_concrete":
+            return blue
+        return b
+
+    do_filter('black-white.litematic', 'red-blue.litematic', black_red_white_blue)
+
+    def glassify(state: BlockState):
+        if "water" in state.blockid:
+            return BlockState("minecraft:blue_stained_glass")
+        elif state.blockid == "minecraft:sand":
+            return BlockState('minecraft:yellow_stained_glass')
+        elif state.blockid == "minecraft:dirt":
+            return BlockState("minecraft:brown_stained_glass")
+        elif state.blockid == "minecraft:stone":
+            return BlockState("minecraft:light_gray_stained_glass")
+        elif state.blockid in ("minecraft:grass_block", "minecraft:birch_leaves"):
+            return BlockState("minecraft:green_stained_glass")
+        elif state.blockid == "minecraft:birch_log":
+            return BlockState("minecraft:white_stained_glass")
+        elif state.blockid == "minecraft:copper_ore":
+            return BlockState("minecraft:orange_stained_glass")
+        elif state.blockid == "minecraft:grass":
+            return BlockState("minecraft:green_stained_glass_pane", east="true", north="true", south="true",
+                              west="true", waterlogged="false")
+        return state
+
+    do_filter('tree.litematic', 'tree-glass.litematic', glassify)
+
+    def wool_to_concrete(b: BlockState):
+        return b.with_blockid(b.blockid.replace('wool', 'concrete'))
+
+    do_filter('concrete-wool.litematic', 'concrete-full.litematic', wool_to_concrete)
+
+
+def assert_valid_palette(region: Region):
+    palette = region.palette
+
+    assert palette[0] == AIR, "Palette does not have air at index 0"
+
+    entries = set()
+    for entry in palette:
+        assert entry not in entries, f"Palette has duplicate entry: {entry}"
+        entries.add(entry)
+
+    blocks = {region.getblock(*p) for p in region.allblockpos()}
+    for entry in palette:
+        if entry == AIR:
+            continue
+        assert entry in blocks, f"Palette contains an unused entry"
+
+
+def test_unused_palette_entries_get_pruned():
+    region = Region(0, 0, 0, 10, 10, 10)
+    region.setblock(0, 0, 0, BlockState("minecraft:stone"))
+    region.setblock(0, 0, 0, AIR)
+    assert_valid_palette(region)

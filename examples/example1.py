@@ -11,7 +11,7 @@ block = BlockState("minecraft:light_blue_concrete")
 
 # Build the planet
 for x, y, z in reg.allblockpos():
-    if round(((x-10)**2 + (y-10)**2 + (z-10)**2)**.5) <= 10:
+    if round(((x - 10) ** 2 + (y - 10) ** 2 + (z - 10) ** 2) ** .5) <= 10:
         reg.setblock(x, y, z, block)
 
 # Save the schematic
@@ -30,5 +30,3 @@ for x in reg.xrange():
         else:
             print("#", end='')
     print()
-
-

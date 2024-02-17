@@ -1,4 +1,7 @@
-def block_is_in_box(block, box):
+Coordinate = tuple[int, int, int]
+
+
+def block_is_in_box(block: Coordinate, box: tuple[Coordinate, Coordinate]) -> bool:
     """
     Returns True id the block is in the box
     block is (x, y, z)
@@ -11,11 +14,11 @@ def block_is_in_box(block, box):
     ys.sort()
     zs = [box[0][1], box[1][1]]
     zs.sort()
-    xmin, xmax = xs
-    ymin, ymax = ys
-    zmin, zmax = zs
-    return xmin <= x <= xmax and ymin <= y <= ymax and zmin <= z <= zmax
+    x_min, x_max = xs
+    y_min, y_max = ys
+    z_min, z_max = zs
+    return x_min <= x <= x_max and y_min <= y <= y_max and z_min <= z <= z_max
 
 
-def box_is_in_box(box1, box2):
+def box_is_in_box(box1: tuple[Coordinate, Coordinate], box2: tuple[Coordinate, Coordinate]) -> bool:
     return block_is_in_box(box1[0], box2) and block_is_in_box(box1[1], box2)

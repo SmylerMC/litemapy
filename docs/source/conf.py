@@ -8,6 +8,7 @@ author = 'Smyler and Litemapy contributors'
 # we don't import it like we do in setup.py because RTD takes care of it and we don't want to interfere
 with open("../../litemapy/info.py") as f:
     match = re.search(r'LITEMAPY_VERSION = "(.+)"', f.read())
+    assert match != None
     version = match[1]
 
 extensions = [
