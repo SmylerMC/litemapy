@@ -259,3 +259,18 @@ def test_region_in():
     assert stone in region
     region[0, 0, 0] = AIR
     assert stone not in region
+
+
+def test_replace():
+    region = Region(0, 0, 0, 10, 10, 10)
+    stone = BlockState("minecraft:stone")
+    log = BlockState("minecraft:oak_log")
+    grass = BlockState("minecraft:grass_block")
+    region[1, 0, 0] = stone
+    region[2, 0, 0] = log
+    assert region[0, 0, 0] == AIR
+    region.replace(AIR, grass)
+    assert region[0, 0, 0] == grass
+    assert region.palette[0] == AIR
+    region.replace(log, stone)
+    assert region[2, 0, 0] == stone
