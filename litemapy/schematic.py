@@ -946,18 +946,25 @@ class Region:
         self.__blocks[self.__blocks == old_index] = new_index
 
     def _optimize_palette(self) -> None:
+        # Functions that work directly with the palette like filter or replace
+        # may introduce duplicates or unused entries in the palette.
+        # For this reason, it is necessary to clean things up before exporting
+        # block content in any way
         new_palette = []
         for old_index, state in enumerate(self.__palette):
+            # Skip unused entries, except air that needs to remain at index 0
             if old_index != 0 and old_index not in self.__blocks:
-                # Non-air block that no longer exists in the schematic
                 continue
+            # Do not copy duplicate entries multiple times
             for i, other_state in enumerate(new_palette):
                 if state == other_state:
                     new_index = i
                     break
             else:
+                # Keep that entry
                 new_index = len(new_palette)
                 new_palette.append(state)
+            # Update blocks to reflect the new palette
             self.__replace_palette_index(old_index, new_index)
         self.__palette = new_palette
 
@@ -978,8 +985,25 @@ class Region:
             self.__replace_palette_index(0, len(self.__palette) - 1)
             self.__palette[0] = AIR
 
-        # The filter function may have introduced duplicates in the palette
-        self._optimize_palette()
+    def replace(self, replace: BlockState, replace_with: BlockState) -> None:
+        """
+        Replace all occurrences of a :class:`BlockState` with another.
+        This method works with the palette directly, in O(1) time,
+        and is therefore a lot more efficient than looping over the content.
+
+        :param replace:         the blockstate to replace
+        :param replace_with:    a new blockstate to replace the old one with
+        """
+        try:
+            index = self.__palette.index(replace)
+        except ValueError:
+            return  # Nothing to do
+        if index == 0:
+            # We are replacing air, that's not good
+            self.__palette.append(replace_with)
+            self.__replace_palette_index(0, len(self.__palette) - 1)
+        else:
+            self.__palette[index] = replace_with
 
 
 AIR = BlockState("minecraft:air")
