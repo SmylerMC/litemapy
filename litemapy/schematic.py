@@ -8,6 +8,7 @@ from typing_extensions import deprecated
 
 from typing import Any, Generator, Callable, Optional
 
+from .deprecation import deprecated_name
 from .info import *
 from .minecraft import BlockState, Entity, TileEntity, RequiredKeyMissingException
 from .storage import LitematicaBitArray, DiscriminatingDictionary
@@ -67,7 +68,7 @@ class Schematic:
 
         :param file_path:   the filesystem path the schematic should be saved to
         :param update_meta: whether to update the schematic's metadata before saving
-                            (see :func:`~litemapy.Schematic.updatemeta`)
+                            (see :func:`~litemapy.Schematic.update_metadata`)
         :param save_soft:   whether to add an entry to the metadata indicating the schematic was created with Litemapy
         :param gzipped:     whether to compress the NBT content with gzip (this is the normal behavior)
         :param byteorder:   endianness of NBT numbers (either "little" or "big", default is "big")
@@ -75,7 +76,7 @@ class Schematic:
         :raises ValueError: if this schematic does not have any region
         """
         if update_meta:
-            self.updatemeta()
+            self.update_metadata()
         f = nbtlib.File(self.to_nbt(save_soft=save_soft), gzipped=gzipped, byteorder=byteorder)
         f.save(file_path)
 
@@ -118,8 +119,9 @@ class Schematic:
         root["Regions"] = regs
         return root
 
+    @deprecated_name("fromnbt")
     @staticmethod
-    def fromnbt(nbt: Compound) -> 'Schematic':
+    def from_nbt(nbt: Compound) -> 'Schematic':
         """
         Read a schematic from an NBT tag.
 
@@ -140,7 +142,7 @@ class Schematic:
         desc = str(meta["Description"])
         regions: dict[str, 'Region'] = {}
         for key, value in nbt["Regions"].items():
-            reg = Region.fromnbt(value)
+            reg = Region.from_nbt(value)
             regions[str(key)] = reg
         schematic = Schematic(name=name, author=author, description=desc, regions=regions, lm_version=lm_version,
                               mc_version=mc_version)
@@ -161,7 +163,8 @@ class Schematic:
             schematic.__preview = meta['PreviewImageData']
         return schematic
 
-    def updatemeta(self) -> None:
+    @deprecated_name("updatemeta")
+    def update_metadata(self) -> None:
         """
         Update this schematic's metadata (set the modified time to the current time).
         """
@@ -179,7 +182,7 @@ class Schematic:
         :raises CorruptedSchematicError: if the schematic file is malformed in any way
         """
         nbt = nbtlib.File.load(file_path, True)
-        return Schematic.fromnbt(nbt)
+        return Schematic.from_nbt(nbt)
 
     def _can_add_region(self, name: str, region: 'Region') -> tuple[bool, str]:
         if type(name) != str:
@@ -188,29 +191,29 @@ class Schematic:
 
     def __on_region_add(self, name: str, region: 'Region') -> None:
         if self.__x_min is None:
-            self.__x_min = region.minschemx()
+            self.__x_min = region.min_schem_x()
         else:
-            self.__x_min = min(self.__x_min, region.minschemx())
+            self.__x_min = min(self.__x_min, region.min_schem_x())
         if self.__x_max is None:
-            self.__x_max = region.maxschemx()
+            self.__x_max = region.max_schem_x()
         else:
-            self.__x_max = max(self.__x_max, region.maxschemx())
+            self.__x_max = max(self.__x_max, region.max_schem_x())
         if self.__y_min is None:
-            self.__y_min = region.minschemy()
+            self.__y_min = region.min_schem_y()
         else:
-            self.__y_min = min(self.__y_min, region.minschemy())
+            self.__y_min = min(self.__y_min, region.min_schem_y())
         if self.__y_max is None:
-            self.__y_max = region.maxschemy()
+            self.__y_max = region.max_schem_y()
         else:
-            self.__y_max = max(self.__y_max, region.maxschemy())
+            self.__y_max = max(self.__y_max, region.max_schem_y())
         if self.__z_min is None:
-            self.__z_min = region.minschemz()
+            self.__z_min = region.min_schem_z()
         else:
-            self.__z_min = min(self.__z_min, region.minschemz())
+            self.__z_min = min(self.__z_min, region.min_schem_z())
         if self.__z_max is None:
-            self.__z_max = region.maxschemz()
+            self.__z_max = region.max_schem_z()
         else:
-            self.__z_max = max(self.__z_max, region.maxschemz())
+            self.__z_max = max(self.__z_max, region.max_schem_z())
 
     def __on_region_remove(self, name, region) -> None:
         bounding_box_changed: bool = self.__x_min == region.minschemx()
@@ -362,7 +365,7 @@ class Region:
         root["PendingBlockTicks"] = List[Compound](self.__block_ticks)
         root["PendingFluidTicks"] = List[Compound](self.__fluid_ticks)
 
-        arr = LitematicaBitArray(self.getvolume(), self.__get_needed_nbits())
+        arr = LitematicaBitArray(self.volume(), self.__get_needed_nbits())
         for x in range(abs(self.__width)):
             for y in range(abs(self.__height)):
                 for z in range(abs(self.__length)):
@@ -508,7 +511,7 @@ class Region:
             tile_entity['id'] = tile_entity['Id']
             del tile_entity['Id']
 
-            tent = TileEntity.fromnbt(tile_entity)
+            tent = TileEntity.from_nbt(tile_entity)
             tent.position = tent.data['Pos']
             del tile_entity['Pos']
             region.tile_entities.append(tent)
@@ -638,7 +641,7 @@ class Region:
         for block in structure['blocks']:
             x, y, z = block['pos']
             state = block['state']
-            region[x, y, z] = BlockState.fromnbt(palette[state])
+            region[x, y, z] = BlockState.from_nbt(palette[state])
             if 'nbt' in block.keys():
                 tile_entity = TileEntity(block['nbt'])
                 tile_entity.position = block['pos']
@@ -670,7 +673,8 @@ class Region:
     def __contains__(self, block: BlockState) -> bool:
         return block in self.__palette and self.__palette.index(block) in self.__blocks
 
-    def getblockcount(self) -> int:
+    @deprecated_name("getblockcount")
+    def count_blocks(self) -> int:
         """
         Counts the number of blocks in the region.
 
@@ -689,7 +693,8 @@ class Region:
             z -= self.__length + 1
         return x, y, z
 
-    def getvolume(self) -> int:
+    @deprecated_name("getvolume")
+    def volume(self) -> int:
         """
         Computes this region's volume.
 
@@ -700,8 +705,9 @@ class Region:
     def __get_needed_nbits(self) -> int:
         return max(ceil(log(len(self.__palette), 2)), 2)
 
+    @deprecated_name("fromnbt")
     @staticmethod
-    def fromnbt(nbt: Compound) -> 'Region':
+    def from_nbt(nbt: Compound) -> 'Region':
         """
         Read a region from an NBT tag.
 
@@ -718,20 +724,20 @@ class Region:
         region = Region(x, y, z, width, height, length)
         del region.__palette[0]
         for block_nbt in nbt["BlockStatePalette"]:
-            block = BlockState.fromnbt(block_nbt)
+            block = BlockState.from_nbt(block_nbt)
             region.__palette.append(block)
 
         for entity_nbt in nbt["Entities"]:
-            entity = Entity.fromnbt(entity_nbt)
+            entity = Entity.from_nbt(entity_nbt)
             region.entities.append(entity)
 
         for tile_entity_nbt in nbt["TileEntities"]:
-            block = TileEntity.fromnbt(tile_entity_nbt)
+            block = TileEntity.from_nbt(tile_entity_nbt)
             region.tile_entities.append(block)
 
         blocks = nbt["BlockStates"]
         nbits = region.__get_needed_nbits()
-        bit_array = LitematicaBitArray.from_nbt_long_array(blocks, region.getvolume(), nbits)
+        bit_array = LitematicaBitArray.from_nbt_long_array(blocks, region.volume(), nbits)
         for x in range(abs(width)):
             for y in range(abs(height)):
                 for z in range(abs(length)):
@@ -746,103 +752,119 @@ class Region:
 
         return region
 
-    def minschemx(self) -> int:
+    @deprecated_name("minschemx")
+    def min_schem_x(self) -> int:
         """
         :returns:   the minimum X coordinate of this region in the schematics coordinate system
         """
         return min(self.__x, self.__x + self.width + 1)
 
-    def maxschemx(self) -> int:
+    @deprecated_name("maxschemx")
+    def max_schem_x(self) -> int:
         """
         :returns:   the maximum X coordinate of this region in the schematics coordinate system
         """
         return max(self.__x, self.__x + self.width - 1)
 
-    def minschemy(self) -> int:
+    @deprecated_name("minschemy")
+    def min_schem_y(self) -> int:
         """
         :returns:   the minimum Y coordinate of this region in the schematics coordinate system
         """
         return min(self.__y, self.__y + self.height + 1)
 
-    def maxschemy(self) -> int:
+    @deprecated_name("maxschemy")
+    def max_schem_y(self) -> int:
         """
         :returns:   the maximum Y coordinate of this region in the schematics coordinate system
         """
         return max(self.__y, self.__y + self.height - 1)
 
-    def minschemz(self) -> int:
+    @deprecated_name("minschemz")
+    def min_schem_z(self) -> int:
         """
         :returns:   the minimum Z coordinate of this region in the schematics coordinate system
         """
         return min(self.__z, self.__z + self.length + 1)
 
-    def maxschemz(self) -> int:
+    @deprecated_name("maxschemz")
+    def max_schem_z(self) -> int:
         """
         :returns:   the maximum Z coordinate of this region in the schematics coordinate system
         """
         return max(self.__z, self.__z + self.length - 1)
 
-    def minx(self) -> int:
+    @deprecated_name("minx")
+    def min_x(self) -> int:
         """
         :returns:   the minimum X coordinate of this region in its own coordinate system
         """
         return min(0, self.width + 1)
 
-    def maxx(self) -> int:
+    @deprecated_name("maxx")
+    def max_x(self) -> int:
         """
         :returns:   the maximum X coordinate of this region in its own coordinate system
         """
         return max(0, self.width - 1)
 
-    def miny(self) -> int:
+    @deprecated_name("miny")
+    def min_y(self) -> int:
         """
         :returns:   the minimum Y coordinate of this region in its own coordinate system
         """
         return min(0, self.height + 1)
 
-    def maxy(self) -> int:
+    @deprecated_name("maxy")
+    def max_y(self) -> int:
         """
         :returns:   the maximum Y coordinate of this region in its own coordinate system
         """
         return max(0, self.height - 1)
 
-    def minz(self) -> int:
+    @deprecated_name("minz")
+    def min_z(self) -> int:
         """
         :returns:   the minimum Z coordinate of this region in its own coordinate system
         """
         return min(0, self.length + 1)
 
-    def maxz(self) -> int:
+    @deprecated_name("maxz")
+    def max_z(self) -> int:
         """
         :returns:   the maximum Z coordinate of this region in its own coordinate system
         """
         return max(0, self.length - 1)
 
-    def xrange(self) -> range:
+    @deprecated_name("xrange")
+    def range_x(self) -> range:
         """
         :returns:   the range of coordinates this region contains along its X axis
         """
-        return range(self.minx(), self.maxx() + 1)
+        return range(self.min_x(), self.max_x() + 1)
 
-    def yrange(self) -> range:
+    @deprecated_name("yrange")
+    def range_y(self) -> range:
         """
         :returns:   the range of coordinates this region contains along its Y axis
         """
-        return range(self.miny(), self.maxy() + 1)
+        return range(self.min_y(), self.max_y() + 1)
 
-    def zrange(self) -> range:
+    @deprecated_name("zrange")
+    def range_z(self) -> range:
         """
         :returns:   the range of coordinates this region contains along its Z axis
         """
-        return range(self.minz(), self.maxz() + 1)
+        return range(self.min_z(), self.max_z() + 1)
 
-    def allblockpos(self) -> Generator[tuple[int, int, int], None, None]:
+    @deprecated_name("allblockpos")
+    def block_positions(self) -> Generator[tuple[int, int, int], None, None]:
         """
         :returns:   an iterator over the coordinates this region contains in its own coordinate system
         """
-        for x in self.xrange():
-            for y in self.yrange():
-                for z in self.zrange():
+        for x in self.range_x():
+            for y in self.range_y():
+                for z in self.range_z():
                     yield x, y, z
 
     @property

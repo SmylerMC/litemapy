@@ -62,7 +62,7 @@ LOOKUP: dict[str, BlockState] = {
 # This is the most important function.
 # It will be called once by Litemapy for each block type in the schematic.
 def glassify(state: BlockState) -> BlockState:
-    new_state = LOOKUP.get(state.blockid)
+    new_state = LOOKUP.get(state.id)
     if new_state is None:
         print(f"Unknown block: {state}")
         return state
@@ -84,7 +84,7 @@ def glacify_litematic(in_file: str, out_file: str):
     # Schematics can contain multiple regions, we need to process them all
     for name, region in litematic.regions.items():
         # Update the stats
-        volume = region.getvolume()
+        volume = region.volume()
         total_blocks += volume
         print(f"Processing region {name} of volume {volume} blocks ({region.getblockcount()} non-air)")
 
