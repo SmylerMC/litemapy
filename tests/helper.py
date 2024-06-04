@@ -33,9 +33,9 @@ def randomschematic(regsize=20, regspread=20, regprob=0.8, blockprob=0.999):
     for reg in sch.regions.values():
         while random.random() < blockprob:
             s = randomblockstate()
-            mix, max = reg.minx(), reg.maxx()
-            miy, may = reg.miny(), reg.maxy()
-            miz, maz = reg.minz(), reg.maxz()
+            mix, max = reg.min_x(), reg.max_x()
+            miy, may = reg.min_y(), reg.max_y()
+            miz, maz = reg.min_z(), reg.max_z()
             x = random.randint(mix, max)
             y = random.randint(miy, may)
             z = random.randint(miz, maz)

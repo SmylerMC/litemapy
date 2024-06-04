@@ -10,7 +10,7 @@ schem = reg.as_schematic(name="Planet", author="SmylerMC", description="Made wit
 block = BlockState("minecraft:light_blue_concrete")
 
 # Build the planet
-for x, y, z in reg.allblockpos():
+for x, y, z in reg.block_positions():
     if round(((x - 10) ** 2 + (y - 10) ** 2 + (z - 10) ** 2) ** .5) <= 10:
         reg[x, y, z] = block
 
@@ -22,10 +22,10 @@ schem = Schematic.load("planet.litematic")
 reg = list(schem.regions.values())[0]
 
 # Print out the basic shape
-for x in reg.xrange():
-    for z in reg.zrange():
+for x in reg.range_x():
+    for z in reg.range_z():
         b = reg[x, 10, z]
-        if b.blockid == "minecraft:air":
+        if b.id == "minecraft:air":
             print(" ", end="")
         else:
             print("#", end='')

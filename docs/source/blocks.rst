@@ -8,7 +8,7 @@ E.g.
 .. code-block:: python
 
     >>> block = BlockState("minecraft:oak_log", facing="up")
-    >>> block.blockid
+    >>> block.id
     "minecraft:oak_log"
     >>> block["facing"]
     "up"

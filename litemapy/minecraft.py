@@ -1,6 +1,8 @@
 from json import dumps
 from nbtlib.tag import Int, Double, String, List, Compound, Base
+from typing_extensions import deprecated
 
+from .deprecation import deprecated_name
 from .storage import DiscriminatingDictionary
 
 from typing import Any, Optional, Union
@@ -32,14 +34,15 @@ class BlockState:
         Writes this block state to an nbt tag.
         """
         root = Compound()
-        root["Name"] = String(self.blockid)
+        root["Name"] = String(self.id)
         properties: dict[str, str] = {String(k): String(v) for k, v in self.__properties.items()}
         if len(properties) > 0:
             root["Properties"] = Compound(properties)
         return root
 
+    @deprecated_name("fromnbt")
     @staticmethod
-    def fromnbt(nbt: Compound) -> 'BlockState':
+    def from_nbt(nbt: Compound) -> 'BlockState':
         """
         Reads a :class:`BlockState` from an nbt tag.
         """
@@ -52,13 +55,19 @@ class BlockState:
         return block
 
     @property
-    def blockid(self) -> str:
+    def id(self) -> str:
         """
         The block's identifier.
         """
         return self.__block_id
 
-    def with_blockid(self, block_id: str) -> 'BlockState':
+    @property
+    @deprecated("Use BlockState.id instead")
+    def blockid(self) -> str:
+        return self.__block_id
+
+    @deprecated_name("with_blockid")
+    def with_id(self, block_id: str) -> 'BlockState':
         """
         Returns a new :class:`BlockState` with the same properties as this one but a different block id.
 
@@ -76,7 +85,7 @@ class BlockState:
         :returns: A copy of this :class:`BlockState` with the given properties updated to new values
         """
         none_properties = list(map(lambda kv: kv[0], filter(lambda kv: kv[1] is None, properties.items())))
-        other = BlockState(self.blockid)
+        other = BlockState(self.id)
         other.__properties.update(self.__properties)
         for prop_name in none_properties:
             other.__properties.pop(prop_name)
@@ -190,8 +199,9 @@ class Entity:
         """
         return self._data
 
+    @deprecated_name("fromnbt")
     @staticmethod
-    def fromnbt(nbt: Compound) -> 'Entity':
+    def from_nbt(nbt: Compound) -> 'Entity':
         """
         Read an entity from an nbt tag.
 
@@ -318,8 +328,9 @@ class TileEntity:
         """
         return self._data
 
+    @deprecated_name("fromnbt")
     @staticmethod
-    def fromnbt(nbt: Compound) -> 'TileEntity':
+    def from_nbt(nbt: Compound) -> 'TileEntity':
         """
         Reads a tile entity from an NBT tag.
 

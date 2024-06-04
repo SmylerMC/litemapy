@@ -40,7 +40,7 @@ or how it plays with Litemapy.
     for x in reg.xrange():
         for z in reg.zrange():
             b = reg.getblock(x, 10, z)
-            if b.blockid == "minecraft:air":
+            if b.id == "minecraft:air":
                 print(" ", end="")
             else:
                 print("#", end='')

@@ -42,70 +42,70 @@ def test_regions_have_accurate_sizes():
 
 def test_region_min_and_max_are_accurate():
     reg = Region(0, 0, 0, 10, 20, 30)
-    assert reg.minschemx() == 0
-    assert reg.maxschemx() == 9
-    assert reg.minschemy() == 0
-    assert reg.maxschemy() == 19
-    assert reg.minschemz() == 0
-    assert reg.maxschemz() == 29
-    assert reg.minx() == 0
-    assert reg.maxx() == 9
-    assert reg.miny() == 0
-    assert reg.maxy() == 19
-    assert reg.minz() == 0
-    assert reg.maxz() == 29
+    assert reg.min_schem_x() == 0
+    assert reg.max_schem_x() == 9
+    assert reg.min_schem_y() == 0
+    assert reg.max_schem_y() == 19
+    assert reg.min_schem_z() == 0
+    assert reg.max_schem_z() == 29
+    assert reg.min_x() == 0
+    assert reg.max_x() == 9
+    assert reg.min_y() == 0
+    assert reg.max_y() == 19
+    assert reg.min_z() == 0
+    assert reg.max_z() == 29
     reg = Region(0, 0, 0, -10, -20, -30)
-    assert reg.minschemx() == -9
-    assert reg.maxschemx() == 0
-    assert reg.minschemy() == -19
-    assert reg.maxschemy() == 0
-    assert reg.minschemz() == -29
-    assert reg.maxschemz() == 0
-    assert reg.minx() == -9
-    assert reg.maxx() == 0
-    assert reg.miny() == -19
-    assert reg.maxy() == 0
-    assert reg.minz() == -29
-    assert reg.maxz() == 0
+    assert reg.min_schem_x() == -9
+    assert reg.max_schem_x() == 0
+    assert reg.min_schem_y() == -19
+    assert reg.max_schem_y() == 0
+    assert reg.min_schem_z() == -29
+    assert reg.max_schem_z() == 0
+    assert reg.min_x() == -9
+    assert reg.max_x() == 0
+    assert reg.min_y() == -19
+    assert reg.max_y() == 0
+    assert reg.min_z() == -29
+    assert reg.max_z() == 0
     reg = Region(10, 10, 10, 10, 10, 10)
-    assert reg.minschemx() == 10
-    assert reg.maxschemx() == 19
-    assert reg.minschemy() == 10
-    assert reg.maxschemy() == 19
-    assert reg.minschemz() == 10
-    assert reg.maxschemz() == 19
-    assert reg.minx() == 0
-    assert reg.maxx() == 9
-    assert reg.miny() == 0
-    assert reg.maxy() == 9
-    assert reg.minz() == 0
-    assert reg.maxz() == 9
+    assert reg.min_schem_x() == 10
+    assert reg.max_schem_x() == 19
+    assert reg.min_schem_y() == 10
+    assert reg.max_schem_y() == 19
+    assert reg.min_schem_z() == 10
+    assert reg.max_schem_z() == 19
+    assert reg.min_x() == 0
+    assert reg.max_x() == 9
+    assert reg.min_y() == 0
+    assert reg.max_y() == 9
+    assert reg.min_z() == 0
+    assert reg.max_z() == 9
     reg = Region(-10, -10, -10, 10, 10, 10)
-    assert reg.minschemx() == -10
-    assert reg.maxschemx() == -1
-    assert reg.minschemy() == -10
-    assert reg.maxschemy() == -1
-    assert reg.minschemz() == -10
-    assert reg.maxschemz() == -1
-    assert reg.minx() == 0
-    assert reg.maxx() == 9
-    assert reg.miny() == 0
-    assert reg.maxy() == 9
-    assert reg.minz() == 0
-    assert reg.maxz() == 9
+    assert reg.min_schem_x() == -10
+    assert reg.max_schem_x() == -1
+    assert reg.min_schem_y() == -10
+    assert reg.max_schem_y() == -1
+    assert reg.min_schem_z() == -10
+    assert reg.max_schem_z() == -1
+    assert reg.min_x() == 0
+    assert reg.max_x() == 9
+    assert reg.min_y() == 0
+    assert reg.max_y() == 9
+    assert reg.min_z() == 0
+    assert reg.max_z() == 9
     reg = Region(-10, -10, -10, -10, -10, -10)
-    assert reg.minschemx() == -19
-    assert reg.maxschemx() == -10
-    assert reg.minschemy() == -19
-    assert reg.maxschemy() == -10
-    assert reg.minschemz() == -19
-    assert reg.maxschemz() == -10
-    assert reg.minx() == -9
-    assert reg.maxx() == 0
-    assert reg.miny() == -9
-    assert reg.maxy() == 0
-    assert reg.minz() == -9
-    assert reg.maxz() == 0
+    assert reg.min_schem_x() == -19
+    assert reg.max_schem_x() == -10
+    assert reg.min_schem_y() == -19
+    assert reg.max_schem_y() == -10
+    assert reg.min_schem_z() == -19
+    assert reg.max_schem_z() == -10
+    assert reg.min_x() == -9
+    assert reg.max_x() == 0
+    assert reg.min_y() == -9
+    assert reg.max_y() == 0
+    assert reg.min_z() == -9
+    assert reg.max_z() == 0
 
 
 def test_are_random_schematics_preserved_when_reading_and_writing():
@@ -128,18 +128,18 @@ def test_are_random_schematics_preserved_when_reading_and_writing():
             read_region = read_schematic.regions[name]
 
             # Assert computed values are equal
-            assert write_region.minx() == read_region.minx()
-            assert write_region.maxx() == read_region.maxx()
-            assert write_region.miny() == read_region.miny()
-            assert write_region.maxy() == read_region.maxy()
-            assert write_region.minz() == read_region.minz()
-            assert write_region.maxz() == read_region.maxz()
-            assert write_region.minschemx() == read_region.minschemx()
-            assert write_region.maxschemx() == read_region.maxschemx()
-            assert write_region.minschemy() == read_region.minschemy()
-            assert write_region.maxschemy() == read_region.maxschemy()
-            assert write_region.minschemz() == read_region.minschemz()
-            assert write_region.maxschemz() == read_region.maxschemz()
+            assert write_region.min_x() == read_region.min_x()
+            assert write_region.max_x() == read_region.max_x()
+            assert write_region.min_y() == read_region.min_y()
+            assert write_region.max_y() == read_region.max_y()
+            assert write_region.min_z() == read_region.min_z()
+            assert write_region.max_z() == read_region.max_z()
+            assert write_region.min_schem_x() == read_region.min_schem_x()
+            assert write_region.max_schem_x() == read_region.max_schem_x()
+            assert write_region.min_schem_y() == read_region.min_schem_y()
+            assert write_region.max_schem_y() == read_region.max_schem_y()
+            assert write_region.min_schem_z() == read_region.min_schem_z()
+            assert write_region.max_schem_z() == read_region.max_schem_z()
 
             # Assert all blocks are equal
             for x, y, z in write_region.allblockpos():
@@ -167,9 +167,9 @@ def test_region_filter():
         assert before_schematic.height == after_schematic.height, "Invalid test litematic"
         assert before_schematic.length == after_schematic.length, "Invalid test litematic"
         before_schematic.filter(function)
-        for x in before_schematic.xrange():
-            for y in before_schematic.yrange():
-                for z in before_schematic.zrange():
+        for x in before_schematic.range_x():
+            for y in before_schematic.range_y():
+                for z in before_schematic.range_z():
                     state_1 = before_schematic[x, y, z]
                     state_2 = after_schematic[x, y, z]
                     assert state_1 == state_2
@@ -184,30 +184,30 @@ def test_region_filter():
     blue = BlockState("minecraft:blue_concrete")
 
     def black_red_white_blue(b: BlockState):
-        if b.blockid == "minecraft:black_concrete":
+        if b.id == "minecraft:black_concrete":
             return red
-        if b.blockid == "minecraft:white_concrete":
+        if b.id == "minecraft:white_concrete":
             return blue
         return b
 
     do_filter('black-white.litematic', 'red-blue.litematic', black_red_white_blue)
 
     def glassify(state: BlockState):
-        if "water" in state.blockid:
+        if "water" in state.id:
             return BlockState("minecraft:blue_stained_glass")
-        elif state.blockid == "minecraft:sand":
+        elif state.id == "minecraft:sand":
             return BlockState('minecraft:yellow_stained_glass')
-        elif state.blockid == "minecraft:dirt":
+        elif state.id == "minecraft:dirt":
             return BlockState("minecraft:brown_stained_glass")
-        elif state.blockid == "minecraft:stone":
+        elif state.id == "minecraft:stone":
             return BlockState("minecraft:light_gray_stained_glass")
-        elif state.blockid in ("minecraft:grass_block", "minecraft:birch_leaves"):
+        elif state.id in ("minecraft:grass_block", "minecraft:birch_leaves"):
             return BlockState("minecraft:green_stained_glass")
-        elif state.blockid == "minecraft:birch_log":
+        elif state.id == "minecraft:birch_log":
             return BlockState("minecraft:white_stained_glass")
-        elif state.blockid == "minecraft:copper_ore":
+        elif state.id == "minecraft:copper_ore":
             return BlockState("minecraft:orange_stained_glass")
-        elif state.blockid == "minecraft:grass":
+        elif state.id == "minecraft:grass":
             return BlockState("minecraft:green_stained_glass_pane", east="true", north="true", south="true",
                               west="true", waterlogged="false")
         return state
@@ -215,7 +215,7 @@ def test_region_filter():
     do_filter('tree.litematic', 'tree-glass.litematic', glassify)
 
     def wool_to_concrete(b: BlockState):
-        return b.with_blockid(b.blockid.replace('wool', 'concrete'))
+        return b.with_id(b.id.replace('wool', 'concrete'))
 
     do_filter('concrete-wool.litematic', 'concrete-full.litematic', wool_to_concrete)
 
@@ -230,7 +230,7 @@ def assert_valid_palette(region: Region):
         assert entry not in entries, f"Palette has duplicate entry: {entry}"
         entries.add(entry)
 
-    blocks = {region[p] for p in region.allblockpos()}
+    blocks = {region[p] for p in region.block_positions()}
     for entry in palette:
         if entry == AIR:
             continue
