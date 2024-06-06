@@ -1,3 +1,15 @@
+### 0.9.0b0
+* Drop Python 3.8 support, Python 3.9 is now the minimum supported version
+* All methods and field are now proper snake_case. 
+  Old names can still be used but are deprecated and will eventually be removed.
+* Blocks can now be accessed from regions using bracket notation:
+  `block = region[x, y, z]`, `region[x, y, z] = block`
+* The built-in `in` keywork can now be used to test whether a region contains a block:
+  `burning = BlockState("minecraft:fire") in region`
+* Added `Region.replace()` to replace all occurrences of a block in a region with a different one
+* Litemapy is now aware of litematic subversions
+* Type hints are now provided with annotations instead of Sphinx docstrings
+
 ### 0.8.1b0
 * Massively improve saving performance by using Numpy to count non-air blocks (by @llGaetanll).
 * Obsolete region palette entries are now pruned.
