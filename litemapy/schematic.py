@@ -24,6 +24,7 @@ class Schematic:
     description: str
     region: dict[str, 'Region']
     lm_version: int
+    lm_subversion: int
     mc_version: int
     created: int
     modified: int
@@ -33,7 +34,8 @@ class Schematic:
     def __init__(self,
                  name: str = DEFAULT_NAME, author: str = "", description: str = "",
                  regions: Optional[dict[str, 'Region']] = None,
-                 lm_version: int = LITEMATIC_VERSION, mc_version: int = MC_DATA_VERSION
+                 lm_version: int = LITEMATIC_VERSION, lm_subversion: int = LITEMATIC_SUBVERSION,
+                 mc_version: int = MC_DATA_VERSION
                  ) -> None:
         """
         Schematic can be created by optionally providing metadata and regions, or leaving them blank or default.
@@ -59,6 +61,7 @@ class Schematic:
             self.__regions.update(regions)
         self.mc_version = mc_version
         self.lm_version = lm_version
+        self.lm_subversion = lm_subversion
         self.__preview = IntArray([])
 
     def save(self, file_path: str, update_meta: bool = True, save_soft: bool = True, gzipped: bool = True,
@@ -94,6 +97,7 @@ class Schematic:
             raise ValueError("Empty schematic does not have any regions")
         root = Compound()
         root["Version"] = Int(self.lm_version)
+        root["SubVersion"] = Int(self.lm_subversion)
         root["MinecraftDataVersion"] = Int(self.mc_version)
         meta = Compound()
         enclose = Compound()
@@ -133,6 +137,7 @@ class Schematic:
         """
         meta: Compound = nbt["Metadata"]
         lm_version: Int = nbt["Version"]
+        lm_subversion: Int = nbt.get("SubVersion", 0)
         mc_version: Int = nbt["MinecraftDataVersion"]
         width = int(meta["EnclosingSize"]["x"])
         height = int(meta["EnclosingSize"]["y"])
@@ -144,7 +149,8 @@ class Schematic:
         for key, value in nbt["Regions"].items():
             reg = Region.from_nbt(value)
             regions[str(key)] = reg
-        schematic = Schematic(name=name, author=author, description=desc, regions=regions, lm_version=lm_version,
+        schematic = Schematic(name=name, author=author, description=desc, regions=regions,
+                              lm_version=lm_version, lm_subversion=lm_subversion,
                               mc_version=mc_version)
         if schematic.width != width:
             raise CorruptedSchematicError(

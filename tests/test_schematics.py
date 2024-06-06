@@ -274,3 +274,14 @@ def test_replace():
     assert region.palette[0] == AIR
     region.replace(log, stone)
     assert region[2, 0, 0] == stone
+
+
+def test_subversion():
+    schematic = Schematic.load(path.join(VALID_LITEMATIC_DIRECTORY, "Subversion.litematic"))
+    assert schematic.lm_subversion == 1
+    with TemporaryDirectory() as temp:
+        schematic.lm_subversion = 1337
+        name = path.join(temp, "Subversion.litematic")
+        schematic.save(name)
+        schematic = Schematic.load(name)
+    assert schematic.lm_subversion == 1337
