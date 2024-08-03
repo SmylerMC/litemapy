@@ -8,6 +8,13 @@ from .storage import DiscriminatingDictionary
 from typing import Any, Optional, Union
 
 
+EntityPosition = tuple[float, float, float]
+EntityRotation = tuple[float, float]
+EntityMotion = tuple[float, float, float]
+
+BlockPosition = tuple[int, int, int]
+
+
 class BlockState:
     """
     Represents an in-game block.
@@ -157,9 +164,9 @@ class Entity:
     """
 
     _data: Compound
-    _position: tuple[float, float, float]
-    _rotation: tuple[float, float, float]
-    _motion: tuple[float, float, float]
+    _position: EntityPosition
+    _rotation: EntityRotation
+    _motion: EntityMotion
 
     # TODO Needs unit tests
 
@@ -189,7 +196,7 @@ class Entity:
         position = [float(coord) for coord in self._data['Pos']]
         self._position = (position[0], position[1], position[2])
         rotation = [float(coord) for coord in self._data['Rotation']]
-        self._rotation = (rotation[0], rotation[1], rotation[2])
+        self._rotation = (rotation[0], rotation[1])
         motion = [float(coord) for coord in self._data['Motion']]
         self._motion = (motion[0], motion[1], motion[2])
 
@@ -218,7 +225,7 @@ class Entity:
             self._position = (position[0], position[1], position[2])
         if key == 'Rotation':
             rotation = [float(coord) for coord in tag]
-            self._rotation = (rotation[0], rotation[1], rotation[2])
+            self._rotation = (rotation[0], rotation[1])
         if key == 'Motion':
             motion = [float(coord) for coord in tag]
             self._motion = (motion[0], motion[1], motion[2])
@@ -242,7 +249,7 @@ class Entity:
         position = [float(coord) for coord in self._data['Pos']]
         self._position = (position[0], position[1], position[2])
         rotation = [float(coord) for coord in self._data['Rotation']]
-        self._rotation = (rotation[0], rotation[1], rotation[2])
+        self._rotation = (rotation[0], rotation[1])
         motion = [float(coord) for coord in self._data['Motion']]
         self._motion = (motion[0], motion[1], motion[2])
 
@@ -259,38 +266,38 @@ class Entity:
         self._data['id'] = String(self._id)
 
     @property
-    def position(self) -> tuple[float, float, float]:
+    def position(self) -> EntityPosition:
         """
         The position of the entity.
         """
         return self._position
 
     @position.setter
-    def position(self, position: tuple[float, float, float]) -> None:
+    def position(self, position: EntityPosition) -> None:
         self._position = position
         self._data['Pos'] = List[Double]([Double(coord) for coord in self._position])
 
     @property
-    def rotation(self) -> tuple[float, float, float]:
+    def rotation(self) -> EntityRotation:
         """
         The rotation of the entity.
         """
         return self._rotation
 
     @rotation.setter
-    def rotation(self, rotation: tuple[float, float, float]) -> None:
+    def rotation(self, rotation: EntityRotation) -> None:
         self._rotation = rotation
         self._data['Rotation'] = List[Double]([Double(coord) for coord in self._rotation])
 
     @property
-    def motion(self) -> tuple[float, float, float]:
+    def motion(self) -> EntityMotion:
         """
         The velocity vector of the entity.
         """
         return self._motion
 
     @motion.setter
-    def motion(self, motion: tuple[float, float, float]) -> None:
+    def motion(self, motion: EntityMotion) -> None:
         self._motion = motion
         self._data['Motion'] = List[Double]([Double(coord) for coord in self._motion])
 
@@ -306,7 +313,7 @@ class TileEntity:
     The ID can be inferred by looking up the :class:`BlockState` as the same position in the :class:`Region`.
     """
     _data: Compound
-    _position: tuple[int, int, int]
+    _position: BlockPosition
 
     def __init__(self, nbt: Compound) -> None:
         # TODO Not documented because it only exposes NBT
@@ -369,14 +376,14 @@ class TileEntity:
         self._position = (position[0], position[1], position[2])
 
     @property
-    def position(self) -> tuple[int, int, int]:
+    def position(self) -> BlockPosition:
         """
         The tile entity's position within the :class:`Region`/
         """
         return self._position
 
     @position.setter
-    def position(self, position: tuple[int, int, int]):
+    def position(self, position: BlockPosition):
         self._position = position
         for coord, index in [('x', 0), ('y', 1), ('z', 2)]:
             self._data[coord] = Int(self._position[index])
