@@ -136,9 +136,9 @@ class BlockState:
 
         return identifier
 
-    def __eq__(self, other: 'BlockState') -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, BlockState):
-            raise ValueError("Can only compare BlockStates with BlockStates")
+            return False
         return other.__block_id == self.__block_id and other.__properties == self.__properties
 
     def __hash__(self) -> int:
