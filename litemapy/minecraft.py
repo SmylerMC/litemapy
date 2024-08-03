@@ -25,7 +25,7 @@ class BlockState:
         :param block_id:    the identifier of the block (e.g. *minecraft:stone*)
         :param properties:  the properties of the block state as keyword parameters (e.g. *facing="north"*)
         """
-        self.__block_id = block_id
+        self.__block_id = assert_valid_identifier(block_id)
         self.__properties = DiscriminatingDictionary(self.__validate, properties)
         self.__identifier_cache = None
 
@@ -46,7 +46,7 @@ class BlockState:
         """
         Reads a :class:`BlockState` from an nbt tag.
         """
-        block_id = str(nbt["Name"])
+        block_id = assert_valid_identifier(str(nbt["Name"]))
         if "Properties" in nbt:
             properties: dict[str, str] = {str(k): str(v) for k, v in nbt["Properties"].items()}
         else:
@@ -73,6 +73,7 @@ class BlockState:
 
         :param block_id:  the block id for the new :class:`BlockState`
         """
+        assert_valid_identifier(block_id)
         return BlockState(block_id, **self.__properties)
 
     def with_properties(self, **properties: Optional[str]) -> 'BlockState':
@@ -156,6 +157,7 @@ class Entity:
     (e.g. a sheep has a tag for its color and one indicating whether it has been sheared).
     """
 
+    _id: str
     _data: Compound
     _position: tuple[float, float, float]
     _rotation: tuple[float, float, float]
@@ -185,7 +187,7 @@ class Entity:
         if 'Motion' not in keys:
             self._data['Motion'] = List[Double]([Double(0.), Double(0.), Double(0.)])
 
-        self._id = self._data['id']
+        self._id = assert_valid_identifier(self._data['id'])
         position = [float(coord) for coord in self._data['Pos']]
         self._position = (position[0], position[1], position[2])
         rotation = [float(coord) for coord in self._data['Rotation']]
@@ -380,6 +382,45 @@ class TileEntity:
         self._position = position
         for coord, index in [('x', 0), ('y', 1), ('z', 2)]:
             self._data[coord] = Int(self._position[index])
+
+
+def is_valid_identifier(identifier: str) -> bool:
+    """
+    Checks if a string is a valid identifier (aka. ResourceLocation in Mojmap).
+    """
+    # Check taken from Minecraft 1.20.1 ResourceLocation
+    allowed_chars = "_-abcdefghijklmnopqrstuvwxyz0123456789.:"
+    separator = False
+    for char in identifier:
+        if char not in allowed_chars:
+            return False
+        if char == ":":
+            # Now parsing the path part
+            separator = True
+            allowed_chars = "_-abcdefghijklmnopqrstuvwxyz0123456789./"
+    return separator
+
+
+class InvalidIdentifier(ValueError):
+    identifier: str
+
+    def __init__(self, identifier: str) -> None:
+        super().__init__(f'Invalid identifier "{identifier}"')
+
+
+def assert_valid_identifier(identifier: str) -> str:
+    """
+    Checks whether a string is a valid identifier (aka  ResourceLocation in Mojmap),
+    and raises InvalidIdentifierError if it is not.
+    The name "identifier" is from Yarn mappings but makes more sens in this context.
+
+    :returns: the identifier
+    :raises CorruptedSchematicError: if provided string is not a valid identifier
+    """
+
+    if not is_valid_identifier(identifier):
+        raise InvalidIdentifier(identifier)
+    return identifier
 
 
 class RequiredKeyMissingException(Exception):
