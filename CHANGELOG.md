@@ -1,3 +1,8 @@
+### 0.10.0b0
+* Fix entity rotation support.
+* Fix block state not being comparable with other types.
+* Enforce valid resource location name. If a block name would not be valid for Minecraft, Litemapy prevents your from creating the block state by raising an `InvalidIdentifier` exception.
+
 ### 0.9.0b0
 * Drop Python 3.8 support, Python 3.9 is now the minimum supported version
 * All methods and field are now proper snake_case. 
