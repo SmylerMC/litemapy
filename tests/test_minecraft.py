@@ -55,6 +55,12 @@ def test_blockstate_properties_iter():
     assert rebuilt == prop
 
 
+def test_blockstate_contains():
+    blockstate_1 = BlockState("minecraft:stone", test1="testval1")
+    assert "test1" in blockstate_1
+    assert "test2" not in blockstate_1
+
+
 def test_blockstate_is_hashable():
     state1 = BlockState("minecraft:air")
     state2 = BlockState("minecraft:air")

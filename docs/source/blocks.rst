@@ -12,6 +12,8 @@ E.g.
     "minecraft:oak_log"
     >>> block["facing"]
     "up"
+    >>> "facing" in block
+    True
 
 .. autoclass:: litemapy.BlockState
     :members:
