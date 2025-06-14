@@ -1,3 +1,8 @@
+### 0.11.0b0
+* Add `BlockState.properties()`
+* Add support for `in` operator on `BlockState`
+* Fix documentation building on Read the Docs.
+
 ### 0.10.0b0
 * Fix entity rotation support.
 * Fix block state not being comparable with other types.
