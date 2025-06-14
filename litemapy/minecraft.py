@@ -161,6 +161,9 @@ class BlockState:
     def __len__(self) -> int:
         return len(self.__properties)
 
+    def __contains__(self, key: str) -> bool:
+        return key in self.__properties
+
 
 class Entity:
     """
