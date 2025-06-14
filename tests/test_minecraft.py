@@ -46,6 +46,15 @@ def test_blockstate_with_properties():
     assert blockstate_3.to_block_state_identifier() == "minecraft:stone[test1=testval1,test2=testval2,test3=testval3]"
 
 
+def test_blockstate_properties_iter():
+    prop = {"test1": "testval1", "test2": "testval2"}
+    blockstate = BlockState("minecraft:stone", **prop)
+    rebuilt = {}
+    for p, v in blockstate.properties():
+        rebuilt[p] = v
+    assert rebuilt == prop
+
+
 def test_blockstate_is_hashable():
     state1 = BlockState("minecraft:air")
     state2 = BlockState("minecraft:air")
