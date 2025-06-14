@@ -5,8 +5,7 @@ from typing_extensions import deprecated
 from .deprecation import deprecated_name
 from .storage import DiscriminatingDictionary
 
-from typing import Any, Optional, Union
-
+from typing import Any, Optional, Union, Iterable
 
 EntityPosition = tuple[float, float, float]
 EntityRotation = tuple[float, float]
@@ -100,6 +99,9 @@ class BlockState:
             properties.pop(prop_name)
         other.__properties.update(properties)
         return other
+
+    def properties(self) -> Iterable[tuple[str, str]]:
+        return self.__properties.items()
 
     def __validate(self, k: Any, v: Any) -> tuple[bool, str]:
         if type(k) is not str or type(v) is not str:
