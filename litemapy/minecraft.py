@@ -101,6 +101,11 @@ class BlockState:
         return other
 
     def properties(self) -> Iterable[tuple[str, str]]:
+        """
+        Exposes the properties of this :class:`BlockState` using an iterator over its properties, in a similar fashion as :func:`dict.items()`.
+
+        :returns: An iterable over the properties, as property, value tuples.
+        """
         return self.__properties.items()
 
     def __validate(self, k: Any, v: Any) -> tuple[bool, str]:
