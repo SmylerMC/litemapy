@@ -113,8 +113,8 @@ class Schematic:
         meta["RegionCount"] = Int(len(self.regions))
         meta["TimeCreated"] = Long(self.created)
         meta["TimeModified"] = Long(self.modified)
-        meta["TotalBlocks"] = Int(sum([reg.getblockcount() for reg in self.regions.values()]))
-        meta["TotalVolume"] = Int(sum([reg.getvolume() for reg in self.regions.values()]))
+        meta["TotalBlocks"] = Int(sum([reg.count_blocks() for reg in self.regions.values()]))
+        meta["TotalVolume"] = Int(sum([reg.volume() for reg in self.regions.values()]))
         meta['PreviewImageData'] = self.__preview
         root["Metadata"] = meta
         regs = Compound()
@@ -222,24 +222,24 @@ class Schematic:
             self.__z_max = max(self.__z_max, region.max_schem_z())
 
     def __on_region_remove(self, name, region) -> None:
-        bounding_box_changed: bool = self.__x_min == region.minschemx()
-        bounding_box_changed = bounding_box_changed or self.__x_max == region.maxschemx()
-        bounding_box_changed = bounding_box_changed or self.__y_min == region.minschemy()
-        bounding_box_changed = bounding_box_changed or self.__y_max == region.maxschemy()
-        bounding_box_changed = bounding_box_changed or self.__z_min == region.minschemz()
-        bounding_box_changed = bounding_box_changed or self.__z_max == region.maxschemz()
+        bounding_box_changed: bool = self.__x_min == region.min_schem_x()
+        bounding_box_changed = bounding_box_changed or self.__x_max == region.max_schem_x()
+        bounding_box_changed = bounding_box_changed or self.__y_min == region.min_schem_y()
+        bounding_box_changed = bounding_box_changed or self.__y_max == region.max_schem_y()
+        bounding_box_changed = bounding_box_changed or self.__z_min == region.min_schem_z()
+        bounding_box_changed = bounding_box_changed or self.__z_max == region.max_schem_z()
         if bounding_box_changed:
             self.__compute_enclosure()
 
     def __compute_enclosure(self):
         x_min, x_max, y_min, y_max, z_min, z_max = None, None, None, None, None, None
         for region in self.__regions.values():
-            x_min = min(x_min, region.minschemx()) if x_min is not None else region.minschemx()
-            x_max = max(x_max, region.maxschemx()) if x_max is not None else region.maxschemx()
-            y_min = min(y_min, region.minschemy()) if y_min is not None else region.minschemy()
-            y_max = max(y_max, region.maxschemy()) if y_max is not None else region.maxschemy()
-            z_min = min(z_min, region.minschemz()) if z_min is not None else region.minschemz()
-            z_max = max(z_max, region.maxschemz()) if z_max is not None else region.maxschemz()
+            x_min = min(x_min, region.min_schem_x()) if x_min is not None else region.min_schem_x()
+            x_max = max(x_max, region.max_schem_x()) if x_max is not None else region.max_schem_x()
+            y_min = min(y_min, region.min_schem_y()) if y_min is not None else region.min_schem_y()
+            y_max = max(y_max, region.max_schem_y()) if y_max is not None else region.max_schem_y()
+            z_min = min(z_min, region.min_schem_z()) if z_min is not None else region.min_schem_z()
+            z_max = max(z_max, region.max_schem_z()) if z_max is not None else region.max_schem_z()
         self.__x_min = x_min
         self.__x_max = x_max
         self.__y_min = y_min
