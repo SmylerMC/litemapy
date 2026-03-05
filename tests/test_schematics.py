@@ -142,7 +142,7 @@ def test_are_random_schematics_preserved_when_reading_and_writing():
             assert write_region.max_schem_z() == read_region.max_schem_z()
 
             # Assert all blocks are equal
-            for x, y, z in write_region.allblockpos():
+            for x, y, z in write_region.block_positions():
                 ws = write_region[x, y, z]
                 rs = read_region[x, y, z]
                 assert ws == rs

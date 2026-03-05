@@ -54,8 +54,8 @@ schem = Schematic.load("planet.litematic")
 reg = list(schem.regions.values())[0]
 
 # Print out the basic shape
-for x in reg.xrange():
-    for z in reg.zrange():
+for x in reg.range_x():
+    for z in reg.range_z():
         b = reg[x, 10, z]
         if b.id == "minecraft:air":
             print(" ", end="")

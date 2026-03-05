@@ -86,7 +86,7 @@ def glacify_litematic(in_file: str, out_file: str):
         # Update the stats
         volume = region.volume()
         total_blocks += volume
-        print(f"Processing region {name} of volume {volume} blocks ({region.getblockcount()} non-air)")
+        print(f"Processing region {name} of volume {volume} blocks ({region.count_blocks()} non-air)")
 
         # This is where the magic happens: we ask Litemapy to replace blocks according to what glassiy returns
         region.filter(glassify)
