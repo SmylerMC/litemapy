@@ -672,8 +672,12 @@ class Region:
     def __setitem__(self, position: tuple[int, int, int], block: BlockState) -> None:
         x, y, z = self.__region_coordinates_to_store_coordinates(*position)
 
-        # Remove existing tile entity at this position
+        # Rebuild tile entity index if stale (e.g. after from_nbt appends)
         store_pos = (x, y, z)
+        if len(self.__te_index) != len(self.__tile_entities):
+            self.__te_index = {te.position: te for te in self.__tile_entities}
+
+        # Remove existing tile entity at this position
         old_te = self.__te_index.pop(store_pos, None)
         if old_te is not None:
             self.__tile_entities.remove(old_te)
@@ -685,10 +689,13 @@ class Region:
             self.__tile_entities.append(new_te)
             self.__te_index[store_pos] = new_te
 
-        if block in self.__palette:
-            i = self.__palette.index(block)
+        # Strip tile entity before palette storage to avoid leaking TE
+        # to other blocks sharing the same palette entry
+        palette_block = block.with_tile_entity(None) if block.tile_entity else block
+        if palette_block in self.__palette:
+            i = self.__palette.index(palette_block)
         else:
-            self.__palette.append(block)
+            self.__palette.append(palette_block)
             i = len(self.__palette) - 1
         self.__blocks[x, y, z] = i
 

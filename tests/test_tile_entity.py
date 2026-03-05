@@ -159,3 +159,29 @@ def test_litematic_round_trip_preserves_tile_entities():
     # Blocks without tile entities should not be affected
     assert loaded_reg[0, 0, 0].tile_entity is None
     assert loaded_reg[0, 0, 0].id == "minecraft:stone"
+
+
+def test_palette_does_not_leak_tile_entity():
+    # A TE-bearing block stored first should not leak its TE
+    # to other blocks of the same type that have no TE
+    reg = Region(0, 0, 0, 5, 5, 5)
+
+    te_nbt = Compound({
+        "id": String("minecraft:chest"),
+        "Items": List[Compound]([
+            Compound({
+                "Slot": Byte(0),
+                "id": String("minecraft:diamond"),
+                "Count": Byte(64)
+            })
+        ])
+    })
+    te = TileEntity(te_nbt)
+    chest_with_te = BlockState("minecraft:chest").with_tile_entity(te)
+    chest_without_te = BlockState("minecraft:chest")
+
+    reg[0, 0, 0] = chest_with_te
+    reg[1, 1, 1] = chest_without_te
+
+    assert reg[0, 0, 0].tile_entity is not None
+    assert reg[1, 1, 1].tile_entity is None
