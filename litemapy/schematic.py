@@ -337,6 +337,7 @@ class Region:
         self.__blocks = np.zeros((abs(width), abs(height), abs(length)), dtype=np.uint32)
         self.__entities = []
         self.__tile_entities = []
+        self.__te_index = {}
         self.__block_ticks = []
         self.__fluid_ticks = []
 
@@ -672,13 +673,17 @@ class Region:
         x, y, z = self.__region_coordinates_to_store_coordinates(*position)
 
         # Remove existing tile entity at this position
-        self.__tile_entities = [te for te in self.__tile_entities if te.position != (x, y, z)]
+        store_pos = (x, y, z)
+        old_te = self.__te_index.pop(store_pos, None)
+        if old_te is not None:
+            self.__tile_entities.remove(old_te)
 
         # Add new tile entity if present in the BlockState
         if block.tile_entity is not None:
             new_te = copy.deepcopy(block.tile_entity)
-            new_te.position = (x, y, z)
+            new_te.position = store_pos
             self.__tile_entities.append(new_te)
+            self.__te_index[store_pos] = new_te
 
         if block in self.__palette:
             i = self.__palette.index(block)
@@ -702,10 +707,9 @@ class Region:
         :returns:           the tile entity at the given position, or None if there is none
         """
         store_pos = self.__region_coordinates_to_store_coordinates(*position)
-        for te in self.__tile_entities:
-            if te.position == store_pos:
-                return te
-        return None
+        if len(self.__te_index) != len(self.__tile_entities):
+            self.__te_index = {te.position: te for te in self.__tile_entities}
+        return self.__te_index.get(store_pos)
 
     @deprecated_name("getblockcount")
     def count_blocks(self) -> int:
