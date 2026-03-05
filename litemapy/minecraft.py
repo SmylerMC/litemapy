@@ -23,17 +23,20 @@ class BlockState:
     __block_id: str
     __properties: DiscriminatingDictionary
     __identifier_cache: Optional[str]
+    __tile_entity: Optional['TileEntity']
 
-    def __init__(self, block_id: str, **properties: str) -> None:
+    def __init__(self, block_id: str, tile_entity: Optional['TileEntity'] = None, **properties: str) -> None:
         """
         A block state has a block ID and a dictionary of properties.
 
         :param block_id:    the identifier of the block (e.g. *minecraft:stone*)
+        :param tile_entity: the tile entity associated with this block (e.g. chest inventory)
         :param properties:  the properties of the block state as keyword parameters (e.g. *facing="north"*)
         """
         self.__block_id = assert_valid_identifier(block_id)
         self.__properties = DiscriminatingDictionary(self.__validate, properties)
         self.__identifier_cache = None
+        self.__tile_entity = tile_entity
 
     def to_nbt(self) -> Compound:
         """
@@ -80,7 +83,7 @@ class BlockState:
         :param block_id:  the block id for the new :class:`BlockState`
         """
         assert_valid_identifier(block_id)
-        return BlockState(block_id, **self.__properties)
+        return BlockState(block_id, tile_entity=self.tile_entity, **self.__properties)
 
     def with_properties(self, **properties: Optional[str]) -> 'BlockState':
         """
@@ -92,13 +95,30 @@ class BlockState:
         :returns: A copy of this :class:`BlockState` with the given properties updated to new values
         """
         none_properties = list(map(lambda kv: kv[0], filter(lambda kv: kv[1] is None, properties.items())))
-        other = BlockState(self.id)
+        other = BlockState(self.id, tile_entity=self.tile_entity)
         other.__properties.update(self.__properties)
         for prop_name in none_properties:
             other.__properties.pop(prop_name)
             properties.pop(prop_name)
         other.__properties.update(properties)
         return other
+
+    def with_tile_entity(self, tile_entity: Optional['TileEntity']) -> 'BlockState':
+        """
+        Returns a new copy of this :class:`BlockState` with the given tile entity.
+
+        :param tile_entity: the new tile entity
+
+        :returns: A copy of this :class:`BlockState` with the given tile entity
+        """
+        return BlockState(self.id, tile_entity=tile_entity, **self.__properties)
+
+    @property
+    def tile_entity(self) -> Optional['TileEntity']:
+        """
+        The tile entity associated with this block state.
+        """
+        return self.__tile_entity
 
     def properties(self) -> Iterable[tuple[str, str]]:
         """

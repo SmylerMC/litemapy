@@ -3,6 +3,7 @@ from time import time
 
 import nbtlib
 import numpy as np
+import copy
 from nbtlib.tag import Short, Byte, Int, Long, Double, String, List, Compound, ByteArray, IntArray
 from typing_extensions import deprecated
 
@@ -657,7 +658,11 @@ class Region:
 
     def __getitem__(self, position: tuple[int, int, int]) -> BlockState:
         x, y, z = self.__region_coordinates_to_store_coordinates(*position)
-        return self.__palette[self.__blocks[x, y, z]]
+        state = self.__palette[self.__blocks[x, y, z]]
+        te = self.get_tile_entity(position)
+        if te is not None:
+            return state.with_tile_entity(te)
+        return state
 
     @deprecated("Region.getblock() is deprecated. Use array style syntax instead: region[x, y, z]")
     def getblock(self, x: int, y: int, z: int) -> BlockState:
@@ -665,6 +670,16 @@ class Region:
 
     def __setitem__(self, position: tuple[int, int, int], block: BlockState) -> None:
         x, y, z = self.__region_coordinates_to_store_coordinates(*position)
+
+        # Remove existing tile entity at this position
+        self.__tile_entities = [te for te in self.__tile_entities if te.position != (x, y, z)]
+
+        # Add new tile entity if present in the BlockState
+        if block.tile_entity is not None:
+            new_te = copy.deepcopy(block.tile_entity)
+            new_te.position = (x, y, z)
+            self.__tile_entities.append(new_te)
+
         if block in self.__palette:
             i = self.__palette.index(block)
         else:
@@ -678,6 +693,19 @@ class Region:
 
     def __contains__(self, block: BlockState) -> bool:
         return block in self.__palette and self.__palette.index(block) in self.__blocks
+
+    def get_tile_entity(self, position: tuple[int, int, int]) -> Optional[TileEntity]:
+        """
+        Returns the tile entity at the given position, if any.
+
+        :param position:    the position to look for a tile entity at
+        :returns:           the tile entity at the given position, or None if there is none
+        """
+        store_pos = self.__region_coordinates_to_store_coordinates(*position)
+        for te in self.__tile_entities:
+            if te.position == store_pos:
+                return te
+        return None
 
     @deprecated_name("getblockcount")
     def count_blocks(self) -> int:
