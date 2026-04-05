@@ -3,6 +3,7 @@ from time import time
 
 import nbtlib
 import numpy as np
+import copy
 from nbtlib.tag import Short, Byte, Int, Long, Double, String, List, Compound, ByteArray, IntArray
 from typing_extensions import deprecated
 
@@ -336,6 +337,7 @@ class Region:
         self.__blocks = np.zeros((abs(width), abs(height), abs(length)), dtype=np.uint32)
         self.__entities = []
         self.__tile_entities = []
+        self.__te_index = {}
         self.__block_ticks = []
         self.__fluid_ticks = []
 
@@ -657,7 +659,11 @@ class Region:
 
     def __getitem__(self, position: tuple[int, int, int]) -> BlockState:
         x, y, z = self.__region_coordinates_to_store_coordinates(*position)
-        return self.__palette[self.__blocks[x, y, z]]
+        state = self.__palette[self.__blocks[x, y, z]]
+        te = self.get_tile_entity(position)
+        if te is not None:
+            return state.with_tile_entity(te)
+        return state
 
     @deprecated("Region.getblock() is deprecated. Use array style syntax instead: region[x, y, z]")
     def getblock(self, x: int, y: int, z: int) -> BlockState:
@@ -665,10 +671,31 @@ class Region:
 
     def __setitem__(self, position: tuple[int, int, int], block: BlockState) -> None:
         x, y, z = self.__region_coordinates_to_store_coordinates(*position)
-        if block in self.__palette:
-            i = self.__palette.index(block)
+
+        # Rebuild tile entity index if stale (e.g. after from_nbt appends)
+        store_pos = (x, y, z)
+        if len(self.__te_index) != len(self.__tile_entities):
+            self.__te_index = {te.position: te for te in self.__tile_entities}
+
+        # Remove existing tile entity at this position
+        old_te = self.__te_index.pop(store_pos, None)
+        if old_te is not None:
+            self.__tile_entities.remove(old_te)
+
+        # Add new tile entity if present in the BlockState
+        if block.tile_entity is not None:
+            new_te = copy.deepcopy(block.tile_entity)
+            new_te.position = store_pos
+            self.__tile_entities.append(new_te)
+            self.__te_index[store_pos] = new_te
+
+        # Strip tile entity before palette storage to avoid leaking TE
+        # to other blocks sharing the same palette entry
+        palette_block = block.with_tile_entity(None) if block.tile_entity else block
+        if palette_block in self.__palette:
+            i = self.__palette.index(palette_block)
         else:
-            self.__palette.append(block)
+            self.__palette.append(palette_block)
             i = len(self.__palette) - 1
         self.__blocks[x, y, z] = i
 
@@ -678,6 +705,18 @@ class Region:
 
     def __contains__(self, block: BlockState) -> bool:
         return block in self.__palette and self.__palette.index(block) in self.__blocks
+
+    def get_tile_entity(self, position: tuple[int, int, int]) -> Optional[TileEntity]:
+        """
+        Returns the tile entity at the given position, if any.
+
+        :param position:    the position to look for a tile entity at
+        :returns:           the tile entity at the given position, or None if there is none
+        """
+        store_pos = self.__region_coordinates_to_store_coordinates(*position)
+        if len(self.__te_index) != len(self.__tile_entities):
+            self.__te_index = {te.position: te for te in self.__tile_entities}
+        return self.__te_index.get(store_pos)
 
     @deprecated_name("getblockcount")
     def count_blocks(self) -> int:
